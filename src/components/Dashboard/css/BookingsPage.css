@@ -1,39 +1,39 @@
 /* Booking page layout */
 .BookingsPage-content {
-  flex: 1;
-  padding: 20px;
-  background-color: #f5f5f5;
+    flex: 1;
+    padding: 20px;
+    background-color: #f5f5f5;
 }
 
 .booking-actions {
-  display: flex;
-  align-items: center;
-  margin: 24px 0;
+    display: flex;
+    align-items: center;
+    margin: 24px 0;
 }
 
 .search-input {
-  flex: 1;
-  padding: 8px 16px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  margin-right: 16px;
+    flex: 1;
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-right: 16px;
 }
 
 .action-btn {
-  background: #2574fb;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  width: 36px;
-  height: 36px;
-  font-size: 1.5rem;
-  cursor: pointer;
+    background: #2574fb;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    width: 36px;
+    height: 36px;
+    font-size: 1.5rem;
+    cursor: pointer;
 }
 
 /* Grid layout */
 .booking-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  padding: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 10px;
 }

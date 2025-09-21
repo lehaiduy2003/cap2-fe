@@ -1,36 +1,35 @@
 /* Background video */
 #bg-video {
-  position: fixed;
-  top: 0;
-  left: 0;
-  min-width: 100%;
-  min-height: 100%;
-  object-fit: cover;
-  
+    position: fixed;
+    top: 0;
+    left: 0;
+    min-width: 100%;
+    min-height: 100%;
+    object-fit: cover;
 }
 
 /* Lớp overlay trên video */
 .video-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.3); /* điều chỉnh độ tối nền */
-  z-index: -2;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3); /* điều chỉnh độ tối nền */
+    z-index: -2;
 }
 /* Container */
 .login-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
 }
-.register-box{
-      background: transparent;   /* bỏ nền mờ */
-  backdrop-filter: none;     /* tắt hiệu ứng glassmorphism */
-  border: none;  
+.register-box {
+    background: transparent; /* bỏ nền mờ */
+    backdrop-filter: none; /* tắt hiệu ứng glassmorphism */
+    border: none;
     display: flex;
     width: 900px;
     max-width: 90%;
@@ -43,130 +42,132 @@
     margin-left: 60px;
 }
 .register-container {
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 12px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.2);
-  max-width: 1000px;
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    max-width: 1000px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
 }
 
 /* Left image panel */
 .login-image {
-  width: 40%;
-  position: relative;
+    width: 40%;
+    position: relative;
 }
 
 .login-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .login-image .overlay {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  text-align: center;
-  color: white;
-  padding: 10px 0;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    text-align: center;
+    color: white;
+    padding: 10px 0;
 }
 
 .login-image .overlay h1 {
-  font-size: 24px;
-  margin: 0;
+    font-size: 24px;
+    margin: 0;
 }
 
 /* Right form panel */
 .login-form {
-  width: 60%;
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
+    width: 60%;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
 }
 
 .login-form h2 {
-  text-align: center;
-  margin-bottom: 20px;
+    text-align: center;
+    margin-bottom: 20px;
 }
 
 .form-row {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 15px;
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
 }
 
 .form-group {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .form-group label {
-  font-weight: 500;
-  margin-bottom: 5px;
+    font-weight: 500;
+    margin-bottom: 5px;
 }
 
-input, select, textarea {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: inherit;
+input,
+select,
+textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
 }
 
 /* Button */
 .regis-btn {
-  width: 100%;
-  background-color: #007bff;
-  color: white;
-  font-weight: bold;
-  padding: 12px;
-  border: none;
-  border-radius: 6px;
-  margin-top: 20px;
-  cursor: pointer;
-  transition: background-color 0.5s ease;
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    margin-top: 20px;
+    cursor: pointer;
+    transition: background-color 0.5s ease;
 }
 
 .regis-btn:hover {
-  background-color: #0056b3;
+    background-color: #0056b3;
 }
 
 /* Messages */
 .error-message {
-  color: red;
-  font-size: 14px;
-  margin-bottom: 10px;
-  text-align: center;
+    color: red;
+    font-size: 14px;
+    margin-bottom: 10px;
+    text-align: center;
 }
 
 .success-message {
-  color: green;
-  font-size: 14px;
-  margin-bottom: 10px;
-  text-align: center;
+    color: green;
+    font-size: 14px;
+    margin-bottom: 10px;
+    text-align: center;
 }
 
 /* Responsive for smaller screens */
 @media (max-width: 768px) {
-  .login-container {
-    flex-direction: column;
-  }
+    .login-container {
+        flex-direction: column;
+    }
 
-  .login-image {
-    width: 100%;
-    height: 200px;
-  }
+    .login-image {
+        width: 100%;
+        height: 200px;
+    }
 
-  .login-form {
-    width: 100%;
-  }
+    .login-form {
+        width: 100%;
+    }
 
-  .form-row {
-    flex-direction: column;
-  }
+    .form-row {
+        flex-direction: column;
+    }
 }

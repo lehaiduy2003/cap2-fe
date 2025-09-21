@@ -1,284 +1,282 @@
 .room-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center; /* căn giữa toàn bộ các thẻ */
-  gap: 30px; /* khoảng cách giữa các thẻ */
-  padding: 20px;
-  max-width: 1283px;       /* giới hạn chiều rộng tối đa */
-  margin: 0 auto;          /* căn giữa container */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* căn giữa toàn bộ các thẻ */
+    gap: 30px; /* khoảng cách giữa các thẻ */
+    padding: 20px;
+    max-width: 1283px; /* giới hạn chiều rộng tối đa */
+    margin: 0 auto; /* căn giữa container */
 }
 
 .text_title {
- 
-  text-align: center;
-  font-size: 24px;
-  font-weight: bold;
-  margin-top: 20px;
-  margin-bottom: 10px;
- 
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 10px;
 }
- /* tim kiem theo quan  */
-.district_find img{
-  width: 40px;
-  height: 40px;
-  margin-right: 5px;
+/* tim kiem theo quan  */
+.district_find img {
+    width: 40px;
+    height: 40px;
+    margin-right: 5px;
 }
 .district-list {
-  background: white;
-  border: 1px solid #ccc;
-  padding: 10px;
-  border-radius: 10px;
-  margin-top: 10px;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 10px;
 }
 .district-list ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 .district-list li {
-  padding: 5px 0;
-  cursor: pointer;
+    padding: 5px 0;
+    cursor: pointer;
 }
 .district-list li:hover {
-  background-color: #e5e7eb;
+    background-color: #e5e7eb;
 }
 
 /* Thẻ chính */
 /* Card tổng thể */
 .card {
-  height: 420px;
-  width: 14vw;              /* 260px ≈ 18vw trên màn hình desktop ~1440px */
-  border-radius: 2.5vh;      /* 20px ≈ 2.5vh nếu chiều cao màn hình khoảng 800px */
-  background: #fff;
-  box-shadow: 0 1vh 3vh rgba(0, 0, 0, 0.08); /* chuyển shadow theo vh cho đồng nhất */
-  overflow: hidden;
-  transition: all 0.3s ease;
-  margin-bottom: 30px;
+    height: 420px;
+    width: 14vw; /* 260px ≈ 18vw trên màn hình desktop ~1440px */
+    border-radius: 2.5vh; /* 20px ≈ 2.5vh nếu chiều cao màn hình khoảng 800px */
+    background: #fff;
+    box-shadow: 0 1vh 3vh rgba(0, 0, 0, 0.08); /* chuyển shadow theo vh cho đồng nhất */
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin-bottom: 30px;
 }
 
 .card:hover {
-  transform: translateY(-6px);
+    transform: translateY(-6px);
 }
 
 /* Ảnh phòng */
 .card-image_big {
-  width: 100%;
-  height: 160px;
-  object-fit: cover;
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
 }
 
 /* Nội dung bên trong thẻ */
 .card-body {
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 /* Phần trên cùng: tiêu đề + trạng thái */
 .card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .card-top h2 {
-  font-size: 16px;
-  font-weight: 700;
-  margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
 }
 
 .status-badge {
-  background-color: #fef3c7;
-  color: #92400e;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
+    background-color: #fef3c7;
+    color: #92400e;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 /* Tiêu đề phòng */
 .card-title {
-  font-size: 15px;
-  font-weight: 600;
-  margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
 }
 
 /* Địa chỉ */
 .card-address {
-  font-size: 12px;
-  color: #6b7280;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+    font-size: 12px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 /* Các chỉ số: diện tích, giường, phòng tắm */
 .card-features {
-  display: flex;
-  justify-content: space-between;
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
-  padding: 8px 0;
-  font-size: 11px;
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    padding: 8px 0;
+    font-size: 11px;
 }
 
 .card-feature-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 /* Người liên hệ (footer) */
 .card-footer {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
 }
 
 .card-footer img {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
 }
 
 .contact-info span {
-  font-weight: 600;
-  font-size: 13px;
+    font-weight: 600;
+    font-size: 13px;
 }
 
 .contact-info small {
-  font-size: 12px;
-  color: #6b7280;
+    font-size: 12px;
+    color: #6b7280;
 }
 
 /* Điều chỉnh vị trí slider nếu cần */
 .swiper-container {
-  margin-top: -10rem; /* Kéo toàn bộ swiper lên gần hơn với phần trên */
+    margin-top: -10rem; /* Kéo toàn bộ swiper lên gần hơn với phần trên */
 }
-
 
 /* Căn chỉnh Swiper container để tạo banner */
 .swiper-container1 {
-  margin-top: 2rem;
-  width: 100%;
-  height: 90vh; /* Điều chỉnh độ cao của banner */
+    margin-top: 2rem;
+    width: 100%;
+    height: 90vh; /* Điều chỉnh độ cao của banner */
 }
 .swiper-container1 img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Đảm bảo hình ảnh phủ đầy không gian */
-  border-radius: 10px; /* Bo góc cho hình ảnh */
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Đảm bảo hình ảnh phủ đầy không gian */
+    border-radius: 10px; /* Bo góc cho hình ảnh */
 }
 /* Tùy chỉnh nút điều hướng */
-.swiper-button-prev, 
+.swiper-button-prev,
 .swiper-button-next {
-  outline: none;
-  width: 30px;
-  height: 30px;
-  background-color: rgba(255, 255, 255, 0.6);  /* Màu nền mờ */
-  border-radius: 50%; /* Tạo hình tròn */
-  display: flex;
-  justify-content: center;
-  align-items: center;
- 
-  font-size: 20px;
+    outline: none;
+    width: 30px;
+    height: 30px;
+    background-color: rgba(255, 255, 255, 0.6); /* Màu nền mờ */
+    border-radius: 50%; /* Tạo hình tròn */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 20px;
 }
 
 /* Hiệu ứng hover */
 
-
 /* Tùy chỉnh các slide */
 .swiper-slide {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
 }
 
 /* Hình ảnh trong slide chiếm toàn bộ không gian */
 .swiper-slide img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 10px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
 }
 
 /* Tùy chỉnh pagination */
 .swiper-pagination-bullet {
-  background: white;
-  opacity: 0.8;
+    background: white;
+    opacity: 0.8;
 }
 
 .swiper-pagination-bullet-active {
-  background: red;
+    background: red;
 }
 
 .swiper-container h3 {
-  /* padding-bottom: 10px; */
-  font-weight: bold;
-  font-size: 24px;
-  margin-left: 18rem;
-  margin-bottom: 20px;
-  /* border-bottom: #6b7280 1px solid; */
-  display: inline-block;
+    /* padding-bottom: 10px; */
+    font-weight: bold;
+    font-size: 24px;
+    margin-left: 18rem;
+    margin-bottom: 20px;
+    /* border-bottom: #6b7280 1px solid; */
+    display: inline-block;
 }
 .button-group_city {
-  display: flex;
-  justify-content: center; /* Căn giữa các button */
-  align-items: center;
-  gap: 10px;               /* Khoảng cách giữa các button, bạn điều chỉnh giá trị này theo ý muốn */
-  margin-top: 30px;
+    display: flex;
+    justify-content: center; /* Căn giữa các button */
+    align-items: center;
+    gap: 10px; /* Khoảng cách giữa các button, bạn điều chỉnh giá trị này theo ý muốn */
+    margin-top: 30px;
 }
 
 .button-tab_city {
-  padding: 10px 20px;      /* Giảm padding nếu cần để các button sát nhau hơn */
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background-color: white;
-  color: #222;
-  font-weight: 500;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.3s ease;
+    padding: 10px 20px; /* Giảm padding nếu cần để các button sát nhau hơn */
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: white;
+    color: #222;
+    font-weight: 500;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .button-tab_city.active {
-  background-color: #007bff;
-  color: white;
-  border-color: white;
+    background-color: #007bff;
+    color: white;
+    border-color: white;
 }
-.card-feature-item img{
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  margin-right: 5px;
+.card-feature-item img {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
 }
 
 .more-btn {
-  color: #1976d2;
-  font-weight: 600;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+    color: #1976d2;
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 .district_find {
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
 }
 
 .district_find:hover {
-  transform: scale(1.15) rotate(10deg);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-  background: #f0f8ff;
-  border-radius: 50%;
+    transform: scale(1.15) rotate(10deg);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+    background: #f0f8ff;
+    border-radius: 50%;
 }
 .district_find img {
-  transition: filter 0.2s;
+    transition: filter 0.2s;
 }
 .district_find:hover img {
-  filter: brightness(1.2) drop-shadow(0 0 4px #1976d2);
+    filter: brightness(1.2) drop-shadow(0 0 4px #1976d2);
 }

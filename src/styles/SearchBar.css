@@ -1,219 +1,223 @@
 .search-bar {
-  display: flex;
-  align-items: center;
-  background-color: #fff;
-  border-radius: 2.5rem;
-  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
-  padding: 0.5rem 3rem;
-  width: 48vw;
-  height: 8vh;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  margin: 0 auto;
-  margin-top: 10px;
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    border-radius: 2.5rem;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 3rem;
+    width: 48vw;
+    height: 8vh;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin: 0 auto;
+    margin-top: 10px;
 }
-.find-icon{
-  width: 20px;
-  height: 20px;
+.find-icon {
+    width: 20px;
+    height: 20px;
 }
 .search-bar input {
- border: none;
-  outline: none;
-  font-size: 1rem;
+    border: none;
+    outline: none;
+    font-size: 1rem;
 }
 
 .search-bar .search-top {
-  display: flex;
-  align-items: center;
-  flex: 1;
+    display: flex;
+    align-items: center;
+    flex: 1;
 }
 
 .search-bar .search-top ul {
-  display: flex;
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .search-bar .search-top ul li {
-  display: flex;
-  align-items: center;
-  margin-right: 2rem;
+    display: flex;
+    align-items: center;
+    margin-right: 2rem;
 }
 
 .search-bar .search-top ul li img {
-  margin-right: 0.5rem;
+    margin-right: 0.5rem;
 }
 
 .search-bar .search-top button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 1.25rem;
-  padding: 0.8rem 1rem;
-  cursor: pointer;
- box-shadow: 0 0.5rem 1rem rgba(194, 116, 116, 0.1);
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 1.25rem;
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    box-shadow: 0 0.5rem 1rem rgba(194, 116, 116, 0.1);
 }
 .search-bar .search-top button:hover {
-  background-color: #0056b3;
+    background-color: #0056b3;
 }
 
 .search-bar .search-top ul li {
-  display: flex;
-  align-items: center;
-  margin-right: 2rem;
+    display: flex;
+    align-items: center;
+    margin-right: 2rem;
 }
 
 .search-bar .search-top ul li img {
-  margin-right: 0.5rem;
+    margin-right: 0.5rem;
 }
 
 .search-bar .search-top ul li span {
-  margin-left: 0.5rem;
+    margin-left: 0.5rem;
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
-  .search-bar {
-    flex-direction: column;
-    padding: 1rem;
-    width: 90vw;
-    height: 40vh;
-  }
+    .search-bar {
+        flex-direction: column;
+        padding: 1rem;
+        width: 90vw;
+        height: 40vh;
+    }
 
-  .search-bar .search-top ul {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+    .search-bar .search-top ul {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
-  .search-bar .search-top ul li {
-    margin-right: 0;
-    margin-bottom: 1rem;
-  }
+    .search-bar .search-top ul li {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
 
-  .search-bar .search-top button {
-    width: 100%;
-    padding: 1rem;
-    font-size: 1rem;
-  }
+    .search-bar .search-top button {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1rem;
+    }
 }
 /* Responsive design for large screens (50 inch) */
 @media (min-width: 1920px) {
-  .search-bar {
-    width: 50vw; /* Tăng chiều rộng để phù hợp với màn hình lớn */
-    height: 8vh; /* Tăng chiều cao để cân đối */
-    padding: 1rem 4rem; /* Tăng khoảng cách padding */
-    font-size: 1.2rem; /* Tăng kích thước chữ */
-  }
+    .search-bar {
+        width: 50vw; /* Tăng chiều rộng để phù hợp với màn hình lớn */
+        height: 8vh; /* Tăng chiều cao để cân đối */
+        padding: 1rem 4rem; /* Tăng khoảng cách padding */
+        font-size: 1.2rem; /* Tăng kích thước chữ */
+    }
 
-  .search-bar input {
-    font-size: 1.2rem; /* Tăng kích thước chữ trong ô input */
-  }
+    .search-bar input {
+        font-size: 1.2rem; /* Tăng kích thước chữ trong ô input */
+    }
 
-  .search-bar .search-top ul li {
-    margin-right: 3rem; /* Tăng khoảng cách giữa các mục */
-  }
+    .search-bar .search-top ul li {
+        margin-right: 3rem; /* Tăng khoảng cách giữa các mục */
+    }
 
-  .search-bar .search-top button {
-    padding: 1rem 1.5rem; /* Tăng kích thước nút */
-    font-size: 1.2rem; /* Tăng kích thước chữ trong nút */
-  }
+    .search-bar .search-top button {
+        padding: 1rem 1.5rem; /* Tăng kích thước nút */
+        font-size: 1.2rem; /* Tăng kích thước chữ trong nút */
+    }
 
-  .search-bar .search-top ul li img {
-    width: 30px; /* Tăng kích thước hình ảnh */
-    height: 30px;
-  }
+    .search-bar .search-top ul li img {
+        width: 30px; /* Tăng kích thước hình ảnh */
+        height: 30px;
+    }
 }
 
 /* đoạn sau */
 
-
 .circle-button {
-  width: 4%;
-  height: 4%;
-  /* border-radius: 50%;
+    width: 4%;
+    height: 4%;
+    /* border-radius: 50%;
   background: radial-gradient(circle at center, #444, #000);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
   border: none; */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  margin-left: 20px;
-  /* Đặt vị trí cố định ở góc trái phía dưới */
-  position: fixed;
-  bottom: 40px;  /* Khoảng cách từ mép dưới, bạn có thể điều chỉnh */
-  left: 30px;    /* Khoảng cách từ mép trái */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-left: 20px;
+    /* Đặt vị trí cố định ở góc trái phía dưới */
+    position: fixed;
+    bottom: 40px; /* Khoảng cách từ mép dưới, bạn có thể điều chỉnh */
+    left: 30px; /* Khoảng cách từ mép trái */
 }
 
 /* Arrow up icon */
 .arrow-up::before,
 .arrow-up::after {
-  content: '';
-  position: absolute;
-  width: 12px;
-  height: 2px;
-  background: white;
-  top: 50%;
-  left: 50%;
-  transform-origin: center;
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 2px;
+    background: white;
+    top: 50%;
+    left: 50%;
+    transform-origin: center;
 }
 
 .arrow-up::before {
-  transform: translate(-50%, -50%) rotate(45deg);
+    transform: translate(-50%, -50%) rotate(45deg);
 }
 
 .arrow-up::after {
-  transform: translate(-50%, -50%) rotate(-45deg);
+    transform: translate(-50%, -50%) rotate(-45deg);
 }
 
 /* Close X icon */
 .close-x::before,
 .close-x::after {
-  content: '';
-  position: absolute;
-  width: 20px;
-  height: 2px;
-  background: white;
-  top: 50%;
-  left: 50%;
-  transform-origin: center;
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 2px;
+    background: white;
+    top: 50%;
+    left: 50%;
+    transform-origin: center;
 }
 
 .close-x::before {
-  transform: translate(-50%, -50%) rotate(45deg);
+    transform: translate(-50%, -50%) rotate(45deg);
 }
 
 .close-x::after {
-  transform: translate(-50%, -50%) rotate(-45deg);
+    transform: translate(-50%, -50%) rotate(-45deg);
 }
 .circle-dropdown-menu-inside {
-  position: fixed;
-  bottom: 100px;    /* Khoảng cách từ mép dưới */
-  left: 10px;       /* Khoảng cách từ mép trái */
-  z-index: 999;
-  min-width: 100px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  border: none;
-  border-radius: 50%;
-  transition: opacity 0.5s ease, transform 0.5s ease;
- 
+    position: fixed;
+    bottom: 100px; /* Khoảng cách từ mép dưới */
+    left: 10px; /* Khoảng cách từ mép trái */
+    z-index: 999;
+    min-width: 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: none;
+    border-radius: 50%;
+    transition:
+        opacity 0.5s ease,
+        transform 0.5s ease;
 }
 
-.circle-min,.circle-max {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-background-color: #5e5ce6;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: white;
-  transition: opacity 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
+.circle-min,
+.circle-max {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #5e5ce6;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    transition:
+        opacity 0.4s ease,
+        transform 0.4s ease,
+        box-shadow 0.4s ease;
 }

@@ -1,109 +1,109 @@
 .header1 {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .header-right {
-  display: flex;
-  align-items: center;
-  gap: 24px; /* hoặc dùng margin-left cho notification nếu chỉ có 2 item */
+    display: flex;
+    align-items: center;
+    gap: 24px; /* hoặc dùng margin-left cho notification nếu chỉ có 2 item */
 }
 
 .greeting {
-  font-size: 1.1rem;
-  color: #333;
+    font-size: 1.1rem;
+    color: #333;
 }
 
 .sub-greeting {
-  font-size: 0.9rem;
-  color: #888;
+    font-size: 0.9rem;
+    color: #888;
 }
 
 .user-name {
-  font-size: 1.3rem;
-  color: #2574fb;
-  font-weight: bold;
-  margin-top: 8px;
+    font-size: 1.3rem;
+    color: #2574fb;
+    font-weight: bold;
+    margin-top: 8px;
 }
 
 .user-profile {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 .avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: #ddd;
-  margin-right: 12px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #ddd;
+    margin-right: 12px;
 }
 
 .user-role {
-  font-size: 0.9rem;
-  color: #888;
+    font-size: 0.9rem;
+    color: #888;
 }
 
 /* New CSS for notification bell and dropdown */
 .notification {
-  position: relative;
-  cursor: pointer;
-  margin-left: 20px; /* Adds space between the user profile and the bell */
+    position: relative;
+    cursor: pointer;
+    margin-left: 20px; /* Adds space between the user profile and the bell */
 }
 
 .bell-icon {
-  font-size: 24px;
-  color: #333;
+    font-size: 24px;
+    color: #333;
 }
 
 .notification-dropdown {
-  position: absolute;
-  top: 30px;
-  right: 0;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 200px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  z-index: 10;
+    position: absolute;
+    top: 30px;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 200px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
 }
 
 .notification-item {
-  padding: 8px 0;
-  border-bottom: 1px solid #eee;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
 }
 
 .notification-item:last-child {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 .notification-item:hover {
-  background-color: #f4f4f4;
-  cursor: pointer;
+    background-color: #f4f4f4;
+    cursor: pointer;
 }
 .profile-dropdown {
-  position: absolute;
-  top: 56px; /* hoặc điều chỉnh theo ý bạn */
-  right: 0;
-  background: #fff;
-  border: 1px solid #ccc;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  border-radius: 6px;
-  min-width: 140px;
-  z-index: 20;
-  padding: 8px 0;
+    position: absolute;
+    top: 56px; /* hoặc điều chỉnh theo ý bạn */
+    right: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    min-width: 140px;
+    z-index: 20;
+    padding: 8px 0;
 }
 
 .dropdown-item {
-  padding: 10px 16px;
-  cursor: pointer;
-  color: #333;
-  transition:background 0.2s;
+    padding: 10px 16px;
+    cursor: pointer;
+    color: #333;
+    transition: background 0.2s;
 }
 
 .dropdown-item:hover {
-  background: #f4f4f4;
+    background: #f4f4f4;
 }
