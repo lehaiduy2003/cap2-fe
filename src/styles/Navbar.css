@@ -1,0 +1,379 @@
+/* Navbar Container */
+@font-face {
+  font-family: 'Kirucoupage';
+  src: url('./Kirucoupage.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.navbar-container {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  overflow: visible;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  /* background-color: rgba(255, 255, 255, 0.2); mau trong suot  */
+  background-color: #fff; /* Màu nền trắng */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  font-family: 'Arial', sans-serif;
+  box-shadow: 0 4px 8px rgb(0 0 0 / 10%);
+  height: 75px;
+}
+
+/* Logo */
+.logo-text {
+  font-size: 2.5rem; /* Kích thước chữ lớn hơn */
+  font-weight: bold; /* Đậm chữ */
+  font-family: 'Kirucoupage', sans-serif; /* Font chữ tùy chỉnh */
+  text-transform: uppercase; /* Viết hoa toàn bộ chữ */
+  background: linear-gradient(to right, #007bff, #00d4ff); /* Hiệu ứng gradient từ xanh đậm sang xanh nhạt */
+  -webkit-background-clip: text; /* Cắt gradient theo chữ */
+  -webkit-text-fill-color: transparent; /* Làm chữ trong suốt để hiển thị gradient */
+  text-align: center; /* Căn giữa chữ */
+  letter-spacing: 0.2rem; /* Khoảng cách giữa các chữ */
+  margin: 0 0 0 100px; 
+}
+
+/* Right Side Links */
+.rightside a {
+  margin-right: 1.5rem;
+  text-decoration: none;
+  color: #1a1a1a; /* Màu chữ đậm */
+  font-size: 1rem;
+  font-weight: 500;
+}
+.rightside {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem; /* Khoảng cách giữa các phần tử */
+}
+
+.rightside a:hover {
+  color: #007bff; /* Màu xanh khi hover */
+}
+.img-living{
+  width: 40px; /* Kích thước chiều rộng của logo */
+  height: 40px; /* Kích thước chiều cao của logo */
+  object-fit: cover; /* Đảm bảo hình ảnh không bị méo */
+  margin-right: 10px; 
+  display: inline-block; /* Để logo và chữ nằm trên cùng một dòng */
+}
+.leftside img{
+  width: 40px; /* Kích thước chiều rộng của logo */
+  height: 40px; /* Kích thước chiều cao của logo */
+  object-fit: cover; /* Đảm bảo hình ảnh không bị méo */
+  display: inline-block; /* Để logo và chữ nằm trên cùng một dòng */
+  margin-right: 10px;
+}
+/* Get Started Button */
+.get-started-btn {
+  position: relative;
+  overflow: hidden; /* Đảm bảo pseudo-element không tràn ra ngoài nút */
+  background-color: #007bff; /* Màu nền đen */
+  color: #fff; /* Màu chữ trắng */
+  border: none;
+  border-radius: 20px; /* Bo tròn góc */
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Pseudo-element overlay tạo hiệu ứng chạy */
+.get-started-btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%; /* Bắt đầu hoàn toàn bên trái */
+  width: 100%;
+  height: 100%;
+  background: #00d4ff; /* Màu hover (đen đậm) */
+  transform: skewX(-30deg); /* Tạo hiệu ứng góc nghiêng cho overlay */
+  transition: left 0.3s ease; /* Hiệu ứng di chuyển mượt 0.3 giây */
+  z-index: 0; /* Để overlay nằm dưới nội dung của nút */
+}
+
+/* Nếu nút có nội dung (ví dụ, text nằm trong thẻ span), đảm bảo nội dung hiển thị trên overlay */
+.get-started-btn > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Khi hover, overlay di chuyển từ trái sang phải */
+.get-started-btn:hover::after {
+  left: 100%;
+}
+
+/* User Info */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.username {
+  font-size: 1rem;
+  color: #1a1a1a;
+}
+
+.logout-button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 0.4rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  background-color: #0056b3;
+}
+/* User Menu */
+.user-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  z-index: 100;
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  border: 2px solid #310ced; /* Đường viền xung quanh avatar */
+  border-radius: 50%; /* Bo tròn avatar */
+}
+
+.user-avatar img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.notification-bell {
+  margin-right: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.notification-bell span {
+  position: absolute;
+  top: 10px;
+  right: 109px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  padding: 0px 5px;
+  font-size: 12px;
+}
+.notification-bell img {
+  width: 24px;
+  height: 24px;
+}
+/* Dropdown Bell */
+
+.notification-bell_dropdown {
+  position: absolute;
+  top: 65px;
+  right: 20px;
+  background-color: rgb(217, 245, 246);
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  width: 350px;
+  z-index: 10;
+  padding: 10px;
+}
+
+.notification-item {
+  padding: 8px;
+  font-size: 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+.notification-dropdown.fancy {
+  position: absolute;
+  top: 35px;
+  right: 0;
+  width: 350px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  padding: 16px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.settings-icon {
+  cursor: pointer;
+}
+
+.notification-card {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  position: relative;
+  transition: background 0.3s;
+  padding: 10px;
+  border-radius: 12px;
+}
+
+.notification-card:hover {
+  background-color: #f9f9f9;
+}
+
+.notification-avatar img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 12px;
+}
+
+.notification-content {
+  flex: 1;
+  
+}
+
+.notification-title {
+  font-weight: 600;
+  margin: 0;
+  font-size: 14px;
+  color: #222;
+}
+
+.notification-message {
+  font-size: 13px;
+  color: #555;
+  margin: 4px 0;
+}
+
+.notification-footer {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #888;
+  gap: 6px;
+}
+.notification-bell.active {
+  filter: brightness(1.4); /* Làm sáng */}
+.title-notification{
+  font-weight: bold;
+  font-size: 21px;
+  color: #333;
+  margin-bottom: 10px;
+}
+.notification-delete-button img{
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+/* Dropdown Menu */
+.dropdown-menu {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  z-index: 9999; 
+  width: 200px; /* Giới hạn chiều rộng menu nếu cần */
+  text-align: left; /* Căn chỉnh văn bản trong menu sang trái */
+}
+.rightside a{
+  margin-right: 0.5rem;
+  text-decoration: none;
+  color: #1a1a1a; /* Màu chữ đậm */
+  font-size: 1rem;
+  font-weight: bold;
+}
+/* Định dạng chung cho các nút trong dropdown menu */
+.dropdown-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Khoảng cách giữa hình ảnh và chữ */
+  width: 100%; /* Đảm bảo nút chiếm toàn bộ chiều rộng menu */
+  padding: 10px;
+  background: none;
+  border: none;
+  text-align: left; /* Căn chỉnh chữ bên trái */
+  cursor: pointer;
+  color: #333; /* Màu chữ */
+  transition: background-color 0.3s ease, color 0.3s ease; /* Thêm hiệu ứng chuyển đổi màu */
+  border-radius: 4px; /* Bo góc nhẹ cho nút */
+}
+
+/* Định dạng cho phần tử <a> */
+.dropdown-menu a {
+  font-weight: bold;
+  display: block;
+  padding: 10px;
+  color: #333;
+  text-align: left; /* Căn chỉnh chữ bên trái */
+  cursor: pointer;
+}
+
+/* Hiệu ứng hover cho các nút */
+.dropdown-menu button:hover {
+  color: #007bff; /* Màu chữ khi hover */
+}
+
+/* Định dạng hình ảnh trong các nút */
+.dropdown-menu button img {
+  width: 20px; /* Kích thước chiều rộng của hình ảnh */
+  height: 20px; /* Kích thước chiều cao của hình ảnh */
+  object-fit: contain; /* Đảm bảo hình ảnh không bị méo */
+  transition: filter 0.3s ease; /* Thêm hiệu ứng hover cho hình ảnh */
+}
+
+.dropdown-menu button:hover img {
+  filter: brightness(0.8); /* Làm tối hình ảnh khi hover */
+}
+
+.message-icon-navbar {
+  margin: 0 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.message-icon-navbar:hover {
+  background: #f0f0f0;
+}
+
+.message-icon-navbar img,
+.message-icon-navbar svg {
+  width: 40px;
+  height: 40px;
+  filter: grayscale(100%);
+  transition: filter 0.2s;
+}
+
+.message-icon-navbar:hover img,
+.message-icon-navbar:hover svg {
+  filter: grayscale(0%) brightness(0.2);
+}

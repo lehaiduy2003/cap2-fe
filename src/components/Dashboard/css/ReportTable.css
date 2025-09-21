@@ -1,0 +1,74 @@
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background: #f9fbfd;
+}
+
+.report-table th,
+.report-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+  word-wrap: break-word; /* Allow text to wrap within the cell */
+  white-space: normal; /* Ensure the text wraps, even if it's long */
+}
+
+.report-table th:nth-child(1) {
+  width: 20%; /* Tiêu đề */
+}
+
+.report-table th:nth-child(2) {
+  width: 20%; /* Người báo cáo */
+}
+
+.report-table th:nth-child(3) {
+  width: 20%; /* Lý do */
+}
+
+.report-table th:nth-child(4) {
+  width: 20%; /* Thời gian */
+}
+
+.report-table th:nth-child(5) {
+  width: 10%; /* Trạng thái */
+}
+
+.report-table th:nth-child(6) {
+  width: 10%; /* Hành động */
+
+}
+
+.pending {
+  color: #ff9800;
+  font-weight: bold;
+}
+
+.resolved {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.view-btn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.view-btn:hover {
+  opacity: 0.9;
+}
+
+.resolved {
+  color: green;
+  font-weight: bold;
+}
+
+.pending {
+  color: red;
+  font-weight: bold;
+}
+

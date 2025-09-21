@@ -1,0 +1,153 @@
+  .register-form-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4); /* Semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Ensure it's on top */
+  }
+
+  .register-form {
+    background-color: white;
+    padding: 30px;
+    border-radius: 12px;
+    width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .form-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+  }
+
+      
+      /* Các style khác giữ nguyên */
+      .register-form h2 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        color: #333;
+      }
+      
+      .form-section label {
+        font-weight: bold;
+        color: #555;
+      }
+      
+      .form-section input[type="text"],
+      .form-section input[type="email"],
+      .form-section input[type="password"],
+      .form-section input[type="file"],
+      .form-section textarea {
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 1rem;
+        color: #333;
+        outline: none;
+      }
+      
+      .form-section textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+      
+      .form-section input[type="text"]:focus,
+      .form-section input[type="email"]:focus,
+      .form-section input[type="password"]:focus,
+      .form-section input[type="file"]:focus,
+      .form-section textarea:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+      }
+      .form-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Hai cột bằng nhau */
+        gap: 20px 16px; /* row-gap, column-gap */
+      }
+      
+      .form-section label {
+        grid-column: span 2; /* Mặc định label span 2 để nằm trước input */
+      }
+      
+      .form-section input,
+      .form-section textarea {
+        width: 100%;
+      }
+
+      .register-btn1 {
+        width: 20%;
+        background: #007bff;
+        color: #fff;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      
+      .register-btn1:hover {
+        background: #0056b3;
+      }
+      
+      button[disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+.image-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.image-preview-container {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: rgba(255, 0, 0, 0.7);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  transition: background-color 0.2s;
+}
+
+.remove-image-btn:hover {
+  background-color: rgba(255, 0, 0, 0.9);
+}

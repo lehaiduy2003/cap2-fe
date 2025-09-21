@@ -1,0 +1,72 @@
+.footer-container {
+  background-color: #111;
+  color: #eee;
+  padding: 2vh 0.5vw 1.5vh; /* Giảm padding để thu nhỏ tổng thể */
+  width: 100vw;
+  display: flex;
+  flex-direction: column; /* Xếp theo cột */
+  align-items: center;    /* Căn giữa nội dung bên trong */
+  gap: 1vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;     /* Căn giữa chữ */
+  justify-content: center; /* Căn giữa cả chiều ngang và dọc */
+}
+
+.footer > * {
+  place-items: center !important;
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 1.5vw; /* Giảm khoảng cách giữa các icon */
+}
+
+.social-icons a {
+  background-color: #fff;
+  color: #111;
+  border-radius: 50%;
+  width: 2.5vw;
+  height: 2.5vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem; /* Nhỏ hơn một chút */
+  box-shadow: 0 0.3vh 0.5vh rgba(0, 0, 0, 0.15); /* Bóng nhẹ */
+  transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.social-icons a:hover {
+  background-color: #f0f0f0;
+  transform: scale(1.15);
+  box-shadow: 0 0.5vh 1vh rgba(0, 0, 0, 0.25);
+}
+
+.nav-links {
+  display: flex;
+  justify-content: center;
+  gap: 0.7vw; /* Giảm khoảng cách giữa các link */
+  flex-wrap: wrap; /* Đảm bảo responsive khi màn hình nhỏ */
+}
+
+.nav-links a {
+  color: #bbb;
+  text-decoration: none;
+  font-size: 1.2rem; /* Chữ nhỏ hơn */
+  padding: 0.5vh 1vw; /* Giảm khoảng trắng xung quanh chữ */
+  border-radius: 0.4rem;
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: #fff;
+  background-color: #333;
+  text-decoration: none;
+}
+
+.footer .copyright {
+  font-size: 1rem; /* Giảm chữ nhỏ hơn */
+  color: #888;
+  margin-top: 0.5vh; /* Giảm khoảng cách phía trên */
+  letter-spacing: 0.05em;
+}

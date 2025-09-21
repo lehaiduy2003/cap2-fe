@@ -1,0 +1,261 @@
+import React, { useState, useEffect } from "react";
+import "./skeletons/Storage.css"; // Import file CSS của component Storage
+import { axiosInstance } from "../lib/axios"; // Import axiosInstance
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react"; // Import các icon mũi tên
+
+const Storage = () => {
+  // State cho giá trị tìm kiếm theo người gửi
+  const [searchSender, setSearchSender] = useState("");
+  // State cho giá trị ngày bắt đầu tìm kiếm
+  const [startDate, setStartDate] = useState("");
+  // State cho giá trị ngày kết thúc tìm kiếm
+  const [endDate, setEndDate] = useState("");
+  // State để lưu trữ ảnh được chọn để hiển thị modal
+  const [selectedImage, setSelectedImage] = useState(null);
+  // State chứa danh sách email, sử dụng useState để quản lý và cập nhật
+  const [emails, setEmails] = useState([]); // Initialize emails as an empty array
+
+  // State để theo dõi trang hiện tại, mặc định là trang 1
+  const [currentPage, setCurrentPage] = useState(1);
+  // Số lượng email hiển thị trên mỗi trang
+  const itemsPerPage = 10;
+
+  // Fetch emails from the API
+  useEffect(() => {
+    const fetchEmails = async () => {
+      try {
+        const response = await axiosInstance.get("/api/emails"); // Replace with your API endpoint
+        setEmails(response.data); // Update emails state with API response
+      } catch (error) {
+        console.error("Failed to fetch emails:", error);
+      }
+    };
+
+    fetchEmails();
+  }, []); // Empty dependency array ensures this runs only once on mount
+
+  // Lọc danh sách email dựa trên tìm kiếm và khoảng thời gian
+  const filteredEmails = emails.filter((email) => {
+    const isSenderMatch = email.sender.includes(searchSender);
+    const isDateMatch =
+      (!startDate || new Date(email.receivedDate) >= new Date(startDate)) &&
+      (!endDate || new Date(email.receivedDate) <= new Date(endDate));
+    return isSenderMatch && isDateMatch;
+  });
+
+  // Tính toán tổng số trang dựa trên số lượng email đã lọc và số lượng email trên mỗi trang
+  const totalPages = Math.ceil(filteredEmails.length / itemsPerPage);
+  // Xác định index bắt đầu của email trên trang hiện tại
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  // Lấy danh sách email cho trang hiện tại
+  const currentEmails = filteredEmails.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  // Hàm xử lý sự kiện xóa email
+  const handleDelete = async (id) => {
+    try {
+      await axiosInstance.delete(`/api/emails/${id}`); // Replace with your API endpoint
+      setEmails(emails.filter((email) => email.id !== id)); // Update state after deletion
+    } catch (error) {
+      console.error("Failed to delete email:", error);
+    }
+  };
+
+  // Hàm xử lý sự kiện thay đổi trang
+  const handlePageChange = (page) => {
+    // Kiểm tra nếu trang hợp lệ thì mới cập nhật state
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  // Hàm để xác định phạm vi các số trang sẽ hiển thị
+  const getPageNumbers = () => {
+    const pages = [];
+    // Trang bắt đầu là trang hiện tại trừ 1, nhưng không nhỏ hơn 1
+    const startPage = Math.max(1, currentPage - 1);
+    // Trang kết thúc là trang hiện tại cộng 1, nhưng không lớn hơn tổng số trang
+    const endPage = Math.min(totalPages, currentPage + 1);
+
+    // Thêm các số trang vào mảng
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
+
+  return (
+    <div className="Storage-container">
+      {/* Khu vực tìm kiếm */}
+      <div className="search-container">
+        <input
+          type="text"
+          placeholder="Người gửi"
+          value={searchSender}
+          onChange={(e) => setSearchSender(e.target.value)}
+        />
+        <input
+          type="date"
+          placeholder="Từ ngày"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+        />
+        <input
+          type="date"
+          placeholder="Đến ngày"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+        />
+        <button className="search-btn">Tìm kiếm</button>
+        <button
+          className="refresh-btn"
+          onClick={() => {
+            setSearchSender("");
+            setStartDate("");
+            setEndDate("");
+          }}
+        >
+          Làm mới
+        </button>
+      </div>
+
+      {/* Bảng Email */}
+      <table className="email-table">
+        <thead>
+          <tr>
+            <th>STT</th>
+            <th>Người gửi</th>
+            <th>Tiêu đề</th>
+            <th>Trạng thái</th>
+            <th>Thông báo</th>
+            <th>Ngày nhận</th>
+            <th>Xem</th>
+            <th>Xóa</th>
+          </tr>
+        </thead>
+        <tbody>
+          {currentEmails.map((email, index) => (
+            <tr key={email.id}>
+              {/* STT được tính toán dựa trên index bắt đầu và index của email trong trang */}
+              <td>{startIndex + index + 1}</td>
+              <td>{email.sender}</td>
+              <td>{email.subject}</td>
+              <td
+                className={
+                  email.status === "Đã xử lý" ? "processed" : "error"
+                }
+              >
+                {email.status}
+              </td>
+              <td>{email.notification}</td>
+              <td>{email.receivedDate}</td>
+              <td>
+                <button
+                  className="view-btn"
+                  onClick={() => setSelectedImage(email.image)} // Khi click vào nút Xem, set ảnh được chọn
+                >
+                  Xem
+                </button>
+              </td>
+              <td>
+                <button
+                  className="delete-btn"
+                  onClick={() => handleDelete(email.id)} // Gọi hàm xóa khi click vào nút Xóa
+                >
+                  Xóa
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Khu vực điều khiển phân trang */}
+      <div className="pagination">
+        {/* Nút để chuyển đến trang đầu tiên */}
+        <button
+          className="pagination-btn"
+          onClick={() => handlePageChange(1)}
+          disabled={currentPage === 1} // Disable nếu đang ở trang đầu tiên
+        >
+          <ChevronsLeft size={16} />
+        </button>
+        {/* Nút để chuyển đến trang trước */}
+        <button
+          className="pagination-btn"
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1} // Disable nếu đang ở trang đầu tiên
+        >
+          <ChevronLeft size={16} />
+        </button>
+        {/* Hiển thị các nút số trang */}
+        {getPageNumbers().map((page) => (
+          <button
+            key={page}
+            className={`pagination-btn ${
+              currentPage === page ? "active" : ""
+            }`}
+            onClick={() => handlePageChange(page)} // Gọi hàm chuyển trang khi click
+          >
+            {page}
+          </button>
+        ))}
+        {/* Nút để chuyển đến trang kế tiếp */}
+        <button
+          className="pagination-btn"
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages} // Disable nếu đang ở trang cuối cùng
+        >
+          <ChevronRight size={16} />
+        </button>
+        {/* Nút để chuyển đến trang cuối cùng */}
+        <button
+          className="pagination-btn"
+          onClick={() => handlePageChange(totalPages)}
+          disabled={currentPage === totalPages} // Disable nếu đang ở trang cuối cùng
+        >
+          <ChevronsRight size={16} />
+        </button>
+      </div>
+
+      {/* Modal hiển thị ảnh */}
+      {selectedImage && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={() => setSelectedImage(null)} // Đóng modal khi click ra ngoài
+        >
+          <img
+            src={selectedImage}
+            alt="Selected"
+            style={{
+              maxWidth: "90%",
+              maxHeight: "90%",
+              borderRadius: "8px",
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.25)",
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Storage;

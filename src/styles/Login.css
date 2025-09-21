@@ -1,0 +1,262 @@
+
+  
+ 
+  /* Video nền */
+  #bg-video {
+    position: fixed;
+    top: 0;
+    left: 0;
+    min-width: 100%;
+    min-height: 100%;
+    object-fit: cover;
+    
+  }
+  
+  /* Lớp overlay trên video */
+  .video-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3); /* điều chỉnh độ tối nền */
+    z-index: -2;
+  }
+ /* Container tổng cho Login */
+  .login-container {
+    margin: 0;
+    background: linear-gradient(135deg, rgba(72,70,255,0.8), rgba(255,159,28,0.8));
+    background-size: cover;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px 0; /* Khoảng cách để không che navbar/footer */
+  }
+  
+  /* Hộp login với Glassmorphism */
+  .login-box {
+    background: transparent;   /* bỏ nền mờ */
+  backdrop-filter: none;     /* tắt hiệu ứng glassmorphism */
+  border: none;  
+    display: flex;
+    width: 900px;
+    max-width: 90%;
+    /* background: rgba(255, 255, 255, 0.1); */
+    border-radius: 12px;
+    overflow: hidden;
+    /* box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2); */
+    backdrop-filter: blur(0px);
+    /* border: 2px solid rgba(73, 70, 222, 0.2); */
+  }
+  
+  /* Phần hình ảnh */
+  .login-image {
+    flex: 1;
+    position: relative;
+  }
+  
+  .login-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .overlay {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    /* padding: 5px; */
+    text-align: center;
+  }
+  
+  .login-image .overlay h1 {
+    font-size: 3rem; /* Kích thước chữ lớn hơn */
+    font-weight: normal; /* Đậm chữ */
+    font-family: 'Kirucoupage', sans-serif; /* Font chữ tùy chỉnh */
+    text-transform: uppercase; /* Viết hoa toàn bộ chữ */
+    background: linear-gradient(to right, #007bff, #00d4ff); /* Hiệu ứng gradient từ xanh đậm sang xanh nhạt */
+    -webkit-background-clip: text; /* Cắt gradient theo chữ */
+    -webkit-text-fill-color: transparent; /* Làm chữ trong suốt để hiển thị gradient */
+    text-align: center; /* Căn giữa chữ */
+    margin: 0; /* Loại bỏ khoảng cách mặc định */
+    letter-spacing: 0.2rem; /* Khoảng cách giữa các chữ */
+    text-shadow: 2px 4px 8px rgba(0, 0, 0, 0.5); /* Hiệu ứng đổ bóng nhẹ */
+  }
+  /* Phần form đăng nhập */
+  .login-form {
+    flex: 1;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: #fff;
+  }
+  
+  .login-form h2 {
+    font-size: 24px;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  
+  /* Style cho thông báo lỗi */
+  .error-message {
+    color: #ff6b6b;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  
+  /* Input fields */
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-group label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+    color: #fff;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border-radius: 5px;
+    transition: all 0.3s;
+  }
+  
+  .form-group input:focus {
+    border-color: #007bff;
+    background: rgba(255, 255, 255, 0.3);
+  }
+  
+  /* Password toggle icon */
+  .password-wrapper {
+    position: relative;
+  }
+  
+  .toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  /* Link quên mật khẩu */
+  .forgot-password {
+    text-align: right;
+    margin-bottom: 15px;
+  }
+  
+  .forgot-password a {
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+  .forgot-password a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Nút đăng nhập */
+
+.login-btn {
+  position: relative;
+  overflow: hidden; /* Để ẩn phần overlay khi nó bên ngoài nút */
+  background:  #007bff;  /* Màu nền ban đầu của nút */
+  color: #fff;
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.3s ease-in-out;
+}
+
+/* Tạo overlay cho hiệu ứng chuyển động màu */
+.login-btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%; /* Bắt đầu hoàn toàn bên trái */
+  width: 100%;
+  height: 100%;
+  background: #00d4ff;  /* Màu khi di chuyển - bạn có thể tùy chỉnh */
+  transform: skewX(-30deg); /* Tạo hiệu ứng góc nghiêng */
+  transition: left 0.5s ease-out; /* Hiệu ứng chuyển vị trí của overlay */
+  z-index: 0; /* Để overlay nằm dưới nội dung nút */
+}
+
+/* Khi hover, overlay di chuyển hết qua nút từ trái sang phải */
+.login-btn:hover::after {
+  left: 100%;
+}
+
+/* Đảm bảo nội dung nút (text, icon, ...) hiển thị trên overlay */
+.login-btn > * {
+  position: relative;
+  z-index: 1;
+}
+  
+  /* Nút quay lại (cho phần quên mật khẩu) */
+  .back-btn {
+    margin-top: 10px;
+    background: #555;
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+    border: none;
+    transition: background 0.3s;
+  }
+  
+  .back-btn:hover {
+    background: #333;
+  }
+  
+  /* Phần đăng ký tài khoản */
+  .create-account {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+.create-account button {
+  position: relative;
+  overflow: hidden; /* Để ẩn pseudo-element khi nó nằm ngoài nút */
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  width: 100%;
+  cursor: pointer;
+  background-color: #007bff; /* Màu nền mặc định */
+  color: #fff;
+}
+
+.create-account button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%; /* Bắt đầu hoàn toàn bên trái */
+  width: 100%;
+  height: 100%;
+  background: #00d4ff; /* Màu hiển thị khi hover */
+  transform: skewX(-30deg); /* Hiệu ứng góc nghiêng tạo chiều sâu */
+  transition: left 0.5s ease-in-out; /* Thời gian chuyển động của overlay */
+  z-index: 0; /* Để overlay nằm dưới nội dung của nút */
+}
+
+/* Để nội dung (text, icon) luôn hiển thị trên overlay */
+.create-account button > * {
+  position: relative;
+  z-index: 1;
+}
+
+.create-account button:hover::after {
+  left: 100%; /* Di chuyển overlay sang bên phải khi hover */
+}

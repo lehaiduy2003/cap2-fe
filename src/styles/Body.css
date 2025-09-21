@@ -1,0 +1,89 @@
+.body {
+  
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 20px;
+  min-height: calc(100vh - 100px); /* Ensure the body takes up at least the full height of the viewport minus the footer height */
+}
+
+.card-link {
+  text-decoration: none; /* Remove underline from links */
+  color: inherit; /* Inherit text color */
+}
+.card:hover {
+  transform: translateY(-10px); /* Move the card up */
+  box-shadow: 0 8px 16px rgb(0 0 0 / 32%); /* Increase the shadow */
+}
+.card {
+  
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgb(0 0 0 / 32%);
+  width: 300px;
+  height: 400px; /* Set the height equal to the width to make it a square */
+  margin: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Ensure content is spaced evenly */
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.card-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.card-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-info h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.card-info span {
+  color: green;
+  font-size: 14px;
+}
+
+.card-body {
+  
+  padding: 10px;
+  flex-grow: 1; /* Allow the body to grow and take up available space */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center the content vertically */
+  align-items: center; /* Center the content horizontally */
+  text-align: center; /* Center align text */
+}
+
+.card-body h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.card-body p {
+  font-weight: bold;
+  margin: 5px 0;
+  color: #666;
+  font-size: 14px; /* Adjust font size to fit content */
+}
+
+.card-image_body {
+  width: 100%;
+  height: auto;
+  max-height: 150px; /* Ensure the image fits within the card */
+  object-fit: cover; /* Ensure the image covers the area without stretching */
+  border-radius: 10px;
+}

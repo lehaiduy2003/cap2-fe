@@ -1,0 +1,60 @@
+@font-face {
+  font-family: 'Kirucoupage';
+  src: url('./Kirucoupage.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+.logo-text1{
+  font-size: 2.5rem; /* Kích thước chữ lớn hơn */
+  font-weight: bold; /* Đậm chữ */
+  font-family: 'Kirucoupage', sans-serif; /* Font chữ tùy chỉnh */
+  text-transform: uppercase; /* Viết hoa toàn bộ chữ */
+  background: linear-gradient(to right, #007bff, #00d4ff); /* Hiệu ứng gradient từ xanh đậm sang xanh nhạt */
+  -webkit-background-clip: text; /* Cắt gradient theo chữ */
+  -webkit-text-fill-color: transparent; /* Làm chữ trong suốt để hiển thị gradient */
+  text-align: center; /* Căn giữa chữ */
+  letter-spacing: 0.2rem; /* Khoảng cách giữa các chữ */
+  
+}
+.back-sidebar img{
+ width: 38px;
+ height: 38px;
+ 
+}
+
+.sidebar1 {
+  width: 220px;
+  background: #fff;
+  padding: 32px 0 0 0;
+  border-right: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+.logo-sideBar {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-left: 32px;
+  margin-bottom: 40px;
+}
+.sidebar1 ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+.sidebar1 ul li {
+  padding: 12px 32px;
+  cursor: pointer;
+  color: #333;
+  border-left: 4px solid transparent;
+  transition: all 0.2s;
+}
+.sidebar1 ul li.active,
+.sidebar1 ul li:hover {
+  background: #eaf1ff;
+  color: #1976d2;
+  border-left: 4px solid #1976d2;
+}
