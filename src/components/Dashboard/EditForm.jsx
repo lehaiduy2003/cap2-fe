@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import {
-  getProvinces,
-  getDistrictsByProvinceCode,
-  getWardsByDistrictCode,
-} from "sub-vn";
+import { getProvinces, getDistrictsByProvinceCode, getWardsByDistrictCode } from "sub-vn";
 import "./css/EditForm.css";
+import { BASE_API_URL } from "../../constants";
 
 const EditForm = ({ hotel, onClose, onUpdate }) => {
   const [formData, setFormData] = useState({ ...hotel });
@@ -83,17 +80,14 @@ const EditForm = ({ hotel, onClose, onUpdate }) => {
     setError(null);
 
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/rooms/${formData.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await fetch(`${BASE_API_URL}/api/rooms/${formData.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
 
       if (!response.ok) {
         const errData = await response.json();
@@ -159,11 +153,7 @@ const EditForm = ({ hotel, onClose, onUpdate }) => {
               >
                 <option value="">-- Chọn tỉnh/thành --</option>
                 {provinces.map((p) => (
-                  <option
-                    key={p.code}
-                    value={p.code}
-                    selected={p.name === formData.city}
-                  >
+                  <option key={p.code} value={p.code} selected={p.name === formData.city}>
                     {p.name}
                   </option>
                 ))}
@@ -189,11 +179,7 @@ const EditForm = ({ hotel, onClose, onUpdate }) => {
               >
                 <option value="">-- Chọn quận/huyện --</option>
                 {districts.map((d) => (
-                  <option
-                    key={d.code}
-                    value={d.code}
-                    selected={d.name === formData.district}
-                  >
+                  <option key={d.code} value={d.code} selected={d.name === formData.district}>
                     {d.name}
                   </option>
                 ))}
@@ -219,11 +205,7 @@ const EditForm = ({ hotel, onClose, onUpdate }) => {
               >
                 <option value="">-- Chọn phường/xã --</option>
                 {wards.map((w) => (
-                  <option
-                    key={w.code}
-                    value={w.code}
-                    selected={w.name === formData.ward}
-                  >
+                  <option key={w.code} value={w.code} selected={w.name === formData.ward}>
                     {w.name}
                   </option>
                 ))}

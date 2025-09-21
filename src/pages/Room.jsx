@@ -1,18 +1,16 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import room1 from "../assets/room1.jpeg";
 import room2 from "../assets/room2.jpeg";
 import room3 from "../assets/room3.jpeg";
 import SearchBar from "../components/SearchBar";
 import "../styles/Room.css";
-import blueStar from "../assets/circle.png";
 // Import Swiper styles
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation, Virtual } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
-import { Radius } from "lucide-react";
 import sink from "../assets/sink.png";
 import bedrooms from "../assets/bedroom.png";
 import split_1 from "../assets/split_0_0.png";
@@ -32,13 +30,14 @@ import a9 from "../assets/21.jpg";
 import a10 from "../assets/22.jpg";
 import a11 from "../assets/23.jpg";
 import a12 from "../assets/24.jpg";
+import { BASE_API_URL } from "../constants";
 
 <link
   rel="stylesheet"
   href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 />;
 
-const baseURL = "http://localhost:8080/images/";
+const baseURL = `${BASE_API_URL}/images/`;
 
 function Room() {
   const [rooms, setRooms] = useState([]);
@@ -85,25 +84,19 @@ function Room() {
 
   const fetchRooms = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/rooms");
+      const response = await fetch(`${BASE_API_URL}/api/rooms`);
       if (!response.ok) throw new Error("Network error");
       const data = await response.json();
-
-      // Filter out rooms that are not available
-      const availableRooms = data.data.filter((room) => room.isRoomAvailable);
 
       // Fetch owner information for each room
       const roomsWithOwnerInfo = await Promise.all(
         data.data.map(async (room) => {
           try {
-            const ownerResponse = await fetch(
-              `http://localhost:8080/owner/get-users/${room.ownerId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                },
-              }
-            );
+            const ownerResponse = await fetch(`${BASE_API_URL}/owner/get-users/${room.ownerId}`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            });
 
             if (ownerResponse.ok) {
               const ownerData = await ownerResponse.json();
@@ -147,8 +140,7 @@ function Room() {
   const tabs = ["Tất Cả", "Đà Nẵng", "Thành phố Hồ Chí Minh", "Hà Nội"];
   const filteredRooms = rooms.filter((room) => {
     const matchCity =
-      activeTab === "Tất Cả" ||
-      room.city?.toLowerCase().includes(activeTab.toLowerCase());
+      activeTab === "Tất Cả" || room.city?.toLowerCase().includes(activeTab.toLowerCase());
     const matchDistrict =
       selectedDistrict === "" ||
       room.district?.toLowerCase().includes(selectedDistrict.toLowerCase());
@@ -287,11 +279,7 @@ function Room() {
         ) : (
           <>
             {(showAllRooms ? sortedRooms : sortedRooms.slice(0, 12)).map((room) => (
-              <Link
-                to={`/ResultRoom/${room.id}`}
-                className="card-link"
-                key={room.id}
-              >
+              <Link to={`/ResultRoom/${room.id}`} className="card-link" key={room.id}>
                 <div className="card">
                   <img
                     src={getValidImageUrl(room.imageUrls)}
@@ -316,15 +304,15 @@ function Room() {
                         const features = [
                           {
                             icon: <i className="fas fa-expand-arrows-alt"></i>,
-                            label: `${room.roomSize} m²`
+                            label: `${room.roomSize} m²`,
                           },
                           {
                             icon: <img src={bedrooms} alt="" />,
-                            label: `${room.numBedrooms ?? "?"} Giường`
+                            label: `${room.numBedrooms ?? "?"} Giường`,
                           },
                           {
                             icon: <img src={sink} alt="" />,
-                            label: `${room.numBathrooms ?? "?"} Bồn tắm`
+                            label: `${room.numBathrooms ?? "?"} Bồn tắm`,
                           },
                         ];
                         const isExpanded = expandedCardIds[room.id];
@@ -340,11 +328,11 @@ function Room() {
                             {features.length > 3 && (
                               <button
                                 className="more-btn"
-                                onClick={e => {
+                                onClick={(e) => {
                                   e.preventDefault();
-                                  setExpandedCardIds(prev => ({
+                                  setExpandedCardIds((prev) => ({
                                     ...prev,
-                                    [room.id]: !prev[room.id]
+                                    [room.id]: !prev[room.id],
                                   }));
                                 }}
                                 style={{
@@ -353,7 +341,7 @@ function Room() {
                                   cursor: "pointer",
                                   marginLeft: 8,
                                   color: "#1976d2",
-                                  fontWeight: 600
+                                  fontWeight: 600,
                                 }}
                               >
                                 {isExpanded ? (
@@ -380,9 +368,7 @@ function Room() {
                         }}
                       />
                       <div className="contact-info">
-                        <div className="owner-name">
-                          {room.ownerName || "Chủ phòng"}
-                        </div>
+                        <div className="owner-name">{room.ownerName || "Chủ phòng"}</div>
                         <div className="owner-phone">
                           {room.ownerPhone || "Chưa có số điện thoại"}
                         </div>
@@ -393,7 +379,9 @@ function Room() {
               </Link>
             ))}
             {sortedRooms.length > 12 && (
-              <div style={{ width: "100%", display: "flex", justifyContent: "center", marginTop: 16 }}>
+              <div
+                style={{ width: "100%", display: "flex", justifyContent: "center", marginTop: 16 }}
+              >
                 <button
                   className="more-btn"
                   onClick={() => setShowAllRooms((prev) => !prev)}
@@ -405,7 +393,7 @@ function Room() {
                     fontWeight: 600,
                     fontSize: "1rem",
                     padding: "8px 24px",
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                 >
                   {showAllRooms ? "Thu gọn ▲" : "Xem thêm ▼"}

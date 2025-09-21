@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import ReportTable from "./ReportTable";
-import Header from "./Header";
 import "./css/ReportPage.css";
 import { axiosInstance } from "../../lib/axios";
 import { showErrorToast, showSuccessToast } from "../toast";
+import { BASE_API_URL } from "../../constants";
 
 function ModalContent({ report, onClose, onViPham, onKhongViPham }) {
   if (!report) return null;
@@ -76,30 +76,51 @@ function ModalContent({ report, onClose, onViPham, onKhongViPham }) {
         <div style={styles.header}>
           <h3>Chi tiết báo cáo</h3>
         </div>
-        <p><b>Tiêu đề bài viết:</b> {report.roomTitle}</p>
-        <p><b>Người đăng bài:</b> {report.roomOwnerName || "Không xác định"}</p>
-        <p><b>Địa chỉ phòng:</b> {report.roomAddress}</p>
-        <p><b>Người báo cáo:</b> {report.reporterName}</p>
-        <p><b>Lý do:</b> {report.reason}</p>
-        <p><b>Thời gian:</b> {new Date(report.createdAt).toLocaleString()}</p>
+        <p>
+          <b>Tiêu đề bài viết:</b> {report.roomTitle}
+        </p>
+        <p>
+          <b>Người đăng bài:</b> {report.roomOwnerName || "Không xác định"}
+        </p>
+        <p>
+          <b>Địa chỉ phòng:</b> {report.roomAddress}
+        </p>
+        <p>
+          <b>Người báo cáo:</b> {report.reporterName}
+        </p>
+        <p>
+          <b>Lý do:</b> {report.reason}
+        </p>
+        <p>
+          <b>Thời gian:</b> {new Date(report.createdAt).toLocaleString()}
+        </p>
         <p>
           {report.isHandled ? (
-            <><b>Trạng thái:</b> Đã xử lý</>
+            <>
+              <b>Trạng thái:</b> Đã xử lý
+            </>
           ) : (
-            <><b>Trạng thái:</b> Chưa xử lý</>
+            <>
+              <b>Trạng thái:</b> Chưa xử lý
+            </>
           )}
         </p>
 
-        <p style={styles.sectionTitle}><b>Nội dung bài viết:</b></p>
-        <div style={styles.contentBox}>
-          {report.roomContent || "Không có nội dung."}
-        </div>
+        <p style={styles.sectionTitle}>
+          <b>Nội dung bài viết:</b>
+        </p>
+        <div style={styles.contentBox}>{report.roomContent || "Không có nội dung."}</div>
 
         <div style={styles.buttonGroup}>
-          <button style={styles.dangerButton} onClick={() => onViPham(report.id)}>Vi phạm</button>
-          <button style={styles.button} onClick={() => onKhongViPham(report.id)}>Không vi phạm</button>
-          <button style={styles.button} onClick={onClose}>Đóng</button>
-
+          <button style={styles.dangerButton} onClick={() => onViPham(report.id)}>
+            Vi phạm
+          </button>
+          <button style={styles.button} onClick={() => onKhongViPham(report.id)}>
+            Không vi phạm
+          </button>
+          <button style={styles.button} onClick={onClose}>
+            Đóng
+          </button>
         </div>
       </div>
     </div>
@@ -115,7 +136,6 @@ const ReportPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10; // Số lượng báo cáo trên mỗi trang
 
-
   useEffect(() => {
     const fetchReports = async () => {
       try {
@@ -126,7 +146,7 @@ const ReportPage = () => {
           return;
         }
 
-        const response = await axiosInstance.get("http://localhost:8080/api/reports/admin", {
+        const response = await axiosInstance.get(`${BASE_API_URL}/api/reports/admin`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -145,7 +165,7 @@ const ReportPage = () => {
         setLoading(false);
       }
     };
-  
+
     fetchReports();
   }, []);
 
@@ -162,7 +182,7 @@ const ReportPage = () => {
     try {
       // Fetch room details if roomId exists
       if (report.roomId) {
-        const roomResponse = await axiosInstance.get(`http://localhost:8080/api/rooms/${report.roomId}`, {
+        const roomResponse = await axiosInstance.get(`${BASE_API_URL}/api/rooms/${report.roomId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
@@ -171,14 +191,17 @@ const ReportPage = () => {
         if (roomResponse.data) {
           const roomData = roomResponse.data.data;
           report.roomContent = roomData.description;
-          
+
           // Fetch owner information
           if (roomData.ownerId) {
-            const ownerResponse = await axiosInstance.get(`http://localhost:8080/owner/get-users/${roomData.ownerId}`, {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-              },
-            });
+            const ownerResponse = await axiosInstance.get(
+              `${BASE_API_URL}/owner/get-users/${roomData.ownerId}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                },
+              }
+            );
 
             if (ownerResponse.data) {
               const ownerInfo = ownerResponse.data.usersList?.[0];
@@ -189,7 +212,7 @@ const ReportPage = () => {
           }
         }
       }
-      
+
       setSelectedReport(report);
     } catch (error) {
       console.error("Error fetching report details:", error);
@@ -205,22 +228,24 @@ const ReportPage = () => {
   const handleViPham = async (id) => {
     try {
       const token = localStorage.getItem("authToken");
-      const response = await axiosInstance.post(`http://localhost:8080/api/reports/${id}/handle`, {
-        isViolation: true,
-        adminNote: "Đăng tin giả, đã xóa bài.",
-        type: "BREACH"
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
+      const response = await axiosInstance.post(
+        `${BASE_API_URL}/api/reports/${id}/handle`,
+        {
+          isViolation: true,
+          adminNote: "Đăng tin giả, đã xóa bài.",
+          type: "BREACH",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
 
       if (response.status === 200) {
         // Cập nhật trạng thái báo cáo trong danh sách
-        setReports((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, isHandled: true } : r))
-        );
+        setReports((prev) => prev.map((r) => (r.id === id ? { ...r, isHandled: true } : r)));
         showSuccessToast("Đã xử lý báo cáo thành công");
         handleClose();
       }
@@ -233,22 +258,24 @@ const ReportPage = () => {
   const handleKhongViPham = async (id) => {
     try {
       const token = localStorage.getItem("authToken");
-      const response = await axiosInstance.post(`http://localhost:8080/api/reports/${id}/handle`, {
-        isViolation: false,
-        adminNote: "Không vi phạm.",
-        type: "NON_BREACH"
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
+      const response = await axiosInstance.post(
+        `${BASE_API_URL}/api/reports/${id}/handle`,
+        {
+          isViolation: false,
+          adminNote: "Không vi phạm.",
+          type: "NON_BREACH",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
 
       if (response.status === 200) {
         // Cập nhật trạng thái báo cáo trong danh sách
-        setReports((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, isHandled: true } : r))
-        );
+        setReports((prev) => prev.map((r) => (r.id === id ? { ...r, isHandled: true } : r)));
         showSuccessToast("Đã xử lý báo cáo thành công");
         handleClose();
       }
@@ -259,7 +286,10 @@ const ReportPage = () => {
   };
 
   const totalPages = Math.ceil(reports.length / itemsPerPage);
-  const currentReports = reports.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentReports = reports.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="report-page-container">
@@ -277,8 +307,15 @@ const ReportPage = () => {
           <>
             <ReportTable reports={currentReports} onView={handleView} />
             <div className="pagination">
-              <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>Trang đầu</button>
-              <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}>Trước</button>
+              <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>
+                Trang đầu
+              </button>
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                Trước
+              </button>
               {[...Array(totalPages).keys()].map((i) => (
                 <button
                   key={i + 1}
@@ -288,8 +325,18 @@ const ReportPage = () => {
                   {i + 1}
                 </button>
               ))}
-              <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Tiếp</button>
-              <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages}>Trang cuối</button>
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Tiếp
+              </button>
+              <button
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+              >
+                Trang cuối
+              </button>
             </div>
           </>
         )}
@@ -308,4 +355,3 @@ const ReportPage = () => {
   );
 };
 export default ReportPage;
-

@@ -4,6 +4,7 @@ import FilterBar from "./FilterBar";
 import RegisterForm from "./RegisterForm";
 import EditForm from "./EditForm";
 import "./css/BookingsPage.css";
+import { BASE_API_URL } from "../../constants";
 
 const BookingsPage = () => {
   const [hotels, setHotels] = useState([]);
@@ -36,9 +37,8 @@ const BookingsPage = () => {
       try {
         setLoading(true);
         // Nếu là ADMIN thì dùng endpoint khác
-        const endpoint = userRole === "ADMIN" 
-          ? "http://localhost:8080/api/rooms" 
-          : "http://localhost:8080/api/rooms/owner";
+        const endpoint =
+          userRole === "ADMIN" ? `${BASE_API_URL}/api/rooms` : `${BASE_API_URL}/api/rooms/owner`;
 
         console.log("Fetching from endpoint:", endpoint); // Debug log
         const response = await fetch(endpoint, {
@@ -46,7 +46,7 @@ const BookingsPage = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        
+
         if (!response.ok) {
           const errorData = await response.json();
           // Không throw error nếu không tìm thấy phòng
@@ -57,14 +57,14 @@ const BookingsPage = () => {
           }
           throw new Error(errorData.message || "Không thể lấy danh sách phòng");
         }
-        
+
         const result = await response.json();
         console.log("Dữ liệu lấy được từ API:", result);
-        
+
         // Kiểm tra và xử lý dữ liệu trước khi set state
         if (result && result.data) {
-          const validHotels = Array.isArray(result.data) 
-            ? result.data.filter(hotel => hotel && hotel.id) // Lọc ra các hotel hợp lệ
+          const validHotels = Array.isArray(result.data)
+            ? result.data.filter((hotel) => hotel && hotel.id) // Lọc ra các hotel hợp lệ
             : [];
           setHotels(validHotels);
         } else {
@@ -96,31 +96,29 @@ const BookingsPage = () => {
 
   const handleUpdateHotel = (updatedHotel) => {
     if (updatedHotel && updatedHotel.id) {
-      setHotels((prev) =>
-        prev.map((h) => (h.id === updatedHotel.id ? updatedHotel : h))
-      );
+      setHotels((prev) => prev.map((h) => (h.id === updatedHotel.id ? updatedHotel : h)));
       setEditingHotel(null);
     }
   };
 
   const handleDeleteHotel = async (hotelId) => {
     if (!hotelId) return;
-    
+
     if (!window.confirm("Bạn có chắc muốn xóa phòng này?")) return;
-  
+
     try {
-      const response = await fetch(`http://localhost:8080/api/rooms/${hotelId}`, {
+      const response = await fetch(`${BASE_API_URL}/api/rooms/${hotelId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Xóa phòng thất bại");
       }
-  
+
       setHotels((prev) => prev.filter((hotel) => hotel.id !== hotelId));
     } catch (err) {
       alert("Lỗi khi xóa phòng: " + err.message);
@@ -138,14 +136,11 @@ const BookingsPage = () => {
   return (
     <div className="BookingsPage-content">
       <FilterBar onAddClick={() => setShowRegisterForm(true)} />
-      
+
       {showRegisterForm && (
-        <RegisterForm
-          onClose={() => setShowRegisterForm(false)}
-          onRegister={handleAddHotel}
-        />
+        <RegisterForm onClose={() => setShowRegisterForm(false)} onRegister={handleAddHotel} />
       )}
-      
+
       {editingHotel && (
         <EditForm
           hotel={editingHotel}
@@ -153,7 +148,7 @@ const BookingsPage = () => {
           onUpdate={handleUpdateHotel}
         />
       )}
-      
+
       <div className="booking-list">
         {hotels.length > 0 ? (
           hotels.map((hotel) => (

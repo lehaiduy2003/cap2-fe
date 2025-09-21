@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./css/RegisterForm.css";
 import { getProvinces, getDistrictsByProvinceCode, getWardsByDistrictCode } from "sub-vn";
+import { BASE_API_URL } from "../../constants";
 
 const RegisterForm = ({ onClose, onRegister }) => {
   const [formData, setFormData] = useState({
@@ -28,7 +29,7 @@ const RegisterForm = ({ onClose, onRegister }) => {
 
   const handleChange = (e) => {
     const { name, value, files, type, checked } = e.target;
-    
+
     if (name === "images" && files.length > 0) {
       const newImageFiles = Array.from(files);
       setFormData((prev) => ({
@@ -36,7 +37,7 @@ const RegisterForm = ({ onClose, onRegister }) => {
         imageFiles: newImageFiles,
       }));
 
-      const newPreviews = newImageFiles.map(file => URL.createObjectURL(file));
+      const newPreviews = newImageFiles.map((file) => URL.createObjectURL(file));
       setImagePreviews(newPreviews);
     } else if (type === "checkbox") {
       setFormData((prev) => ({ ...prev, [name]: checked }));
@@ -47,18 +48,18 @@ const RegisterForm = ({ onClose, onRegister }) => {
 
   React.useEffect(() => {
     return () => {
-      imagePreviews.forEach(preview => URL.revokeObjectURL(preview));
+      imagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
     };
   }, [imagePreviews]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const token = localStorage.getItem("authToken");
     const headers = {
       Authorization: `Bearer ${token}`,
     };
-  
+
     try {
       const form = new FormData();
       form.append("title", formData.title);
@@ -75,22 +76,22 @@ const RegisterForm = ({ onClose, onRegister }) => {
       form.append("street", formData.street);
       form.append("description", formData.description);
       form.append("isRoomAvailable", formData.isRoomAvailable);
-      
-        formData.imageFiles.forEach(file => {
+
+      formData.imageFiles.forEach((file) => {
         form.append("images", file);
       });
-  
-      const response = await fetch("http://localhost:8080/api/rooms", {
+
+      const response = await fetch(`${BASE_API_URL}/api/rooms`, {
         method: "POST",
         headers: headers,
         body: form,
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to create room");
       }
-  
+
       const data = await response.json();
       onRegister(data.data);
       onClose();
@@ -101,11 +102,11 @@ const RegisterForm = ({ onClose, onRegister }) => {
   };
 
   const removeImage = (index) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      imageFiles: prev.imageFiles.filter((_, i) => i !== index)
+      imageFiles: prev.imageFiles.filter((_, i) => i !== index),
     }));
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   useEffect(() => {
@@ -160,7 +161,7 @@ const RegisterForm = ({ onClose, onRegister }) => {
         <h2>Đăng ký phòng trọ của bạn</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-section">
-            {[ 
+            {[
               { label: "Tiêu đề", name: "title" },
               { label: "Vị trí", name: "location" },
               { label: "Địa Chỉ", name: "addressDetails" },
@@ -265,22 +266,12 @@ const RegisterForm = ({ onClose, onRegister }) => {
 
             <div className="form-field" style={{ gridColumn: "1 / -1" }}>
               <label>Hình ảnh (có thể chọn nhiều ảnh)</label>
-              <input
-                type="file"
-                name="images"
-                accept="image/*"
-                multiple
-                onChange={handleChange}
-              />
+              <input type="file" name="images" accept="image/*" multiple onChange={handleChange} />
               {imagePreviews.length > 0 && (
                 <div className="image-preview-grid">
                   {imagePreviews.map((preview, index) => (
                     <div key={index} className="image-preview-container">
-                      <img
-                        src={preview}
-                        alt={`Preview ${index + 1}`}
-                        className="image-preview"
-                      />
+                      <img src={preview} alt={`Preview ${index + 1}`} className="image-preview" />
                       <button
                         type="button"
                         className="remove-image-btn"

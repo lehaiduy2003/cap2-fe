@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "./css/BookingCard.css";
+import { BASE_API_URL } from "../../constants";
 
 const BookingCard = ({ initialHotel, onEditClick, onDeleteClick }) => {
   const [hotelInfo] = useState(initialHotel);
@@ -7,7 +8,7 @@ const BookingCard = ({ initialHotel, onEditClick, onDeleteClick }) => {
   // Get the first image URL or use default
   const getImageUrl = () => {
     if (hotelInfo.imageUrls?.length > 0) {
-      return `http://localhost:8080/images/${hotelInfo.imageUrls[0]}`;
+      return `${BASE_API_URL}/images/${hotelInfo.imageUrls[0]}`;
     }
     return "/default-room.jpg";
   };
@@ -29,12 +30,18 @@ const BookingCard = ({ initialHotel, onEditClick, onDeleteClick }) => {
         <div className="hotel-location">{hotelInfo.location}</div>
         <div>Có sẵn từ: {hotelInfo.availableFrom}</div>
         <div>Diện tích: {hotelInfo.roomSize}m²</div>
-        <div>Phòng ngủ: {hotelInfo.numBedrooms} | Phòng tắm: {hotelInfo.numBathrooms}</div>
+        <div>
+          Phòng ngủ: {hotelInfo.numBedrooms} | Phòng tắm: {hotelInfo.numBathrooms}
+        </div>
         <div>{hotelInfo.addressDetails}</div>
         <div>Mô tả: {hotelInfo.description}</div>
         <div className="card-actions">
-          <button className="edit-btn" onClick={() => onEditClick(hotelInfo)}>✏️</button>
-          <button className="delete-btn" onClick={onDeleteClick}>🗑️</button>
+          <button className="edit-btn" onClick={() => onEditClick(hotelInfo)}>
+            ✏️
+          </button>
+          <button className="delete-btn" onClick={onDeleteClick}>
+            🗑️
+          </button>
         </div>
       </div>
     </div>

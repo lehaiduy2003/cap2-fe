@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import "./Storage.css"; // Import CSS styles for the invoice
 import { useSearchParams } from "react-router-dom";
+import { BASE_API_URL } from "../../constants";
 
 /**
  * Component tạo mới hợp đồng.
- * 
+ *
  * @param {function} onSave - Hàm lưu hợp đồng khi submit.
  * @param {function} onCancel - Hàm hủy tạo hợp đồng.
  * @param {number} roomId - ID của phòng (optional)
@@ -18,7 +19,7 @@ const InvoiceForm = ({ onSave, onCancel, roomId, tenantId }) => {
     startDate: "",
     endDate: "",
     price_per_month: "",
-    status: "ACTIVE"
+    status: "ACTIVE",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -27,79 +28,85 @@ const InvoiceForm = ({ onSave, onCancel, roomId, tenantId }) => {
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Fetch tenant information
-  const fetchTenantInfo = useCallback(async (id) => {
-    if (!id || tenantInfo) return; // Skip if no ID or already have tenant info
-    
-    try {
-      console.log("Fetching tenant info for ID:", id);
-      const response = await fetch(`http://localhost:8080/owner/get-users/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+  const fetchTenantInfo = useCallback(
+    async (id) => {
+      if (!id || tenantInfo) return; // Skip if no ID or already have tenant info
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch tenant information');
-      }
+      try {
+        console.log("Fetching tenant info for ID:", id);
+        const response = await fetch(`${BASE_API_URL}/owner/get-users/${id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
 
-      const data = await response.json();
-      console.log("Raw tenant response:", JSON.stringify(data));
-      
-      if (data.usersList && data.usersList.length > 0) {
-        setTenantInfo(data.usersList[0]);
+        if (!response.ok) {
+          throw new Error("Failed to fetch tenant information");
+        }
+
+        const data = await response.json();
+        console.log("Raw tenant response:", JSON.stringify(data));
+
+        if (data.usersList && data.usersList.length > 0) {
+          setTenantInfo(data.usersList[0]);
+        }
+      } catch (err) {
+        console.error("Error fetching tenant info:", err);
       }
-    } catch (err) {
-      console.error('Error fetching tenant info:', err);
-    }
-  }, [tenantInfo]);
+    },
+    [tenantInfo]
+  );
 
   // Fetch room information
-  const fetchRoomInfo = useCallback(async (id) => {
-    if (!id || roomInfo) return; // Skip if no ID or already have room info
-    
-    try {
-      console.log("Fetching room info for ID:", id);
-      const response = await fetch(`http://localhost:8080/api/rooms/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+  const fetchRoomInfo = useCallback(
+    async (id) => {
+      if (!id || roomInfo) return; // Skip if no ID or already have room info
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch room information');
-      }
+      try {
+        console.log("Fetching room info for ID:", id);
+        const response = await fetch(`${BASE_API_URL}/api/rooms/${id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
 
-      const data = await response.json();
-      console.log("Raw room response:", JSON.stringify(data));
-      
-      if (data.data) {
-        setRoomInfo(data.data);
-        // Pre-fill monthly rent with room price
-        setFormData(prev => ({
-          ...prev,
-          price_per_month: data.data.price || ""
-        }));
+        if (!response.ok) {
+          throw new Error("Failed to fetch room information");
+        }
+
+        const data = await response.json();
+        console.log("Raw room response:", JSON.stringify(data));
+
+        if (data.data) {
+          setRoomInfo(data.data);
+          // Pre-fill monthly rent with room price
+          setFormData((prev) => ({
+            ...prev,
+            price_per_month: data.data.price || "",
+          }));
+        }
+      } catch (err) {
+        console.error("Error fetching room info:", err);
       }
-    } catch (err) {
-      console.error('Error fetching room info:', err);
-    }
-  }, [roomInfo]);
+    },
+    [roomInfo]
+  );
 
   // Initialize form data and fetch information only once
   useEffect(() => {
     if (isInitialized) return;
 
-    const urlRoomId = searchParams.get('roomId');
-    const urlTenantId = searchParams.get('tenantId');
-    
+    const urlRoomId = searchParams.get("roomId");
+    const urlTenantId = searchParams.get("tenantId");
+
     const currentRoomId = roomId || urlRoomId;
     const currentTenantId = tenantId || urlTenantId;
-    
+
     // Update form data with provided IDs
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       roomId: currentRoomId || prev.roomId,
-      tenantId: currentTenantId || prev.tenantId
+      tenantId: currentTenantId || prev.tenantId,
     }));
 
     // Fetch information
@@ -115,12 +122,12 @@ const InvoiceForm = ({ onSave, onCancel, roomId, tenantId }) => {
 
   /**
    * Hàm xử lý khi submit form.
-   * 
+   *
    * @param {Event} e - Sự kiện submit.
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Prevent multiple submissions
     if (loading) {
       return;
@@ -131,7 +138,13 @@ const InvoiceForm = ({ onSave, onCancel, roomId, tenantId }) => {
 
     try {
       // Validate required fields
-      if (!formData.tenantId || !formData.roomId || !formData.startDate || !formData.endDate || !formData.price_per_month) {
+      if (
+        !formData.tenantId ||
+        !formData.roomId ||
+        !formData.startDate ||
+        !formData.endDate ||
+        !formData.price_per_month
+      ) {
         throw new Error("Vui lòng điền đầy đủ thông tin");
       }
 
@@ -148,7 +161,7 @@ const InvoiceForm = ({ onSave, onCancel, roomId, tenantId }) => {
         startDate: formData.startDate,
         endDate: formData.endDate,
         pricePerMonth: parseInt(formData.price_per_month),
-        status: formData.status
+        status: formData.status,
       };
 
       const token = localStorage.getItem("authToken");
@@ -156,7 +169,7 @@ const InvoiceForm = ({ onSave, onCancel, roomId, tenantId }) => {
         throw new Error("Vui lòng đăng nhập để tạo hợp đồng");
       }
 
-      const response = await fetch("http://localhost:8080/api/contracts", {
+      const response = await fetch("${BASE_API_URL}/api/contracts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -171,7 +184,7 @@ const InvoiceForm = ({ onSave, onCancel, roomId, tenantId }) => {
       }
 
       const data = await response.json();
-      
+
       // Reset form and close
       setFormData({
         tenantId: "",
@@ -179,7 +192,7 @@ const InvoiceForm = ({ onSave, onCancel, roomId, tenantId }) => {
         startDate: "",
         endDate: "",
         price_per_month: "",
-        status: "ACTIVE"
+        status: "ACTIVE",
       });
       onSave(data);
     } catch (err) {
@@ -191,7 +204,7 @@ const InvoiceForm = ({ onSave, onCancel, roomId, tenantId }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -215,8 +228,12 @@ const InvoiceForm = ({ onSave, onCancel, roomId, tenantId }) => {
           />
           {roomInfo && (
             <div className="room-info">
-              <p><strong>Địa chỉ:</strong> {roomInfo.addressDetails}</p>
-              <p><strong>Giá phòng:</strong> {roomInfo.price?.toLocaleString()} VNĐ</p>
+              <p>
+                <strong>Địa chỉ:</strong> {roomInfo.addressDetails}
+              </p>
+              <p>
+                <strong>Giá phòng:</strong> {roomInfo.price?.toLocaleString()} VNĐ
+              </p>
             </div>
           )}
         </div>
@@ -234,9 +251,15 @@ const InvoiceForm = ({ onSave, onCancel, roomId, tenantId }) => {
         </div>
         {tenantInfo && (
           <div className="tenant-info">
-            <p><strong>Tên người thuê:</strong> {tenantInfo.fullName}</p>
-            <p><strong>Email:</strong> {tenantInfo.email}</p>
-            <p><strong>Số điện thoại:</strong> {tenantInfo.phone}</p>
+            <p>
+              <strong>Tên người thuê:</strong> {tenantInfo.fullName}
+            </p>
+            <p>
+              <strong>Email:</strong> {tenantInfo.email}
+            </p>
+            <p>
+              <strong>Số điện thoại:</strong> {tenantInfo.phone}
+            </p>
           </div>
         )}
         <div className="invoice-section">
@@ -280,7 +303,7 @@ const InvoiceForm = ({ onSave, onCancel, roomId, tenantId }) => {
 
         <div className="button-group">
           <button type="submit" className="save-button" disabled={loading}>
-            {loading ? 'Đang lưu...' : 'Lưu'}
+            {loading ? "Đang lưu..." : "Lưu"}
           </button>
           <button type="button" className="cancel-button" onClick={onCancel} disabled={loading}>
             Hủy

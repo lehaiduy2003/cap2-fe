@@ -1,32 +1,33 @@
-import { useState } from 'react';
-import axios from 'axios';
+import { useState } from "react";
+import axios from "axios";
+import { BASE_API_URL } from "../../constants";
 
 const SearchBar = ({ onUserSelect }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [error, setError] = useState(null);
 
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!searchTerm.trim()) {
-      setError('Vui lòng nhập tên người dùng');
+      setError("Vui lòng nhập tên người dùng");
       return;
     }
 
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem("authToken");
       if (!token) {
-        setError('Không tìm thấy mã xác thực');
+        setError("Không tìm thấy mã xác thực");
         return;
       }
 
       const response = await axios.get(
-        `http://localhost:8080/messages/search?username=${encodeURIComponent(searchTerm)}`,
+        `${BASE_API_URL}/messages/search?username=${encodeURIComponent(searchTerm)}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
+            Accept: "application/json",
+            "Content-Type": "application/json",
           },
         }
       );
@@ -35,12 +36,12 @@ const SearchBar = ({ onUserSelect }) => {
       setSearchResults(response.data || []);
       setError(null);
     } catch (error) {
-      console.error('Lỗi khi tìm kiếm người dùng:', error);
+      console.error("Lỗi khi tìm kiếm người dùng:", error);
       if (error.response?.status === 404) {
         setSearchResults([]);
-        setError('Không tìm thấy người dùng');
+        setError("Không tìm thấy người dùng");
       } else {
-        setError('Đã xảy ra lỗi khi tìm kiếm');
+        setError("Đã xảy ra lỗi khi tìm kiếm");
         setSearchResults([]);
       }
     }
@@ -79,9 +80,7 @@ const SearchBar = ({ onUserSelect }) => {
         </div>
       </form>
 
-      {error && (
-        <div className="text-red-500 text-sm mb-2">{error}</div>
-      )}
+      {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
 
       {searchResults.length === 0 && !error && searchTerm && (
         <div className="text-gray-500 text-sm mb-2">Không tìm thấy người dùng</div>
@@ -97,7 +96,7 @@ const SearchBar = ({ onUserSelect }) => {
             >
               <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
                 <img
-                  src={user.avatarUrl || 'https://randomuser.me/api/portraits/lego/1.jpg'}
+                  src={user.avatarUrl || "https://randomuser.me/api/portraits/lego/1.jpg"}
                   alt={user.fullName}
                   className="w-full h-full object-cover"
                 />

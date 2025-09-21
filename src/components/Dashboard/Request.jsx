@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 // import { useNotifications } from "../NotificationComponent/NotificationContext";
 import "./css/Request.css";
 import InvoiceForm from "../Invoices/InvoiceForm";
+import { BASE_API_URL } from "../../constants";
 
 const Request = () => {
   const [requests, setRequests] = useState([]);
@@ -31,49 +32,50 @@ const Request = () => {
     const checkAuth = () => {
       const token = localStorage.getItem("authToken");
       const userData = JSON.parse(localStorage.getItem("userData"));
-      
+
       console.log("Auth check - Token:", token);
       console.log("Auth check - User data:", userData);
-      
-      if (token) {  // Chỉ cần kiểm tra token
+
+      if (token) {
+        // Chỉ cần kiểm tra token
         if (userData) {
           setUserRole(userData.role);
           setIsAuthenticated(true);
           console.log("User authenticated with role:", userData.role);
         } else {
           // Nếu có token nhưng không có userData, thử lấy thông tin user từ token
-          fetch("http://localhost:8080/renterowner/get-profile", {
+          fetch(`${BASE_API_URL}/renterowner/get-profile`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then(data => {
-            console.log("Got user profile:", data);
-            if (data && data.user && data.user.role) {
-              localStorage.setItem("userData", JSON.stringify(data.user));
-              setUserRole(data.user.role);
-              setIsAuthenticated(true);
-              console.log("User authenticated with role:", data.user.role);
-            } else {
-              throw new Error("Invalid user data received");
-            }
-          })
-          .catch(error => {
-            console.error("Error fetching user data:", error);
-            // Nếu lỗi kết nối, thử sử dụng token để xác thực
-            if (token) {
-              setIsAuthenticated(true);
-              console.log("Using token for authentication");
-            } else {
-              setIsAuthenticated(false);
-            }
-          });
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              return response.json();
+            })
+            .then((data) => {
+              console.log("Got user profile:", data);
+              if (data && data.user && data.user.role) {
+                localStorage.setItem("userData", JSON.stringify(data.user));
+                setUserRole(data.user.role);
+                setIsAuthenticated(true);
+                console.log("User authenticated with role:", data.user.role);
+              } else {
+                throw new Error("Invalid user data received");
+              }
+            })
+            .catch((error) => {
+              console.error("Error fetching user data:", error);
+              // Nếu lỗi kết nối, thử sử dụng token để xác thực
+              if (token) {
+                setIsAuthenticated(true);
+                console.log("Using token for authentication");
+              } else {
+                setIsAuthenticated(false);
+              }
+            });
         }
       } else {
         console.log("No token found");
@@ -87,7 +89,7 @@ const Request = () => {
   // Function to fetch room details
   const fetchRoomDetails = async (roomId) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/rooms/${roomId}`, {
+      const response = await fetch(`${BASE_API_URL}/api/rooms/${roomId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
@@ -103,8 +105,8 @@ const Request = () => {
 
       // Clean the response text
       const cleanedText = text
-        .replace(/[\x00-\x1F\x7F-\x9F]/g, '')
-        .replace(/\s+/g, ' ')
+        .replace(/[\x00-\x1F\x7F-\x9F]/g, "")
+        .replace(/\s+/g, " ")
         .trim();
 
       // Try to parse the cleaned JSON
@@ -120,11 +122,14 @@ const Request = () => {
       // Fetch owner information
       if (data.data?.ownerId) {
         try {
-          const ownerResponse = await fetch(`http://localhost:8080/owner/get-users/${data.data.ownerId}`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            },
-          });
+          const ownerResponse = await fetch(
+            `${BASE_API_URL}/owner/get-users/${data.data.ownerId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }
+          );
 
           if (ownerResponse.ok) {
             const ownerText = await ownerResponse.text();
@@ -132,8 +137,8 @@ const Request = () => {
 
             // Clean the owner response text and remove circular references
             const cleanedOwnerText = ownerText
-              .replace(/[\x00-\x1F\x7F-\x9F]/g, '')
-              .replace(/\s+/g, ' ')
+              .replace(/[\x00-\x1F\x7F-\x9F]/g, "")
+              .replace(/\s+/g, " ")
               .replace(/"rooms":\[[^\]]*\]/g, '"rooms":[]')
               .replace(/"contracts":\[[^\]]*\]/g, '"contracts":[]')
               .replace(/"roomImages":\[[^\]]*\]/g, '"roomImages":[]')
@@ -143,7 +148,7 @@ const Request = () => {
             try {
               const ownerData = JSON.parse(cleanedOwnerText);
               console.log("Parsed owner data:", ownerData);
-              
+
               if (ownerData.usersList && ownerData.usersList.length > 0) {
                 const ownerInfo = ownerData.usersList[0];
                 data.data.ownerName = ownerInfo.fullName;
@@ -187,7 +192,7 @@ const Request = () => {
     try {
       const token = localStorage.getItem("authToken");
       const userData = JSON.parse(localStorage.getItem("userData"));
-      
+
       console.log("Fetching with token:", token);
       console.log("User data:", userData);
 
@@ -199,7 +204,7 @@ const Request = () => {
       }
 
       // Fetch view requests
-      const viewResponse = await fetch("http://localhost:8080/api/view-requests/owner", {
+      const viewResponse = await fetch("${BSE_API_URL}/api/view-requests/owner", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -221,33 +226,35 @@ const Request = () => {
 
       const viewData = await viewResponse.json();
       console.log("View requests data:", viewData);
-      const viewRequests = await Promise.all(viewData.map(async req => {
-        // Fetch renter information
-        try {
-          const renterResponse = await fetch(`http://localhost:8080/owner/get-users/${req.renterId}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          if (renterResponse.ok) {
-            const renterData = await renterResponse.json();
-            const renterInfo = renterData.usersList?.[0];
-            if (renterInfo) {
-              return { ...req, type: "VIEW", renterName: renterInfo.fullName };
+      const viewRequests = await Promise.all(
+        viewData.map(async (req) => {
+          // Fetch renter information
+          try {
+            const renterResponse = await fetch(`${BASE_API_URL}/owner/get-users/${req.renterId}`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            if (renterResponse.ok) {
+              const renterData = await renterResponse.json();
+              const renterInfo = renterData.usersList?.[0];
+              if (renterInfo) {
+                return { ...req, type: "VIEW", renterName: renterInfo.fullName };
+              }
             }
+          } catch (error) {
+            console.error("Error fetching renter info:", error);
           }
-        } catch (error) {
-          console.error("Error fetching renter info:", error);
-        }
-        return { ...req, type: "VIEW" };
-      }));
+          return { ...req, type: "VIEW" };
+        })
+      );
 
       // Fetch rental requests only if user is OWNER or ADMIN
       let rentalRequests = [];
       if (userRole === "OWNER" || userRole === "ADMIN") {
         try {
           console.log("Fetching rental requests for role:", userRole);
-          const rentalResponse = await fetch("http://localhost:8080/api/rent-requests/owner", {
+          const rentalResponse = await fetch("${BSE_API_URL}/api/rent-requests/owner", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -258,36 +265,41 @@ const Request = () => {
           if (rentalResponse.ok) {
             const rentalData = await rentalResponse.json();
             console.log("Rental requests data:", rentalData);
-            rentalRequests = await Promise.all(rentalData.map(async req => {
-              console.log("Processing rental request:", req);
-              // Fetch renter information
-              try {
-                const renterResponse = await fetch(`http://localhost:8080/owner/get-users/${req.tenantId}`, {
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                  },
-                });
-                if (renterResponse.ok) {
-                  const renterData = await renterResponse.json();
-                  const renterInfo = renterData.usersList?.[0];
-                  if (renterInfo) {
-                    return {
-                      ...req,
-                      type: "RENTAL",
-                      renterId: req.tenantId,
-                      renterName: renterInfo.fullName
-                    };
+            rentalRequests = await Promise.all(
+              rentalData.map(async (req) => {
+                console.log("Processing rental request:", req);
+                // Fetch renter information
+                try {
+                  const renterResponse = await fetch(
+                    `${BSE_API_URL}/owner/get-users/${req.tenantId}`,
+                    {
+                      headers: {
+                        Authorization: `Bearer ${token}`,
+                      },
+                    }
+                  );
+                  if (renterResponse.ok) {
+                    const renterData = await renterResponse.json();
+                    const renterInfo = renterData.usersList?.[0];
+                    if (renterInfo) {
+                      return {
+                        ...req,
+                        type: "RENTAL",
+                        renterId: req.tenantId,
+                        renterName: renterInfo.fullName,
+                      };
+                    }
                   }
+                } catch (error) {
+                  console.error("Error fetching renter info:", error);
                 }
-              } catch (error) {
-                console.error("Error fetching renter info:", error);
-              }
-              return {
-                ...req,
-                type: "RENTAL",
-                renterId: req.tenantId
-              };
-            }));
+                return {
+                  ...req,
+                  type: "RENTAL",
+                  renterId: req.tenantId,
+                };
+              })
+            );
           } else if (rentalResponse.status === 403) {
             console.log("User does not have permission to view rental requests");
           } else {
@@ -303,7 +315,7 @@ const Request = () => {
       console.log("Total requests:", {
         view: viewRequests.length,
         rental: rentalRequests.length,
-        total: allRequests.length
+        total: allRequests.length,
       });
 
       // Create a map of tenant names
@@ -343,7 +355,7 @@ const Request = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentRequests = requests
-    .filter(req => req.type === requestType)
+    .filter((req) => req.type === requestType)
     .slice(startIndex, endIndex);
 
   // Reset to first page when changing request type
@@ -364,8 +376,8 @@ const Request = () => {
       }
 
       console.log("Fetching renter info for ID:", renterId);
-      
-      const response = await fetch(`http://localhost:8080/owner/get-users/${renterId}`, {
+
+      const response = await fetch(`${BASE_API_URL}/owner/get-users/${renterId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
@@ -381,8 +393,8 @@ const Request = () => {
 
       // Clean the response text and remove circular references
       const cleanedText = text
-        .replace(/[\x00-\x1F\x7F-\x9F]/g, '')
-        .replace(/\s+/g, ' ')
+        .replace(/[\x00-\x1F\x7F-\x9F]/g, "")
+        .replace(/\s+/g, " ")
         .replace(/"rooms":\[[^\]]*\]/g, '"rooms":[]')
         .replace(/"contracts":\[[^\]]*\]/g, '"contracts":[]')
         .replace(/"roomImages":\[[^\]]*\]/g, '"roomImages":[]')
@@ -397,7 +409,7 @@ const Request = () => {
       } catch (parseError) {
         console.error("Initial JSON parse failed:", parseError);
         // Try to find the last valid JSON structure
-        const lastBrace = cleanedText.lastIndexOf('}');
+        const lastBrace = cleanedText.lastIndexOf("}");
         if (lastBrace > 0) {
           try {
             const truncatedText = cleanedText.substring(0, lastBrace + 1);
@@ -426,11 +438,11 @@ const Request = () => {
         email: userData.email || "Chưa cập nhật",
         phone: userData.phone || "Chưa cập nhật",
         dateOfBirth: userData.dob ? new Date(userData.dob).toLocaleDateString() : "Chưa cập nhật",
-        gender: userData.gender || "Chưa cập nhật"
+        gender: userData.gender || "Chưa cập nhật",
       };
-      
+
       console.log("Processed renter info:", renterInfo);
-      
+
       setSelectedRenterInfo(renterInfo);
       setSelectedRequest(request);
       setIsModalOpen(true);
@@ -449,7 +461,7 @@ const Request = () => {
   // Handle view request response
   const handleViewRequestRespond = async (requestId, accept, adminNote = null) => {
     try {
-      const response = await fetch("http://localhost:8080/api/view-requests/respond", {
+      const response = await fetch("${BSE_API_URL}/api/view-requests/respond", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -458,7 +470,7 @@ const Request = () => {
         body: JSON.stringify({
           requestId: requestId,
           accept: accept,
-          adminNote: adminNote || ""
+          adminNote: adminNote || "",
         }),
       });
 
@@ -477,7 +489,7 @@ const Request = () => {
   // Handle rental request response
   const handleRentalRequestRespond = async (requestId, accept, adminNote = null) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/rent-requests/${requestId}`, {
+      const response = await fetch(`${BASE_API_URL}/api/rent-requests/${requestId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -487,7 +499,7 @@ const Request = () => {
           accept: accept,
           adminNote: adminNote || "",
           status: accept ? "APPROVED" : "REJECTED",
-          ownerFinalize: accept
+          ownerFinalize: accept,
         }),
       });
 
@@ -496,10 +508,10 @@ const Request = () => {
       }
 
       showInfoToast(accept ? "Đã chấp nhận yêu cầu thuê phòng" : "Đã từ chối yêu cầu thuê phòng");
-      
+
       if (accept) {
         // Find the request to get roomId and tenantId
-        const request = requests.find(req => req.id === requestId);
+        const request = requests.find((req) => req.id === requestId);
         if (request) {
           // Show contract form directly instead of navigating
           setIsCreatingNew(true);
@@ -507,7 +519,7 @@ const Request = () => {
           setSelectedTenantId(request.renterId);
         }
       }
-      
+
       await fetchRequests();
     } catch (error) {
       console.error("Error responding to rental request:", error);
@@ -519,18 +531,18 @@ const Request = () => {
   const handleCancelRental = async (requestId) => {
     try {
       // Find the request to get roomId
-      const request = requests.find(req => req.id === requestId);
+      const request = requests.find((req) => req.id === requestId);
       if (!request) {
         throw new Error("Không tìm thấy yêu cầu thuê phòng");
       }
 
       // Cancel rental request
-      const response = await fetch(`http://localhost:8080/api/rent-requests/${requestId}/cancel`, {
+      const response = await fetch(`${BASE_API_URL}/api/rent-requests/${requestId}/cancel`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        }
+        },
       });
 
       if (!response.ok) {
@@ -538,16 +550,16 @@ const Request = () => {
       }
 
       // Update room status back to available
-      const updateRoomResponse = await fetch(`http://localhost:8080/api/rooms/${request.roomId}`, {
-        method: 'PUT',
+      const updateRoomResponse = await fetch(`${BASE_API_URL}/api/rooms/${request.roomId}`, {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
         body: JSON.stringify({
           ...request.room,
-          isRoomAvailable: true
-        })
+          isRoomAvailable: true,
+        }),
       });
 
       if (!updateRoomResponse.ok) {
@@ -586,7 +598,7 @@ const Request = () => {
       }
 
       // Find the room details from the requests list
-      const roomDetails = requests.find(req => req.roomId === selectedRoomId)?.room;
+      const roomDetails = requests.find((req) => req.roomId === selectedRoomId)?.room;
       if (!roomDetails) {
         throw new Error("Không tìm thấy thông tin phòng");
       }
@@ -605,11 +617,11 @@ const Request = () => {
       }
 
       // Create contract using the same endpoint as InvoiceForm
-      const contractResponse = await fetch("http://localhost:8080/api/contracts", {
-        method: 'POST',
+      const contractResponse = await fetch("${BSE_API_URL}/api/contracts", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           tenantId: selectedTenantId,
@@ -617,7 +629,7 @@ const Request = () => {
           startDate: contractData.startDate,
           endDate: contractData.endDate,
           pricePerMonth: roomDetails.price,
-          status: "ACTIVE"
+          status: "ACTIVE",
         }),
       });
 
@@ -629,16 +641,16 @@ const Request = () => {
 
       if (!contractResponse.ok) {
         const errorData = await contractResponse.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to create contract');
+        throw new Error(errorData.message || "Failed to create contract");
       }
 
       // Update room status to not available
       console.log("Attempting to hide room:", selectedRoomId);
-      const updateRoomResponse = await fetch(`http://localhost:8080/api/rooms/${selectedRoomId}/hide`, {
-        method: 'POST',
+      const updateRoomResponse = await fetch(`${BASE_API_URL}/api/rooms/${selectedRoomId}/hide`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -666,8 +678,8 @@ const Request = () => {
       setSelectedTenantId(null);
       await fetchRequests(); // Refresh the requests list
     } catch (error) {
-      console.error('Error creating contract:', error);
-      showErrorToast(error.message || 'Có lỗi xảy ra khi tạo hợp đồng');
+      console.error("Error creating contract:", error);
+      showErrorToast(error.message || "Có lỗi xảy ra khi tạo hợp đồng");
     }
   };
 
@@ -685,14 +697,14 @@ const Request = () => {
     <div className="request-container">
       <h2>Yêu cầu phòng trọ</h2>
       <div className="request-type-selector">
-        <button 
-          className={requestType === "VIEW" ? "active" : ""} 
+        <button
+          className={requestType === "VIEW" ? "active" : ""}
           onClick={() => setRequestType("VIEW")}
         >
           Yêu cầu xem phòng
         </button>
-        <button 
-          className={requestType === "RENTAL" ? "active" : ""} 
+        <button
+          className={requestType === "RENTAL" ? "active" : ""}
           onClick={() => setRequestType("RENTAL")}
         >
           Yêu cầu thuê phòng
@@ -720,8 +732,8 @@ const Request = () => {
               {currentRequests.map((req) => (
                 <tr key={req.id}>
                   <td>
-                    <span 
-                      className="room-name" 
+                    <span
+                      className="room-name"
                       title={req.room?.title || "Unknown Room"}
                       onClick={() => showRenterInfo(req.renterId, req)}
                     >
@@ -729,7 +741,7 @@ const Request = () => {
                     </span>
                   </td>
                   <td>
-                    <span style={{ fontWeight: 500, color: '#333' }}>
+                    <span style={{ fontWeight: 500, color: "#333" }}>
                       {tenantNames[req.renterId] || "Đang tải..."}
                     </span>
                   </td>
@@ -782,14 +794,15 @@ const Request = () => {
                         </button>
                       </div>
                     )}
-                    {(req.status === "APPROVED" || req.status === "BOTH_FINALIZED") && req.type === "RENTAL" && (
-                      <button
-                        className="cancel-rental-btn"
-                        onClick={() => handleCancelRental(req.id)}
-                      >
-                        Hủy cho thuê phòng
-                      </button>
-                    )}
+                    {(req.status === "APPROVED" || req.status === "BOTH_FINALIZED") &&
+                      req.type === "RENTAL" && (
+                        <button
+                          className="cancel-rental-btn"
+                          onClick={() => handleCancelRental(req.id)}
+                        >
+                          Hủy cho thuê phòng
+                        </button>
+                      )}
                   </td>
                 </tr>
               ))}
@@ -850,28 +863,59 @@ const Request = () => {
               <div className="renter-info">
                 <div className="info-section">
                   <h4>Thông tin cá nhân</h4>
-                  <p><strong>Họ và tên:</strong> {selectedRenterInfo.fullName}</p>
-                  <p><strong>Email:</strong> {selectedRenterInfo.email}</p>
-                  <p><strong>Số điện thoại:</strong> {selectedRenterInfo.phone}</p>
-                  <p><strong>Ngày sinh:</strong> {selectedRenterInfo.dateOfBirth}</p>
-                  <p><strong>Giới tính:</strong> {selectedRenterInfo.gender}</p>
+                  <p>
+                    <strong>Họ và tên:</strong> {selectedRenterInfo.fullName}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {selectedRenterInfo.email}
+                  </p>
+                  <p>
+                    <strong>Số điện thoại:</strong> {selectedRenterInfo.phone}
+                  </p>
+                  <p>
+                    <strong>Ngày sinh:</strong> {selectedRenterInfo.dateOfBirth}
+                  </p>
+                  <p>
+                    <strong>Giới tính:</strong> {selectedRenterInfo.gender}
+                  </p>
                 </div>
                 <div className="info-section">
                   <h4>Thông tin yêu cầu</h4>
-                  <p><strong>Loại yêu cầu:</strong> {selectedRequest.type === "VIEW" ? "Xem phòng" : "Thuê phòng"}</p>
-                  <p><strong>Phòng:</strong> {selectedRequest.room?.title || "Không xác định"}</p>
-                  <p><strong>Địa chỉ:</strong> {selectedRequest.room?.addressDetails || "Không xác định"}</p>
-                  <p><strong>Chủ phòng:</strong> {selectedRequest.room?.ownerName || "Không xác định"}</p>
-                  <p><strong>Nội dung bài viết:</strong> {selectedRequest.room?.description || "Không có mô tả"}</p>
-                  <p><strong>Trạng thái:</strong> {
-                    selectedRequest.status === "PENDING" ? "Đang chờ" :
-                    selectedRequest.status === "APPROVED" ? "Đã chấp nhận" :
-                    selectedRequest.status === "REJECTED" ? "Đã từ chối" :
-                    selectedRequest.status === "BOTH_FINALIZED" ? "Đã hoàn tất" :
-                    selectedRequest.status
-                  }</p>
+                  <p>
+                    <strong>Loại yêu cầu:</strong>{" "}
+                    {selectedRequest.type === "VIEW" ? "Xem phòng" : "Thuê phòng"}
+                  </p>
+                  <p>
+                    <strong>Phòng:</strong> {selectedRequest.room?.title || "Không xác định"}
+                  </p>
+                  <p>
+                    <strong>Địa chỉ:</strong>{" "}
+                    {selectedRequest.room?.addressDetails || "Không xác định"}
+                  </p>
+                  <p>
+                    <strong>Chủ phòng:</strong>{" "}
+                    {selectedRequest.room?.ownerName || "Không xác định"}
+                  </p>
+                  <p>
+                    <strong>Nội dung bài viết:</strong>{" "}
+                    {selectedRequest.room?.description || "Không có mô tả"}
+                  </p>
+                  <p>
+                    <strong>Trạng thái:</strong>{" "}
+                    {selectedRequest.status === "PENDING"
+                      ? "Đang chờ"
+                      : selectedRequest.status === "APPROVED"
+                      ? "Đã chấp nhận"
+                      : selectedRequest.status === "REJECTED"
+                      ? "Đã từ chối"
+                      : selectedRequest.status === "BOTH_FINALIZED"
+                      ? "Đã hoàn tất"
+                      : selectedRequest.status}
+                  </p>
                   {selectedRequest.adminNote && (
-                    <p><strong>Ghi chú:</strong> {selectedRequest.adminNote}</p>
+                    <p>
+                      <strong>Ghi chú:</strong> {selectedRequest.adminNote}
+                    </p>
                   )}
                 </div>
               </div>
@@ -887,8 +931,8 @@ const Request = () => {
 
       {isCreatingNew && (
         <div className="form-overlay">
-          <InvoiceForm 
-            onSave={handleSaveContract} 
+          <InvoiceForm
+            onSave={handleSaveContract}
             onCancel={() => setIsCreatingNew(false)}
             roomId={selectedRoomId}
             tenantId={selectedTenantId}
@@ -900,5 +944,3 @@ const Request = () => {
 };
 
 export default Request;
-
-

@@ -1,20 +1,13 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "./Storage.css";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import InvoiceDetails from "./InvoiceDetails";
 import InvoiceForm from "./InvoiceForm";
-import { useNavigate } from "react-router-dom";
-
+import { BASE_API_URL } from "../../constants";
 /**
  * Component chính quản lý danh sách hóa đơn và các chức năng liên quan.
  */
 const Storage = ({ roomId }) => {
-  const navigate = useNavigate();
   const [searchRoomName, setSearchRoomName] = useState(""); // Tìm kiếm theo tên phòng
   const [startDate, setStartDate] = useState(""); // Ngày bắt đầu tìm kiếm
   const [endDate, setEndDate] = useState(""); // Ngày kết thúc tìm kiếm
@@ -43,11 +36,11 @@ const Storage = ({ roomId }) => {
       }
 
       console.log(`Fetching tenant info for ID: ${tenantId}`);
-      const response = await fetch(`http://localhost:8080/owner/get-users/${tenantId}`, {
+      const response = await fetch(`${BASE_API_URL}/owner/get-users/${tenantId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
       });
 
@@ -60,42 +53,44 @@ const Storage = ({ roomId }) => {
       // Get the response text and clean it up
       const responseText = await response.text();
       console.log("Raw response:", responseText.substring(0, 200) + "..."); // Log first 200 chars
-      
+
       try {
         // Try to parse the full response first
         const fullData = JSON.parse(responseText);
         if (fullData.usersList?.[0]?.fullName) {
-          setTenantNames(prev => ({
+          setTenantNames((prev) => ({
             ...prev,
-            [tenantId]: fullData.usersList[0].fullName
+            [tenantId]: fullData.usersList[0].fullName,
           }));
           return;
         }
       } catch (fullParseError) {
-        console.log("Full parse failed, trying partial parse");
+        console.log("Full parse failed, trying partial parse: ", fullParseError);
       }
 
       // If full parse failed, try partial parse
-      const userInfoMatch = responseText.match(/"usersList":\s*\[\s*{\s*"id":\s*\d+,\s*"fullName":\s*"([^"]+)"/);
+      const userInfoMatch = responseText.match(
+        /"usersList":\s*\[\s*{\s*"id":\s*\d+,\s*"fullName":\s*"([^"]+)"/
+      );
       if (userInfoMatch) {
         const fullName = userInfoMatch[1];
         console.log(`Found tenant name: ${fullName}`);
-        setTenantNames(prev => ({
+        setTenantNames((prev) => ({
           ...prev,
-          [tenantId]: fullName
+          [tenantId]: fullName,
         }));
       } else {
         console.warn("Could not extract tenant name from response");
-        setTenantNames(prev => ({
+        setTenantNames((prev) => ({
           ...prev,
-          [tenantId]: "Không tìm thấy tên"
+          [tenantId]: "Không tìm thấy tên",
         }));
       }
     } catch (error) {
       console.error("Error fetching tenant name:", error);
-      setTenantNames(prev => ({
+      setTenantNames((prev) => ({
         ...prev,
-        [tenantId]: `Lỗi: ${error.message}`
+        [tenantId]: `Lỗi: ${error.message}`,
       }));
     }
   };
@@ -109,11 +104,11 @@ const Storage = ({ roomId }) => {
       }
 
       console.log(`Fetching room info for ID: ${roomId}`);
-      const response = await fetch(`http://localhost:8080/api/rooms/${roomId}`, {
+      const response = await fetch(`${BASE_API_URL}/api/rooms/${roomId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
       });
 
@@ -123,21 +118,21 @@ const Storage = ({ roomId }) => {
 
       const data = await response.json();
       if (data.data && data.data.title) {
-        setRoomNames(prev => ({
+        setRoomNames((prev) => ({
           ...prev,
-          [roomId]: data.data.title
+          [roomId]: data.data.title,
         }));
       } else {
-        setRoomNames(prev => ({
+        setRoomNames((prev) => ({
           ...prev,
-          [roomId]: "Không tìm thấy tên phòng"
+          [roomId]: "Không tìm thấy tên phòng",
         }));
       }
     } catch (error) {
       console.error("Error fetching room name:", error);
-      setRoomNames(prev => ({
+      setRoomNames((prev) => ({
         ...prev,
-        [roomId]: "Lỗi tải thông tin"
+        [roomId]: "Lỗi tải thông tin",
       }));
     }
   };
@@ -153,21 +148,21 @@ const Storage = ({ roomId }) => {
       }
 
       console.log("Fetching contracts with token:", token);
-      const response = await fetch('http://localhost:8080/api/contracts', {
-        method: 'GET',
+      const response = await fetch("${BASE_API_URL}/api/contracts", {
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
       });
 
       console.log("Response status:", response.status);
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         console.error("Error response data:", errorData);
-        
+
         if (response.status === 401) {
           throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại");
         } else if (response.status === 403) {
@@ -183,23 +178,23 @@ const Storage = ({ roomId }) => {
 
       const responseData = await response.json();
       console.log("Response data:", responseData);
-      
+
       if (responseData && responseData.data) {
         // Transform the data to match our expected format
-        const transformedContracts = responseData.data.map(contract => ({
+        const transformedContracts = responseData.data.map((contract) => ({
           id: contract.id,
           roomId: contract.roomId,
           tenantId: contract.tenantId,
           startDate: contract.startDate,
           endDate: contract.endDate,
           price_per_month: contract.pricePerMonth,
-          status: contract.status || "ACTIVE"
+          status: contract.status || "ACTIVE",
         }));
-        
+
         setContracts(transformedContracts);
-        
+
         // Fetch tenant names and room names for all contracts
-        transformedContracts.forEach(contract => {
+        transformedContracts.forEach((contract) => {
           if (contract.tenantId && !tenantNames[contract.tenantId]) {
             fetchTenantName(contract.tenantId);
           }
@@ -212,11 +207,11 @@ const Storage = ({ roomId }) => {
         throw new Error("Định dạng dữ liệu không hợp lệ");
       }
     } catch (err) {
-      console.error('Error fetching contracts:', err);
-      setError(err.message || 'Có lỗi xảy ra khi tải danh sách hợp đồng');
+      console.error("Error fetching contracts:", err);
+      setError(err.message || "Có lỗi xảy ra khi tải danh sách hợp đồng");
     } finally {
       setLoading(false);
-    } 
+    }
   };
 
   /**
@@ -232,39 +227,36 @@ const Storage = ({ roomId }) => {
 
   const totalPages = Math.ceil(filteredContracts.length / itemsPerPage); // Tổng số trang
   const startIndex = (currentPage - 1) * itemsPerPage; // Chỉ mục bắt đầu của trang hiện tại
-  const currentContracts = filteredContracts.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  ); // Danh sách hợp đồng trên trang hiện tại
+  const currentContracts = filteredContracts.slice(startIndex, startIndex + itemsPerPage); // Danh sách hợp đồng trên trang hiện tại
 
   /**
    * Xóa hợp đồng khỏi danh sách.
-   * 
+   *
    * @param {number} id - ID của hợp đồng cần xóa.
    */
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/contracts/${id}`, {
-        method: 'DELETE',
+      const response = await fetch(`${BASE_API_URL}/api/contracts/${id}`, {
+        method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete contract');
+        throw new Error("Failed to delete contract");
       }
 
       setContracts(contracts.filter((contract) => contract.id !== id));
     } catch (err) {
-      setError(err.message || 'Có lỗi xảy ra khi xóa hợp đồng');
-      console.error('Error deleting contract:', err);
+      setError(err.message || "Có lỗi xảy ra khi xóa hợp đồng");
+      console.error("Error deleting contract:", err);
     }
   };
 
   /**
    * Chuyển trang.
-   * 
+   *
    * @param {number} page - Số trang cần chuyển đến.
    */
   const handlePageChange = (page) => {
@@ -275,7 +267,7 @@ const Storage = ({ roomId }) => {
 
   /**
    * Lấy danh sách số trang.
-   * 
+   *
    * @returns {array} Danh sách số trang.
    */
   const getPageNumbers = () => {
@@ -291,7 +283,7 @@ const Storage = ({ roomId }) => {
 
   /**
    * Xem chi tiết hợp đồng.
-   * 
+   *
    * @param {number} id - ID của hợp đồng cần xem.
    */
   const handleViewContract = (id) => {
@@ -314,7 +306,7 @@ const Storage = ({ roomId }) => {
 
   /**
    * Lưu hợp đồng mới.
-   * 
+   *
    * @param {object} newContract - Dữ liệu hợp đồng mới.
    */
   const handleSaveContract = (newContract) => {
@@ -376,10 +368,7 @@ const Storage = ({ roomId }) => {
         <div className="error-container">
           <div className="error-content">
             <p className="error-message">{error}</p>
-            <button 
-              className="retry-button"
-              onClick={fetchContracts}
-            >
+            <button className="retry-button" onClick={fetchContracts}>
               Thử lại
             </button>
           </div>
@@ -388,7 +377,7 @@ const Storage = ({ roomId }) => {
         <div className="empty-state-container">
           <div className="empty-state-content">
             <h3>Chưa có hợp đồng nào</h3>
-            <p>Bạn có thể tạo hợp đồng mới bằng cách nhấn nút "Tạo mới" ở trên</p>
+            <p>Bạn có thể tạo hợp đồng mới bằng cách nhấn nút &quot;Tạo mới&quot; ở trên</p>
           </div>
         </div>
       ) : (
@@ -421,18 +410,18 @@ const Storage = ({ roomId }) => {
                   <td>{contract.price_per_month?.toLocaleString()} VNĐ</td>
                   <td>
                     <span className={`status-${contract.status?.toLowerCase()}`}>
-                      {contract.status === "ACTIVE" ? "Đang hoạt động" :
-                       contract.status === "EXPIRED" ? "Đã hết hạn" :
-                       contract.status === "TERMINATED" ? "Đã chấm dứt" :
-                       contract.status}
+                      {contract.status === "ACTIVE"
+                        ? "Đang hoạt động"
+                        : contract.status === "EXPIRED"
+                        ? "Đã hết hạn"
+                        : contract.status === "TERMINATED"
+                        ? "Đã chấm dứt"
+                        : contract.status}
                     </span>
                   </td>
                   <td>
                     <div className="action-buttons">
-                      <button
-                        className="view-btn"
-                        onClick={() => handleViewContract(contract.id)}
-                      >
+                      <button className="view-btn" onClick={() => handleViewContract(contract.id)}>
                         Xem
                       </button>
                       <button
@@ -470,9 +459,7 @@ const Storage = ({ roomId }) => {
             {getPageNumbers().map((page) => (
               <button
                 key={page}
-                className={`pagination-btn ${
-                  currentPage === page ? "active" : ""
-                }`}
+                className={`pagination-btn ${currentPage === page ? "active" : ""}`}
                 onClick={() => handlePageChange(page)}
               >
                 {page}
@@ -498,11 +485,7 @@ const Storage = ({ roomId }) => {
 
       {isCreatingNew && (
         <div className="form-overlay">
-          <InvoiceForm 
-            onSave={handleSaveContract} 
-            onCancel={handleCancelCreate}
-            roomId={roomId}
-          />
+          <InvoiceForm onSave={handleSaveContract} onCancel={handleCancelCreate} roomId={roomId} />
         </div>
       )}
 

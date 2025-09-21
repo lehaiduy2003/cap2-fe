@@ -1,18 +1,18 @@
 import { useState } from "react";
-import '../styles/Login.css';
-import { useNavigate } from "react-router-dom"; 
+import "../styles/Login.css";
+import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png"; // Import logo nếu cần
 import building from "../assets/4k_building.mp4"; // Import icon nếu cần
 import { showErrorToast, showSuccessToast } from "../components/toast"; // Import toast thông báo
+import { BASE_API_URL } from "../constants";
 
 export default function Login() {
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [forgotPassword, setForgotPassword] = useState(false);
   const [email, setEmail] = useState("");
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,7 +28,7 @@ export default function Login() {
         password: password,
       };
       console.log("Dữ liệu gửi đến API:", data);
-      const response = await fetch("http://localhost:8080/auth/login", {
+      const response = await fetch(`${BASE_API_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,7 +43,7 @@ export default function Login() {
 
       const responseData = await response.json();
       console.log("Response data:", responseData);
-      
+
       if (!responseData.token) {
         throw new Error("Token không tồn tại trong response");
       }
@@ -54,7 +54,7 @@ export default function Login() {
       localStorage.setItem("chat-username", email);
 
       // Lấy thông tin user từ API profile
-      const profileResponse = await fetch("http://localhost:8080/renterowner/get-profile", {
+      const profileResponse = await fetch(`${BASE_API_URL}/renterowner/get-profile`, {
         headers: {
           Authorization: `Bearer ${responseData.token}`,
         },
@@ -77,16 +77,16 @@ export default function Login() {
           gender: profileData.gender,
           dob: profileData.dob,
           bio: profileData.bio,
-          createdAt: profileData.createdAt
+          createdAt: profileData.createdAt,
         };
         console.log("User data:", userData);
-        
+
         // Lưu role và thông tin user
         localStorage.setItem("userRole", userData.role);
         localStorage.setItem("userData", JSON.stringify(userData));
 
         showSuccessToast("Đăng nhập thành công!");
-        
+
         // Chuyển hướng dựa vào role
         if (userData.role === "ADMIN") {
           window.location.href = "/room";
@@ -96,14 +96,13 @@ export default function Login() {
       } else {
         throw new Error(profileData.message || "Không tìm thấy thông tin user");
       }
-
     } catch (err) {
-      console.error('Login failed:', err);
-      setError(err.message || 'Sai tài khoản hoặc mật khẩu');
+      console.error("Login failed:", err);
+      setError(err.message || "Sai tài khoản hoặc mật khẩu");
       showErrorToast(err.message || "Đăng nhập thất bại!");
     }
   };
-      
+
   return (
     <div className="login-wrapper">
       {/* Video nền động */}
@@ -119,11 +118,7 @@ export default function Login() {
       <div className="login-container">
         <div className="login-box">
           <div className="login-image">
-            <img 
-              src={logo}
-              className="logo" 
-              alt="Modern Apartment" 
-            />
+            <img src={logo} className="logo" alt="Modern Apartment" />
             <div className="overlay">
               <h1>RoomieGo</h1>
             </div>
@@ -135,15 +130,17 @@ export default function Login() {
                 <form onSubmit={forgotPassword}>
                   <div className="form-group">
                     <label>Nhập email của bạn</label>
-                    <input 
+                    <input
                       type="email"
                       placeholder="Email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)} 
-                      required 
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
                     />
                   </div>
-                  <button type="submit" className="login-btn">Gửi yêu cầu</button>
+                  <button type="submit" className="login-btn">
+                    Gửi yêu cầu
+                  </button>
                 </form>
                 <button className="back-btn" onClick={() => setForgotPassword(false)}>
                   Quay lại đăng nhập
@@ -156,25 +153,25 @@ export default function Login() {
                 <form onSubmit={handleSubmit}>
                   <div className="form-group">
                     <label>Tên đăng nhập</label>
-                    <input 
-                      type="email" 
-                      placeholder="Email" 
-                      value={email} 
-                      onChange={(e) => setEmail(e.target.value)} 
-                      required 
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
                     />
                   </div>
                   <div className="form-group password-wrapper">
                     <label>Mật khẩu</label>
-                    <input 
-                      type={showPassword ? "text" : "password"} 
-                      placeholder="Pass" 
-                      value={password} 
-                      onChange={(e) => setPassword(e.target.value)} 
-                      required 
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Pass"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
                     />
-                    <i 
-                      className="toggle-password fas fa-eye" 
+                    <i
+                      className="toggle-password fas fa-eye"
                       onClick={() => setShowPassword(!showPassword)}
                       style={{ cursor: "pointer" }}
                     ></i>
@@ -184,12 +181,12 @@ export default function Login() {
                       Quên mật khẩu?
                     </a>
                   </div>
-                  <button type="submit" className="login-btn">Đăng nhập</button>
+                  <button type="submit" className="login-btn">
+                    Đăng nhập
+                  </button>
                 </form>
                 <div className="create-account">
-                  <button onClick={() => navigate("/Register")}>
-                    Đăng ký tài khoản
-                  </button>
+                  <button onClick={() => navigate("/Register")}>Đăng ký tài khoản</button>
                 </div>
               </>
             )}

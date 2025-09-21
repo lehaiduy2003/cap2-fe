@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import './RoommateForm.css';
-import  minimal  from "../../assets/minimal.jpg";
+import "./RoommateForm.css";
+import minimal from "../../assets/minimal.jpg";
 // import minimal2 from "../../assets/minimal2.jpg";
 import openly from "../../assets/openly.jpg";
 import warm from "../../assets/clean&warm.jpg";
 import friend_video from "../../assets/4k_building.mp4";
 import Select from "react-select"; // Import Select component from react-select
-import {getProvinces} from "sub-vn"; // Import getProvinces function
+import { getProvinces } from "sub-vn"; // Import getProvinces function
+import { BASE_API_URL } from "../../constants";
 const provincesOptions = getProvinces().map((province) => ({
   value: province.name,
   label: province.name,
@@ -88,14 +89,13 @@ const StepTwo = ({ formData, errors, handleChange }) => (
 );
 
 const StepThree = ({ formData, errors, handleChange }) => {
-  const hobbiesList = ["Nuôi thú cưng", 
-    "Hút thuốc", "Ăn Chay"];
+  const hobbiesList = ["Nuôi thú cưng", "Hút thuốc", "Ăn Chay"];
 
   // Mảng chứa thông tin các phòng với tiêu chí cụ thể
   const roomTypes = [
-    { value: "1", label: "" , image: minimal },
-    { value: "2", label: "" , image: warm },
-    { value: "3", label: "",  image: openly },
+    { value: "1", label: "", image: minimal },
+    { value: "2", label: "", image: warm },
+    { value: "3", label: "", image: openly },
   ];
 
   return (
@@ -136,7 +136,7 @@ const StepThree = ({ formData, errors, handleChange }) => {
               checked={formData.rateImage === room.value}
               onChange={handleChange}
             />
-            <img src={room.image} alt=""  style={{ width: "100px", height: "auto"} }/>
+            <img src={room.image} alt="" style={{ width: "100px", height: "auto" }} />
             <span>{room.label}</span>
           </label>
         ))}
@@ -155,13 +155,12 @@ const StepThree = ({ formData, errors, handleChange }) => {
   );
 };
 
-
 const RoommateForm = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
 
   const initialFormData = {
-    sex: "Nam",  // Default to Vietnamese
+    sex: "Nam", // Default to Vietnamese
     hometown: "",
     city: "",
     district: "",
@@ -182,9 +181,7 @@ const RoommateForm = () => {
     if (type === "checkbox") {
       setFormData((prev) => ({
         ...prev,
-        hobbies: checked
-          ? [...prev.hobbies, value]
-          : prev.hobbies.filter((h) => h !== value),
+        hobbies: checked ? [...prev.hobbies, value] : prev.hobbies.filter((h) => h !== value),
       }));
     } else if (type === "radio") {
       setFormData((prev) => ({ ...prev, rateImage: value }));
@@ -196,32 +193,31 @@ const RoommateForm = () => {
 
   const validateStep = () => {
     let newErrors = {};
-   if (step === 1) {
-  if (!formData.hometown.trim()) {
-    newErrors.hometown = "Vui lòng nhập quê quán";
-  }
+    if (step === 1) {
+      if (!formData.hometown.trim()) {
+        newErrors.hometown = "Vui lòng nhập quê quán";
+      }
 
-  const dob = Number(formData.dob);
-  const currentYear = new Date().getFullYear();
-  if (!dob) {
-    newErrors.dob = "Vui lòng nhập năm sinh";
-  } else if (dob < 1900 || dob > currentYear) {
-    newErrors.dob = `Năm sinh phải từ 1900 đến ${currentYear}`;
-  }
+      const dob = Number(formData.dob);
+      const currentYear = new Date().getFullYear();
+      if (!dob) {
+        newErrors.dob = "Vui lòng nhập năm sinh";
+      } else if (dob < 1900 || dob > currentYear) {
+        newErrors.dob = `Năm sinh phải từ 1900 đến ${currentYear}`;
+      }
 
-  if (!formData.job.trim()) {
-    newErrors.job = "Vui lòng nhập nghề nghiệp";
-  }
+      if (!formData.job.trim()) {
+        newErrors.job = "Vui lòng nhập nghề nghiệp";
+      }
 
-  if (!formData.phone.trim()) {
-    newErrors.phone = "Vui lòng nhập số điện thoại";
-  }else if (!/^\d{10}$/.test(formData.phone)) {
-    newErrors.phone = "Số điện thoại phải gồm 10 chữ số";
-  }
-} else if (step === 2) {
+      if (!formData.phone.trim()) {
+        newErrors.phone = "Vui lòng nhập số điện thoại";
+      } else if (!/^\d{10}$/.test(formData.phone)) {
+        newErrors.phone = "Số điện thoại phải gồm 10 chữ số";
+      }
+    } else if (step === 2) {
       if (!formData.city.trim()) newErrors.city = "Vui lòng nhập thành phố";
-      if (!formData.district.trim())
-        newErrors.district = "Vui lòng nhập quận";
+      if (!formData.district.trim()) newErrors.district = "Vui lòng nhập quận";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -237,10 +233,8 @@ const RoommateForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     let newErrors = {};
-    if (formData.hobbies.length === 0)
-      newErrors.hobbies = "Chọn ít nhất một thói quen";
-    if (!formData.rateImage)
-      newErrors.rateImage = "Chọn một hình ảnh phòng mong muốn";
+    if (formData.hobbies.length === 0) newErrors.hobbies = "Chọn ít nhất một thói quen";
+    if (!formData.rateImage) newErrors.rateImage = "Chọn một hình ảnh phòng mong muốn";
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -252,7 +246,7 @@ const RoommateForm = () => {
         throw new Error("No authentication token found");
       }
 
-      const userResponse = await fetch("http://localhost:8080/renterowner/get-profile", {
+      const userResponse = await fetch(`${BASE_API_URL}/renterowner/get-profile`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -268,7 +262,7 @@ const RoommateForm = () => {
       console.log("User profile response:", response);
 
       // Check if response has the correct structure
-      if (!response || typeof response.id !== 'number') {
+      if (!response || typeof response.id !== "number") {
         console.error("User data structure:", JSON.stringify(response, null, 2));
         throw new Error("User ID not found in response");
       }
@@ -278,8 +272,8 @@ const RoommateForm = () => {
 
       // Convert Vietnamese gender to English for backend
       const genderMap = {
-        "Nam": "MALE",
-        "Nữ": "FEMALE"
+        Nam: "MALE",
+        Nữ: "FEMALE",
       };
 
       // 1. Create roommate record
@@ -294,13 +288,13 @@ const RoommateForm = () => {
         rateImage: formData.rateImage,
         more: formData.more,
         userId: userId,
-        gender: genderMap[formData.sex] || "MALE"  // Convert to English and provide default
+        gender: genderMap[formData.sex] || "MALE", // Convert to English and provide default
       };
 
       console.log("Form data before sending:", formData);
       console.log("Data being sent to backend:", dataToSend);
 
-      const createResponse = await fetch("http://localhost:8080/api/roommates", {
+      const createResponse = await fetch(`${BASE_API_URL}/api/roommates`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -313,17 +307,19 @@ const RoommateForm = () => {
       console.log("Roommate creation response:", responseData);
 
       if (!createResponse.ok) {
-        throw new Error(`Failed to create roommate: ${responseData.message || createResponse.statusText}`);
+        throw new Error(
+          `Failed to create roommate: ${responseData.message || createResponse.statusText}`
+        );
       }
 
       // Convert gender from English to Vietnamese in the response
       const genderMapResponse = {
-        "MALE": "Nam",
-        "FEMALE": "Nữ"
+        MALE: "Nam",
+        FEMALE: "Nữ",
       };
 
       // 2. Get AI model recommendations using the original user ID
-      const recommendResponse = await fetch(`http://localhost:8000/recommend?user_id=${userId}`, {
+      const recommendResponse = await fetch(`${BASE_API_URL}/recommend?user_id=${userId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -334,13 +330,15 @@ const RoommateForm = () => {
 
       if (!recommendResponse.ok) {
         const errorData = await recommendResponse.json();
-        throw new Error(`Failed to get recommendations: ${errorData.message || recommendResponse.statusText}`);
+        throw new Error(
+          `Failed to get recommendations: ${errorData.message || recommendResponse.statusText}`
+        );
       }
 
       const recommendations = await recommendResponse.json();
-      
+
       // Process recommendations to include phone and convert gender
-      const processedRecommendations = recommendations.map(rec => ({
+      const processedRecommendations = recommendations.map((rec) => ({
         ...rec,
         gender: genderMapResponse[rec.gender] || rec.gender,
         phone: rec.phone || formData.phone,
@@ -351,9 +349,9 @@ const RoommateForm = () => {
         hobbies: rec.hobbies || responseData.hobbies,
         job: rec.job || responseData.job,
         more: rec.more || responseData.more,
-        rateImage: rec.rateImage || responseData.rateImage
+        rateImage: rec.rateImage || responseData.rateImage,
       }));
-      
+
       // 3. Navigate to match page with results
       navigate("/match", { state: { match: processedRecommendations } });
     } catch (err) {
@@ -361,11 +359,11 @@ const RoommateForm = () => {
       console.error("Error details:", {
         message: err.message,
         stack: err.stack,
-        name: err.name
+        name: err.name,
       });
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        submit: err.message || "An error occurred during submission"
+        submit: err.message || "An error occurred during submission",
       }));
     }
   };
@@ -376,33 +374,21 @@ const RoommateForm = () => {
       <div className="video-background">
         <video autoPlay loop muted>
           <source src={friend_video} type="video/mp4" />
-        </video> 
-        </div>
+        </video>
+      </div>
       {/* Step Indictor nằm ngoài hộp form để hiển thị phía trên */}
       <StepIndicator step={step} />
       <div className="roommate-form glass-background">
         <h2>Thông tin Roommate - Bước {step}/3</h2>
         <form onSubmit={handleSubmit}>
           {step === 1 && (
-            <StepOne
-              formData={formData}
-              errors={errors}
-              handleChange={handleChange}
-            />
+            <StepOne formData={formData} errors={errors} handleChange={handleChange} />
           )}
           {step === 2 && (
-            <StepTwo
-              formData={formData}
-              errors={errors}
-              handleChange={handleChange}
-            />
+            <StepTwo formData={formData} errors={errors} handleChange={handleChange} />
           )}
           {step === 3 && (
-            <StepThree
-              formData={formData}
-              errors={errors}
-              handleChange={handleChange}
-            />
+            <StepThree formData={formData} errors={errors} handleChange={handleChange} />
           )}
           <div className="form-navigation">
             {step > 1 && (
@@ -415,9 +401,7 @@ const RoommateForm = () => {
                 Tiếp theo
               </button>
             )}
-            {step === 3 && (
-              <button type="submit">Tìm người phù hợp</button>
-            )}
+            {step === 3 && <button type="submit">Tìm người phù hợp</button>}
           </div>
         </form>
       </div>

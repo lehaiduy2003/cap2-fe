@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import moment from "moment"; // Import moment.js
 import "./Storage.css"; // Import CSS styles for the component
+import { BASE_API_URL } from "../../constants";
 
 /**
  * Component hiển thị chi tiết hợp đồng.
- * 
+ *
  * @param {string} invoiceId - ID của hợp đồng cần hiển thị.
  * @param {function} onClose - Hàm đóng modal.
  */
@@ -19,14 +20,14 @@ const InvoiceDetails = ({ invoiceId, onClose }) => {
       setLoading(true);
       try {
         // Fetch contract details
-        const response = await fetch(`http://localhost:8080/api/contracts/${id}`, {
+        const response = await fetch(`${BASE_API_URL}/api/contracts/${id}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch contract details');
+          throw new Error("Failed to fetch contract details");
         }
 
         const data = await response.json();
@@ -37,11 +38,14 @@ const InvoiceDetails = ({ invoiceId, onClose }) => {
 
         // Fetch tenant information
         if (contract.tenantId) {
-          const tenantResponse = await fetch(`http://localhost:8080/owner/get-users/${contract.tenantId}`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            },
-          });
+          const tenantResponse = await fetch(
+            `${BASE_API_URL}/owner/get-users/${contract.tenantId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }
+          );
           if (tenantResponse.ok) {
             const tenantData = await tenantResponse.json();
             if (tenantData.usersList && tenantData.usersList.length > 0) {
@@ -52,7 +56,7 @@ const InvoiceDetails = ({ invoiceId, onClose }) => {
 
         // Fetch room information
         if (contract.roomId) {
-          const roomResponse = await fetch(`http://localhost:8080/api/rooms/${contract.roomId}`, {
+          const roomResponse = await fetch(`${BASE_API_URL}/api/rooms/${contract.roomId}`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("authToken")}`,
             },
@@ -65,7 +69,7 @@ const InvoiceDetails = ({ invoiceId, onClose }) => {
           }
         }
       } catch (error) {
-        console.error('Error fetching invoice details:', error);
+        console.error("Error fetching invoice details:", error);
       } finally {
         setLoading(false);
       }
@@ -91,7 +95,9 @@ const InvoiceDetails = ({ invoiceId, onClose }) => {
       <div className="modal1">
         <div className="modal-content1">
           <p>Không thể tải thông tin chi tiết hợp đồng.</p>
-          <button type="button" onClick={onClose}>Đóng</button>
+          <button type="button" onClick={onClose}>
+            Đóng
+          </button>
         </div>
       </div>
     );
@@ -100,7 +106,9 @@ const InvoiceDetails = ({ invoiceId, onClose }) => {
   return (
     <div className="modal1">
       <div className="modal-content1">
-        <span className="close" onClick={onClose}>&times;</span>
+        <span className="close" onClick={onClose}>
+          &times;
+        </span>
         <h2>Chi Tiết Hợp Đồng</h2>
 
         <div className="invoice-container">
@@ -114,8 +122,12 @@ const InvoiceDetails = ({ invoiceId, onClose }) => {
             {roomInfo ? (
               <div className="room-info">
                 {/* <p><strong>ID Phòng:</strong> {roomInfo.id}</p> */}
-                <p><strong>Địa chỉ:</strong> {roomInfo.addressDetails}</p>
-                <p><strong>Giá phòng:</strong> {roomInfo.price?.toLocaleString()} VNĐ/Tháng</p>
+                <p>
+                  <strong>Địa chỉ:</strong> {roomInfo.addressDetails}
+                </p>
+                <p>
+                  <strong>Giá phòng:</strong> {roomInfo.price?.toLocaleString()} VNĐ/Tháng
+                </p>
               </div>
             ) : (
               <p>Đang tải thông tin phòng...</p>
@@ -127,9 +139,15 @@ const InvoiceDetails = ({ invoiceId, onClose }) => {
             {tenantInfo ? (
               <div className="tenant-info">
                 {/* <p><strong>ID Người thuê:</strong> {tenantInfo.id}</p> */}
-                <p><strong>Tên người thuê:</strong> {tenantInfo.fullName}</p>
-                <p><strong>Email:</strong> {tenantInfo.email}</p>
-                <p><strong>Số điện thoại:</strong> {tenantInfo.phone}</p>
+                <p>
+                  <strong>Tên người thuê:</strong> {tenantInfo.fullName}
+                </p>
+                <p>
+                  <strong>Email:</strong> {tenantInfo.email}
+                </p>
+                <p>
+                  <strong>Số điện thoại:</strong> {tenantInfo.phone}
+                </p>
               </div>
             ) : (
               <p>Đang tải thông tin người thuê...</p>
@@ -139,17 +157,32 @@ const InvoiceDetails = ({ invoiceId, onClose }) => {
           <div className="invoice-section">
             <h3>Thông tin hợp đồng</h3>
             <div className="contract-info">
-              <p><strong>Ngày bắt đầu:</strong> {invoice.startDate ? moment(invoice.startDate).format("DD/MM/YYYY") : ""}</p>
-              <p><strong>Ngày kết thúc:</strong> {invoice.endDate ? moment(invoice.endDate).format("DD/MM/YYYY") : ""}</p>
-              <p><strong>Giá thuê mỗi tháng:</strong> {invoice.pricePerMonth ? invoice.pricePerMonth.toLocaleString() : ""} VNĐ</p>
-              <p><strong>Trạng thái:</strong> {
-                invoice.status === "ACTIVE" ? "Đang hoạt động" :
-                invoice.status === "EXPIRED" ? "Đã hết hạn" :
-                invoice.status === "CANCELLED" ? "Đã hủy" :
-                invoice.status === "REJECTED" ? "Đã từ chối" :
-                invoice.status === "PENDING" ? "Đang chờ" :
-                invoice.status
-              }</p>
+              <p>
+                <strong>Ngày bắt đầu:</strong>{" "}
+                {invoice.startDate ? moment(invoice.startDate).format("DD/MM/YYYY") : ""}
+              </p>
+              <p>
+                <strong>Ngày kết thúc:</strong>{" "}
+                {invoice.endDate ? moment(invoice.endDate).format("DD/MM/YYYY") : ""}
+              </p>
+              <p>
+                <strong>Giá thuê mỗi tháng:</strong>{" "}
+                {invoice.pricePerMonth ? invoice.pricePerMonth.toLocaleString() : ""} VNĐ
+              </p>
+              <p>
+                <strong>Trạng thái:</strong>{" "}
+                {invoice.status === "ACTIVE"
+                  ? "Đang hoạt động"
+                  : invoice.status === "EXPIRED"
+                  ? "Đã hết hạn"
+                  : invoice.status === "CANCELLED"
+                  ? "Đã hủy"
+                  : invoice.status === "REJECTED"
+                  ? "Đã từ chối"
+                  : invoice.status === "PENDING"
+                  ? "Đang chờ"
+                  : invoice.status}
+              </p>
             </div>
           </div>
 

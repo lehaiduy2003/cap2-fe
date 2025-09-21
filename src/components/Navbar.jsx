@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Link, useLocation } from "react-router-dom";
-import SockJS from 'sockjs-client';
-import * as Stomp from 'stompjs';
+import SockJS from "sockjs-client";
+import * as Stomp from "stompjs";
 import "../styles/Navbar.css";
 import trash from "../assets/trash.png";
 // import chatbox from "../assets/chatbox.png";
@@ -14,10 +14,9 @@ import friends from "../assets/high-five.png";
 import living from "../assets/living.png";
 // import home_icon from "../assets/house.png";
 import bell from "../assets/bell.png";
-import messageIcon from "../assets/message-icon.png";
+import { BASE_API_URL } from "../constants";
 
 function Navbar() {
-  
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -32,29 +31,26 @@ function Navbar() {
   // Function to translate notification type to Vietnamese
   const translateNotificationType = (type) => {
     const translations = {
-      'RENT_REQUEST_CREATED': 'Yêu cầu thuê phòng mới',
-      'RENT_REQUEST_APPROVED': 'Yêu cầu thuê phòng được chấp nhận',
-      'RENT_REQUEST_REJECTED': 'Yêu cầu thuê phòng bị từ chối',
-      'VIEW_CONFIRMED': 'Xác nhận xem phòng',
-      'CONTRACT_CREATED': 'Hợp đồng mới được tạo',
-      'ROOM_HIDDEN': 'Phòng đã bị ẩn',
-      'TENANT_CONFIRMED_VIEWING': 'Người thuê đã xác nhận xem phòng',
-      'RENT_REQUEST_VIEW_ROOM': 'Yêu cầu xem phòng',
-      'OWNER_REJECTED': 'Chủ nhà đã từ chối',
-      'OWNER_APPROVED': 'Chủ nhà đã chấp nhận',
-      'BREACH': 'Vi phạm hợp đồng',
-      'NON_BREACH': 'Không vi phạm hợp đồng'
+      RENT_REQUEST_CREATED: "Yêu cầu thuê phòng mới",
+      RENT_REQUEST_APPROVED: "Yêu cầu thuê phòng được chấp nhận",
+      RENT_REQUEST_REJECTED: "Yêu cầu thuê phòng bị từ chối",
+      VIEW_CONFIRMED: "Xác nhận xem phòng",
+      CONTRACT_CREATED: "Hợp đồng mới được tạo",
+      ROOM_HIDDEN: "Phòng đã bị ẩn",
+      TENANT_CONFIRMED_VIEWING: "Người thuê đã xác nhận xem phòng",
+      RENT_REQUEST_VIEW_ROOM: "Yêu cầu xem phòng",
+      OWNER_REJECTED: "Chủ nhà đã từ chối",
+      OWNER_APPROVED: "Chủ nhà đã chấp nhận",
+      BREACH: "Vi phạm hợp đồng",
+      NON_BREACH: "Không vi phạm hợp đồng",
     };
     return translations[type] || type;
   };
 
-
   // delete notification function
-const handleDeleteNotification = (indexToDelete) => {
-  setNotifications((prev) =>
-    prev.filter((_, index) => index !== indexToDelete)
-  );
-};
+  const handleDeleteNotification = (indexToDelete) => {
+    setNotifications((prev) => prev.filter((_, index) => index !== indexToDelete));
+  };
 
   // Fetch historical notifications
   const fetchNotifications = async (userEmail) => {
@@ -65,7 +61,7 @@ const handleDeleteNotification = (indexToDelete) => {
     }
 
     try {
-        const response = await axios.get("http://localhost:8080/api/notifications", {
+      const response = await axios.get(`${BASE_API_URL}/api/notifications`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -93,7 +89,7 @@ const handleDeleteNotification = (indexToDelete) => {
     }
 
     try {
-      const response = await axios.get("http://localhost:8080/renterowner/get-profile", {
+      const response = await axios.get(`${BASE_API_URL}/renterowner/get-profile`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -103,7 +99,7 @@ const handleDeleteNotification = (indexToDelete) => {
       if (response.data && response.data.statusCode === 200) {
         const { fullName, role, email } = response.data;
         console.log("User profile data:", response.data);
-        
+
         if (!email) {
           console.error("User email is missing from profile data");
           setIsLoggedIn(false);
@@ -137,7 +133,7 @@ const handleDeleteNotification = (indexToDelete) => {
     }
 
     try {
-      const socket = new SockJS("http://localhost:8080/api/socket");
+      const socket = new SockJS(`${BASE_API_URL}/api/socket`);
       const stompClient = Stomp.over(socket);
 
       stompClient.connect(
@@ -151,16 +147,17 @@ const handleDeleteNotification = (indexToDelete) => {
             try {
               const notification = JSON.parse(message.body || "{}");
               console.log("Parsed notification:", notification);
-              setNotifications((prev) => [
-             
-                {
-                  message: notification.message || "No message",
-                  type: notification.type || "Unknown",
-                  userId: notification.userId || "Unknown",
-                  timestamp: new Date().toLocaleTimeString(),
-                },
-                   ...prev,
-              ].slice(0, 5)); // Giới hạn số lượng thông báo hiển thị
+              setNotifications((prev) =>
+                [
+                  {
+                    message: notification.message || "No message",
+                    type: notification.type || "Unknown",
+                    userId: notification.userId || "Unknown",
+                    timestamp: new Date().toLocaleTimeString(),
+                  },
+                  ...prev,
+                ].slice(0, 5)
+              ); // Giới hạn số lượng thông báo hiển thị
             } catch (parseError) {
               console.error("Error parsing WebSocket message:", parseError, "Body:", message.body);
             }
@@ -188,7 +185,7 @@ const handleDeleteNotification = (indexToDelete) => {
     setIsLoggedIn(false);
     setFullName("");
     setNotifications([]);
-    window.location.href = "http://localhost:5173/";
+    window.location.href = "/";
   };
 
   // useEffect để lấy profile và xử lý click ngoài
@@ -237,12 +234,12 @@ const handleDeleteNotification = (indexToDelete) => {
           <span>Bạn cùng phòng</span>
         </Link>
         <div className="group relative">
-          <button onClick={() => window.location.href = '/chat'}>
+          <button onClick={() => (window.location.href = "/chat")}>
             <svg
-              stroke-linejoin="round"
-              stroke-linecap="round"
+              strokeLinejoin="round"
+              strokeLinecap="round"
               stroke="currentColor"
-              stroke-width="2"
+              strokeWidth="2"
               viewBox="0 0 24 24"
               height="44"
               width="44"
@@ -253,14 +250,10 @@ const handleDeleteNotification = (indexToDelete) => {
               <path fill="none" d="M0 0h24v24H0z" stroke="none"></path>
               <path d="M8 9h8"></path>
               <path d="M8 13h6"></path>
-              <path
-                d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z"
-              ></path>
+              <path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z"></path>
             </svg>
           </button>
-          <span
-            className="absolute -top-14 left-[50%] -translate-x-[50%] z-20 origin-left scale-0 px-3 rounded-lg border border-gray-300 bg-white py-2 text-sm font-bold shadow-md transition-all duration-300 ease-in-out group-hover:scale-100"
-          >
+          <span className="absolute -top-14 left-[50%] -translate-x-[50%] z-20 origin-left scale-0 px-3 rounded-lg border border-gray-300 bg-white py-2 text-sm font-bold shadow-md transition-all duration-300 ease-in-out group-hover:scale-100">
             Comment <span> </span>
           </span>
         </div>
@@ -268,9 +261,12 @@ const handleDeleteNotification = (indexToDelete) => {
           <>
             {/* Bell notification */}
             <div className="notification-wrapper" ref={notificationRef}>
-              <div className="notification-bell" onClick={() => setNotificationOpen(!notificationOpen)}>
-                 <img src={bell} alt="Notifications" />
-                  <span>{notifications.length}</span> 
+              <div
+                className="notification-bell"
+                onClick={() => setNotificationOpen(!notificationOpen)}
+              >
+                <img src={bell} alt="Notifications" />
+                <span>{notifications.length}</span>
               </div>
               {notificationOpen && (
                 <div className="notification-bell_dropdown">
@@ -284,7 +280,9 @@ const handleDeleteNotification = (indexToDelete) => {
                           <img src={user2} alt="avatar" />
                         </div>
                         <div className="notification-content">
-                          <p className="notification-title">{translateNotificationType(note.type)}</p>
+                          <p className="notification-title">
+                            {translateNotificationType(note.type)}
+                          </p>
                           <p className="notification-message">{note.message}</p>
                           <a
                             href={`https://zalo.me/${note.message.match(/\b0\d{9}\b/)?.[0]}`}
@@ -298,11 +296,14 @@ const handleDeleteNotification = (indexToDelete) => {
                             <span className="notification-time">{note.timestamp}</span>
                           </div>
                         </div>
-                         <button
-                           className="notification-delete-button"
-                           onClick={() => handleDeleteNotification(index)}>
-                          <span className="notification-delete-icon"><img src={trash} alt="" /></span>
-                         </button>
+                        <button
+                          className="notification-delete-button"
+                          onClick={() => handleDeleteNotification(index)}
+                        >
+                          <span className="notification-delete-icon">
+                            <img src={trash} alt="" />
+                          </span>
+                        </button>
                       </div>
                     ))
                   ) : (
@@ -320,11 +321,11 @@ const handleDeleteNotification = (indexToDelete) => {
               {dropdownOpen && (
                 <div className="dropdown-menu" ref={dropdownRef}>
                   <span className="user-name">{fullName}</span>
-                  <button onClick={() => window.location.href = "/profile"}>
+                  <button onClick={() => (window.location.href = "/profile")}>
                     <img src={user2} alt="" /> Hồ sơ
                   </button>
                   {(role === "OWNER" || role === "ADMIN") && (
-                    <button onClick={() => window.location.href = "/dashboard"}>
+                    <button onClick={() => (window.location.href = "/dashboard")}>
                       <img src={dashboard} alt="" className="dashboard-user" /> Bảng điều khiển
                     </button>
                   )}
@@ -337,7 +338,9 @@ const handleDeleteNotification = (indexToDelete) => {
           </>
         ) : (
           <>
-            <Link to="/Register" className="nav-link">Đăng ký</Link>
+            <Link to="/Register" className="nav-link">
+              Đăng ký
+            </Link>
             <Link to="/Login" className="nav-link">
               <button className="get-started-btn">Đăng Nhập</button>
             </Link>
