@@ -35,3 +35,6 @@ export const THEMES = [
 
 export const BASE_API_URL =
     import.meta.env.VITE_PUBLIC_API_URL || 'http://localhost:8080';
+
+export const FINDER_AI_API_URL =
+    import.meta.env.VITE_PUBLIC_FINDER_AI_API_URL || 'http://localhost:8000';
