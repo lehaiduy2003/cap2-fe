@@ -1,0 +1,379 @@
+.location-search-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family:
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.search-section {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.search-section h1 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 2rem;
+    text-align: center;
+}
+
+.search-input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.location-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.location-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.location-input:disabled {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
+.search-button {
+    padding: 12px 24px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    min-width: 120px;
+}
+
+.search-button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.search-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.error-message p {
+    margin: 0;
+}
+
+/* New layout styles */
+.results-container {
+    display: flex;
+    gap: 20px;
+    height: 700px;
+}
+
+.map-section {
+    flex: 0 0 70%;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.location-info-header {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.location-info-header h2 {
+    margin: 0 0 8px 0;
+    color: #007bff;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.location-info-header p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.nearby-section {
+    flex: 0 0 30%;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.nearby-places {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.nearby-places h3 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.places-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 8px;
+}
+
+.places-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.places-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.places-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.places-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.place-card {
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 15px;
+    background: #fafafa;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.place-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: #007bff;
+}
+
+.place-card.selected {
+    border-color: #007bff;
+    background: #f0f7ff;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+}
+
+.place-icon {
+    font-size: 20px;
+    min-width: 24px;
+    text-align: center;
+}
+
+.place-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.place-card h4 {
+    margin: 0 0 6px 0;
+    color: #333;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.place-address {
+    color: #666;
+    font-size: 12px;
+    margin: 4px 0 8px 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.place-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 8px 0;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.place-type {
+    background-color: #007bff;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.place-rating {
+    font-size: 12px;
+    color: #ffa500;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.place-distance {
+    color: #28a745;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 4px 0 0 0;
+}
+
+/* Info window styles */
+.info-window {
+    max-width: 250px;
+}
+
+.info-window h4 {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.info-window p {
+    margin: 4px 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.info-details {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin: 8px 0;
+}
+
+/* Legacy styles - keeping for backward compatibility */
+.results-section {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.location-info {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.location-info h2 {
+    margin: 0 0 15px 0;
+    color: #28a745;
+    font-size: 1.5rem;
+}
+
+.location-details p {
+    margin: 8px 0;
+    font-size: 16px;
+    color: #555;
+}
+
+.location-details strong {
+    color: #333;
+}
+
+.places-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+@media (max-width: 1024px) {
+    .results-container {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .map-section {
+        flex: none;
+        height: 500px;
+    }
+
+    .nearby-section {
+        flex: none;
+        height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .location-search-container {
+        padding: 15px;
+    }
+
+    .search-input-group {
+        flex-direction: column;
+    }
+
+    .search-button {
+        width: 100%;
+    }
+
+    .results-container {
+        gap: 15px;
+    }
+
+    .map-section,
+    .nearby-section {
+        padding: 15px;
+    }
+
+    .map-section {
+        height: 400px;
+    }
+
+    .nearby-section {
+        height: 300px;
+    }
+
+    .search-section h1 {
+        font-size: 1.5rem;
+    }
+
+    .place-card {
+        padding: 12px;
+    }
+
+    .place-icon {
+        font-size: 18px;
+    }
+}

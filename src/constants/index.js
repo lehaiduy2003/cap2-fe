@@ -38,3 +38,6 @@ export const BASE_API_URL =
 
 export const FINDER_AI_API_URL =
     import.meta.env.VITE_PUBLIC_FINDER_AI_API_URL || 'http://localhost:8000';
+
+export const GOOGLE_MAPS_API_KEY =
+    import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';

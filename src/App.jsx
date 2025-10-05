@@ -29,6 +29,7 @@ import ReportPage from './components/Dashboard/ReportPage';
 import Profile from './pages/Profile';
 import { ToastContainer } from 'react-toastify';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import LocationSearch from './pages/LocationSearch';
 
 const App = () => {
     const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
@@ -111,6 +112,7 @@ const App = () => {
                 <Route path='/dashboard/*' element={<Dashboard />} />
                 <Route path='/profile' element={<Profile />} />
                 <Route path='/chat' element={<ChatPage2 />} />
+                <Route path='/location' element={<LocationSearch />} />
 
                 {/* Add other routes here */}
             </Routes>

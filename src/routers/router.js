@@ -5,6 +5,7 @@ import Login from '../pages/Login';
 export const ROUTERS = {
     USER: {
         HOME: '/',
+        LOCATION: '/location',
     },
 };
 
