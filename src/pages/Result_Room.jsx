@@ -11,6 +11,7 @@ import {
     showInfoToast,
 } from '../components/toast';
 import { BASE_API_URL } from '../constants';
+import LocationSummary from '../components/LocationSummary';
 function Result_Room() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -53,6 +54,26 @@ function Result_Room() {
 
         fetchRoomDetails();
     }, [id]);
+
+    // Keyboard navigation for gallery
+    useEffect(() => {
+        const handleKey = (e) => {
+            if (!room) return;
+            if (e.key === 'ArrowLeft') {
+                setSelectedImageIndex((prev) =>
+                    prev === 0 ? imageUrls.length - 1 : prev - 1,
+                );
+            }
+            if (e.key === 'ArrowRight') {
+                setSelectedImageIndex((prev) =>
+                    prev === imageUrls.length - 1 ? 0 : prev + 1,
+                );
+            }
+        };
+        window.addEventListener('keydown', handleKey);
+        return () => window.removeEventListener('keydown', handleKey);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [room, selectedImageIndex]);
 
     const handleReportSubmit = async () => {
         const token = localStorage.getItem('authToken');
@@ -187,233 +208,274 @@ function Result_Room() {
 
     return (
         <div className='result-room'>
-            <div className='breadcrumb'>
-                <Link to='/Room'>Phòng trọ</Link> / <span>Chi tiết phòng</span>
-            </div>
+            <nav className='breadcrumb'>
+                <Link to='/Room'>Phòng trọ</Link>
+                <span className='divider'>/</span>
+                <span>Chi tiết phòng</span>
+            </nav>
 
-            <h1 className='hotel-title'>{room.title}</h1>
-            <p className='hotel-location'>{room.addressDetails}</p>
+            <header className='page-header'>
+                <h1 className='hotel-title'>{room.title}</h1>
+                <p className='hotel-location'>{room.addressDetails}</p>
+            </header>
 
-            <div className='image-gallery'>
-                <div className='main-image'>
-                    <button
-                        className='gallery-nav-btn prev'
-                        onClick={() =>
-                            setSelectedImageIndex((prev) =>
-                                prev === 0 ? imageUrls.length - 1 : prev - 1,
-                            )
-                        }
-                        aria-label='Previous image'
+            {/* Two-column layout: left = images (50%), right = details + actions */}
+            <section className='room-layout'>
+                {/* LEFT: Image gallery */}
+                <div className='left-column'>
+                    <div
+                        className='image-gallery'
+                        aria-label='Thư viện hình ảnh phòng'
                     >
-                        &#8592;
-                    </button>
-                    <img
-                        src={mainImageUrl}
-                        alt='Main Room'
-                        onError={(e) => {
-                            e.target.src = '/default-room.jpg';
-                        }}
-                    />
-                    <button
-                        className='gallery-nav-btn next'
-                        onClick={() =>
-                            setSelectedImageIndex((prev) =>
-                                prev === imageUrls.length - 1 ? 0 : prev + 1,
-                            )
-                        }
-                        aria-label='Next image'
-                    >
-                        &#8594;
-                    </button>
-                </div>
-                <div className='thumbnail-container'>
-                    {imageUrls.map((url, index) => (
                         <div
-                            key={index}
-                            className={`thumbnail ${selectedImageIndex === index ? 'active' : ''}`}
-                            onClick={() => setSelectedImageIndex(index)}
+                            className='main-image'
+                            tabIndex={0}
+                            aria-label='Ảnh lớn của phòng'
                         >
+                            <button
+                                className='gallery-nav-btn prev'
+                                onClick={() =>
+                                    setSelectedImageIndex((prev) =>
+                                        prev === 0
+                                            ? imageUrls.length - 1
+                                            : prev - 1,
+                                    )
+                                }
+                                aria-label='Previous image'
+                            >
+                                &#8592;
+                            </button>
                             <img
-                                src={url}
-                                alt={`Room ${index + 1}`}
+                                src={mainImageUrl}
+                                alt='Main Room'
                                 onError={(e) => {
                                     e.target.src = '/default-room.jpg';
                                 }}
                             />
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            <div className='detail-room'>
-                <div className='detail_about-place'>
-                    <h2>Chi tiết phòng trọ</h2>
-                    <p>{room.description}</p>
-                    <div className='room-details'>
-                        <span>
-                            <strong>Diện tích:</strong> {room.roomSize} m²
-                        </span>
-                        <span>
-                            <img src={bedroom} alt='' />
-                            <strong>Số người:</strong> {room.numBedrooms}
-                        </span>
-                        <span>
-                            <img src={sink} alt='' />
-                            <strong>Phòng tắm:</strong> {room.numBathrooms}
-                        </span>
-                    </div>
-                    <p>
-                        <strong> Có sẵn từ ngày:</strong>{' '}
-                        {new Date(room.availableFrom).toLocaleDateString()}
-                    </p>
-                    <p>
-                        <strong> Phòng trọ trống:</strong>{' '}
-                        {room.isRoomAvailable ? 'CÓ' : 'KHÔNG'}
-                    </p>
-                </div>
-
-                <div className='detail_price-booking'>
-                    <h4>Gửi yêu cầu</h4>
-
-                    <span>{room.price.toLocaleString()}VND/Tháng </span>
-                    {/* <button onClick={() => setShowViewRequestForm(true)}>Gửi yêu cầu xem phòng</button>
-          <button onClick={() => setShowRentalRequestForm(true)}>Gửi yêu cầu thuê phòng</button> */}
-                    <button
-                        onClick={() => {
-                            const token = localStorage.getItem('authToken');
-                            if (!token) {
-                                showInfoToast(
-                                    'Vui lòng đăng nhập để gửi yêu cầu.',
-                                );
-                                navigate('/login');
-                                return;
-                            }
-                            setShowViewRequestForm(true);
-                        }}
-                    >
-                        Gửi yêu cầu xem phòng
-                    </button>
-                    <button
-                        onClick={() => {
-                            const token = localStorage.getItem('authToken');
-                            if (!token) {
-                                showInfoToast(
-                                    'Vui lòng đăng nhập để gửi yêu cầu.',
-                                );
-                                navigate('/login');
-                                return;
-                            }
-                            setShowRentalRequestForm(true);
-                        }}
-                    >
-                        Gửi yêu cầu thuê phòng
-                    </button>
-                </div>
-
-                <button
-                    className='report-button'
-                    onClick={() => {
-                        const token = localStorage.getItem('authToken');
-                        if (!token) {
-                            showInfoToast('Bạn cần đăng nhập để gửi báo cáo.');
-                            navigate('/login');
-                            return;
-                        }
-                        setShowReportForm(true);
-                    }}
-                >
-                    {' '}
-                    <i className='fa-solid fa-flag'> </i> Báo cáo bài viết{' '}
-                </button>
-
-                {showReportForm && (
-                    <div className='report-overlay'>
-                        <div className='report-form'>
-                            <h3 className='text-red-600'>
-                                <i className='fa-solid fa-flag'> </i>{' '}
-                                <b>Báo cáo bài viết</b>
-                            </h3>
-                            <textarea
-                                value={reportReason}
-                                onChange={(e) =>
-                                    setReportReason(e.target.value)
+                            <button
+                                className='gallery-nav-btn next'
+                                onClick={() =>
+                                    setSelectedImageIndex((prev) =>
+                                        prev === imageUrls.length - 1
+                                            ? 0
+                                            : prev + 1,
+                                    )
                                 }
-                                placeholder='Nhập lý do báo cáo...'
-                            />
-                            <div className='report_inside-buttons'>
-                                <button onClick={handleReportSubmit}>
-                                    Gửi báo cáo
-                                </button>
-                                <button
-                                    onClick={() => setShowReportForm(false)}
+                                aria-label='Next image'
+                            >
+                                &#8594;
+                            </button>
+                        </div>
+                        <div className='thumbnail-container'>
+                            {imageUrls.map((url, index) => (
+                                <div
+                                    key={index}
+                                    className={`thumbnail ${selectedImageIndex === index ? 'active' : ''}`}
+                                    onClick={() => setSelectedImageIndex(index)}
+                                    role='button'
+                                    tabIndex={0}
+                                    aria-label={`Xem ảnh ${index + 1}`}
                                 >
-                                    Hủy
-                                </button>
+                                    <img
+                                        src={url}
+                                        alt={`Room ${index + 1}`}
+                                        onError={(e) => {
+                                            e.target.src = '/default-room.jpg';
+                                        }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* RIGHT: Combined details + actions */}
+                <div className='right-column'>
+                    <section className='combined-panel section-card booking-card'>
+                        <div className='combined-header'>
+                            <div className='price-row'>
+                                <div className='price'>
+                                    {room.price.toLocaleString('vi-VN')}{' '}
+                                    <span className='currency'>VND</span>
+                                </div>
+                                <div className='per'>/ tháng</div>
                             </div>
+                            <span
+                                className={`status-badge ${room.isRoomAvailable ? 'available' : 'unavailable'}`}
+                            >
+                                {room.isRoomAvailable
+                                    ? 'Còn trống'
+                                    : 'Hết phòng'}
+                            </span>
                         </div>
-                    </div>
-                )}
 
-                {showViewRequestForm && (
-                    <div className='report-overlay'>
-                        <div className='report-form'>
-                            <h3>Yêu cầu xem phòng</h3>
-                            <textarea
-                                value={viewRequestMessage}
-                                onChange={(e) =>
-                                    setViewRequestMessage(e.target.value)
-                                }
-                                placeholder='Nhập lời nhắn cho chủ phòng...'
-                            />
-                            <div className='report-buttons'>
-                                <button
-                                    className='send-request'
-                                    onClick={handleSendViewRequest}
-                                >
-                                    Gửi yêu cầu
-                                </button>
-                                <button
-                                    onClick={() =>
-                                        setShowViewRequestForm(false)
+                        <p className='room-description'>{room.description}</p>
+                        <div className='room-details'>
+                            <span>
+                                <strong>Diện tích:</strong> {room.roomSize} m²
+                            </span>
+                            <span>
+                                <img src={bedroom} alt='Số người' />
+                                <strong>Số người:</strong> {room.numBedrooms}
+                            </span>
+                            <span>
+                                <img src={sink} alt='Phòng tắm' />
+                                <strong>Phòng tắm:</strong> {room.numBathrooms}
+                            </span>
+                        </div>
+                        <div className='meta-info'>
+                            <p>
+                                <strong>Có sẵn từ ngày:</strong>{' '}
+                                {new Date(
+                                    room.availableFrom,
+                                ).toLocaleDateString('vi-VN')}
+                            </p>
+                        </div>
+
+                        <div className='cta-group'>
+                            <button
+                                onClick={() => {
+                                    const token =
+                                        localStorage.getItem('authToken');
+                                    if (!token) {
+                                        showInfoToast(
+                                            'Vui lòng đăng nhập để gửi yêu cầu.',
+                                        );
+                                        navigate('/login');
+                                        return;
                                     }
-                                >
-                                    Hủy
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {showRentalRequestForm && (
-                    <div className='report-overlay'>
-                        <div className='report-form'>
-                            <h3>Yêu cầu thuê phòng</h3>
-                            <textarea
-                                value={rentalRequestMessage}
-                                onChange={(e) =>
-                                    setRentalRequestMessage(e.target.value)
-                                }
-                                placeholder='Nhập lời nhắn cho chủ phòng...'
-                            />
-                            <div className='report-buttons'>
-                                <button
-                                    className='send-request'
-                                    onClick={handleSendRentalRequest}
-                                >
-                                    Gửi yêu cầu
-                                </button>
-                                <button
-                                    onClick={() =>
-                                        setShowRentalRequestForm(false)
+                                    setShowViewRequestForm(true);
+                                }}
+                                className='primary-cta'
+                            >
+                                Gửi yêu cầu xem phòng
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const token =
+                                        localStorage.getItem('authToken');
+                                    if (!token) {
+                                        showInfoToast(
+                                            'Vui lòng đăng nhập để gửi yêu cầu.',
+                                        );
+                                        navigate('/login');
+                                        return;
                                     }
-                                >
-                                    Hủy
-                                </button>
-                            </div>
+                                    setShowRentalRequestForm(true);
+                                }}
+                                className='secondary-cta'
+                            >
+                                Gửi yêu cầu thuê phòng
+                            </button>
+                            <button
+                                className='report-button'
+                                onClick={() => {
+                                    const token =
+                                        localStorage.getItem('authToken');
+                                    if (!token) {
+                                        showInfoToast(
+                                            'Bạn cần đăng nhập để gửi báo cáo.',
+                                        );
+                                        navigate('/login');
+                                        return;
+                                    }
+                                    setShowReportForm(true);
+                                }}
+                                aria-label='Báo cáo bài viết'
+                            >
+                                <i className='fa-solid fa-flag'> </i> Báo cáo
+                                bài viết
+                            </button>
+                        </div>
+                        {/* Location map + nearby summary */}
+                        <div className='location-wrapper'>
+                            <LocationSummary
+                                address={room.addressDetails || room.location}
+                            />
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            {showReportForm && (
+                <div className='report-overlay'>
+                    <div className='report-form'>
+                        <h3 className='text-red-600'>
+                            <i className='fa-solid fa-flag'> </i>{' '}
+                            <b>Báo cáo bài viết</b>
+                        </h3>
+                        <textarea
+                            value={reportReason}
+                            onChange={(e) => setReportReason(e.target.value)}
+                            placeholder='Nhập lý do báo cáo...'
+                        />
+                        <div className='report_inside-buttons'>
+                            <button onClick={handleReportSubmit}>
+                                Gửi báo cáo
+                            </button>
+                            <button onClick={() => setShowReportForm(false)}>
+                                Hủy
+                            </button>
                         </div>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
+
+            {showViewRequestForm && (
+                <div className='report-overlay'>
+                    <div className='report-form'>
+                        <h3>Yêu cầu xem phòng</h3>
+                        <textarea
+                            value={viewRequestMessage}
+                            onChange={(e) =>
+                                setViewRequestMessage(e.target.value)
+                            }
+                            placeholder='Nhập lời nhắn cho chủ phòng...'
+                        />
+                        <div className='report-buttons'>
+                            <button
+                                className='send-request'
+                                onClick={handleSendViewRequest}
+                            >
+                                Gửi yêu cầu
+                            </button>
+                            <button
+                                onClick={() => setShowViewRequestForm(false)}
+                            >
+                                Hủy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showRentalRequestForm && (
+                <div className='report-overlay'>
+                    <div className='report-form'>
+                        <h3>Yêu cầu thuê phòng</h3>
+                        <textarea
+                            value={rentalRequestMessage}
+                            onChange={(e) =>
+                                setRentalRequestMessage(e.target.value)
+                            }
+                            placeholder='Nhập lời nhắn cho chủ phòng...'
+                        />
+                        <div className='report-buttons'>
+                            <button
+                                className='send-request'
+                                onClick={handleSendRentalRequest}
+                            >
+                                Gửi yêu cầu
+                            </button>
+                            <button
+                                onClick={() => setShowRentalRequestForm(false)}
+                            >
+                                Hủy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
