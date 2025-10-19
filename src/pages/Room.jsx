@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import room1 from '../assets/room1.jpeg';
 import room2 from '../assets/room2.jpeg';
 import room3 from '../assets/room3.jpeg';
@@ -44,6 +44,7 @@ function Room() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [sortOrder, setSortOrder] = useState(null);
+    const navigate = useNavigate();
     const slides = [
         { image: a1, alt: 'Phòng 1' },
         { image: a2, alt: 'Phòng 2' },
@@ -167,6 +168,43 @@ function Room() {
     return (
         <div className='body'>
             <SearchBar onSortChange={handleSortChange} />
+
+            <div
+                className='map-button-container'
+                style={{
+                    padding: '20px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                }}
+            >
+                <div className='relative mr-2 mb-2'>
+                    <input
+                        type='text'
+                        className='border border-gray-300 rounded-lg py-2 pl-4 pr-10 w-80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                        placeholder='Tìm kiếm phòng...'
+                    />
+                    <button
+                        className='absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500 transition-colors duration-200'
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        <i className='fas fa-search'></i>
+                    </button>
+                </div>
+                <button
+                    onClick={() =>
+                        navigate('/map', { state: { rooms: sortedRooms } })
+                    }
+                    className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200'
+                    style={{ marginBottom: '10px' }}
+                >
+                    <i className='fas fa-map-marked-alt'></i>
+                </button>
+            </div>
 
             <div className='swiper-container1'>
                 <Swiper

@@ -18,7 +18,7 @@ import { useEffect } from 'react';
 import { Loader } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
 import Navbar from './components/Navbar';
-import MapComponent from './components/MapComponent';
+import Map from './pages/Map';
 import Storage from './components/Invoices/Storage';
 import InvoiceForm from './components/Invoices/InvoiceForm';
 import RoommateForm from './components/RoommateForm/RoommateForm';
@@ -58,7 +58,7 @@ const App = () => {
 
     // Define routes where Footer should not be visible
     const hideFooter = [
-        '/maps',
+        '/map',
         '/test1',
         '/dashboard',
         '/dashboard/invoices',
@@ -100,7 +100,7 @@ const App = () => {
                 <Route path='/register' element={<Register />} />
                 <Route path='/chatbox' element={<Chatbox />} />
                 <Route path='/settings' element={<SettingsPage />} />
-                <Route path='/maps' element={<MapComponent />} />
+                <Route path='/map' element={<Map />} />
                 <Route path='/invoices' element={<Storage />} />
                 <Route path='/test1' element={<InvoiceForm />} />
                 <Route path='/roommates' element={<RoommateForm />} />
