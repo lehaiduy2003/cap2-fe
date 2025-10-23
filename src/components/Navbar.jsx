@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { Link, useLocation } from 'react-router-dom';
 import SockJS from 'sockjs-client';
@@ -29,7 +29,7 @@ function Navbar() {
     const stompClientRef = useRef(null);
 
     // Function to translate notification type to Vietnamese
-    const translateNotificationType = (type) => {
+    const translateNotificationType = useCallback((type) => {
         const translations = {
             RENT_REQUEST_CREATED: 'Yêu cầu thuê phòng mới',
             RENT_REQUEST_APPROVED: 'Yêu cầu thuê phòng được chấp nhận',
@@ -45,17 +45,17 @@ function Navbar() {
             NON_BREACH: 'Không vi phạm hợp đồng',
         };
         return translations[type] || type;
-    };
+    }, []);
 
     // delete notification function
-    const handleDeleteNotification = (indexToDelete) => {
+    const handleDeleteNotification = useCallback((indexToDelete) => {
         setNotifications((prev) =>
             prev.filter((_, index) => index !== indexToDelete),
         );
-    };
+    }, []);
 
     // Fetch historical notifications
-    const fetchNotifications = async (userEmail) => {
+    const fetchNotifications = useCallback(async (userEmail) => {
         const token = localStorage.getItem('authToken');
         if (!token || !userEmail) {
             console.log('Missing token or user email for notifications');
@@ -82,59 +82,10 @@ function Navbar() {
         } catch (error) {
             console.error('Error fetching notifications:', error);
         }
-    };
-
-    // Lấy thông tin người dùng và userId để đăng ký WebSocket
-    const fetchUserProfile = async () => {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            console.log('No auth token found');
-            setIsLoggedIn(false);
-            return;
-        }
-
-        try {
-            const response = await axios.get(
-                `${BASE_API_URL}/renterowner/get-profile`,
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    },
-                },
-            );
-
-            if (response.data && response.data.statusCode === 200) {
-                const { fullName, role, email } = response.data;
-                console.log('User profile data:', response.data);
-
-                if (!email) {
-                    console.error('User email is missing from profile data');
-                    setIsLoggedIn(false);
-                    return;
-                }
-
-                setFullName(fullName);
-                setRole(role);
-                setIsLoggedIn(true);
-
-                // Fetch historical notifications using email as identifier
-                await fetchNotifications(email);
-
-                // Kết nối WebSocket sau khi lấy profile
-                connectWebSocket(email);
-            } else {
-                console.error('Invalid response format:', response.data);
-                setIsLoggedIn(false);
-            }
-        } catch (error) {
-            console.error('Error fetching user profile:', error);
-            setIsLoggedIn(false);
-        }
-    };
+    }, []);
 
     // Kết nối WebSocket và đăng ký topic thông báo
-    const connectWebSocket = (userEmail) => {
+    const connectWebSocket = useCallback((userEmail) => {
         if (typeof window === 'undefined' || !userEmail) {
             console.log(
                 'Cannot connect to WebSocket: missing user email or window',
@@ -201,7 +152,56 @@ function Navbar() {
         } catch (error) {
             console.error('Error initializing WebSocket:', error);
         }
-    };
+    }, []);
+
+    // Lấy thông tin người dùng và userId để đăng ký WebSocket
+    const fetchUserProfile = useCallback(async () => {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            console.log('No auth token found');
+            setIsLoggedIn(false);
+            return;
+        }
+
+        try {
+            const response = await axios.get(
+                `${BASE_API_URL}/renterowner/get-profile`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                },
+            );
+
+            if (response.data && response.data.statusCode === 200) {
+                const { fullName, role, email } = response.data;
+                console.log('User profile data:', response.data);
+
+                if (!email) {
+                    console.error('User email is missing from profile data');
+                    setIsLoggedIn(false);
+                    return;
+                }
+
+                setFullName(fullName);
+                setRole(role);
+                setIsLoggedIn(true);
+
+                // Fetch historical notifications using email as identifier
+                await fetchNotifications(email);
+
+                // Kết nối WebSocket sau khi lấy profile
+                connectWebSocket(email);
+            } else {
+                console.error('Invalid response format:', response.data);
+                setIsLoggedIn(false);
+            }
+        } catch (error) {
+            console.log('Error fetching user profile:', error);
+            setIsLoggedIn(false);
+        }
+    }, [fetchNotifications, connectWebSocket]);
 
     // Xử lý đăng xuất
     const handleLogout = () => {
@@ -245,7 +245,7 @@ function Navbar() {
                 });
             }
         };
-    }, []);
+    }, [fetchUserProfile]);
 
     // Ẩn Navbar trên trang Login và Register
     if (location.pathname === '/Login' || location.pathname === '/Register') {

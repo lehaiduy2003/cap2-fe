@@ -1,4 +1,4 @@
-import React from 'react';
+// React import not required in newer JSX transforms
 import './css/ReportTable.css';
 
 const ReportTable = ({ reports, onView }) => {

@@ -1,18 +1,16 @@
 import { useState } from 'react';
 import '../styles/Login.css';
-import { useNavigate } from 'react-router-dom';
-import logo from '../assets/logo.png'; // Import logo nếu cần
-import building from '../assets/4k_building.mp4'; // Import icon nếu cần
-import { showErrorToast, showSuccessToast } from '../components/toast'; // Import toast thông báo
+import { Link } from 'react-router-dom';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { showErrorToast, showSuccessToast } from '../components/toast';
 import { BASE_API_URL } from '../constants';
 
 export default function Login() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [forgotPassword, setForgotPassword] = useState(false);
     const [email, setEmail] = useState('');
-    const navigate = useNavigate();
+    const [rememberMe, setRememberMe] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -111,122 +109,79 @@ export default function Login() {
     };
 
     return (
-        <div className='login-wrapper'>
-            {/* Video nền động */}
-            <video autoPlay muted loop id='bg-video'>
-                <source src={building} type='video/mp4' />
-                Trình duyệt của bạn không hỗ trợ video.
-            </video>
-
-            {/* Overlay tối nhẹ trên video */}
-            <div className='video-overlay'></div>
-
-            {/* Nội dung chính */}
+        <div className='login-page'>
             <div className='login-container'>
-                <div className='login-box'>
-                    <div className='login-image'>
-                        <img
-                            src={logo}
-                            className='logo'
-                            alt='Modern Apartment'
-                        />
-                        <div className='overlay'>
-                            <h1>RoomieGo</h1>
-                        </div>
+                <div className='login-card'>
+                    <div className='login-header'>
+                        <h1 className='login-title'>
+                            Login
+                            <span className='title-underline'></span>
+                        </h1>
                     </div>
-                    <div className='login-form'>
-                        {forgotPassword ? (
-                            <>
-                                <h2>Quên mật khẩu</h2>
-                                <form onSubmit={forgotPassword}>
-                                    <div className='form-group'>
-                                        <label>Nhập email của bạn</label>
-                                        <input
-                                            type='email'
-                                            placeholder='Email'
-                                            value={email}
-                                            onChange={(e) =>
-                                                setEmail(e.target.value)
-                                            }
-                                            required
-                                        />
-                                    </div>
-                                    <button type='submit' className='login-btn'>
-                                        Gửi yêu cầu
-                                    </button>
-                                </form>
-                                <button
-                                    className='back-btn'
-                                    onClick={() => setForgotPassword(false)}
-                                >
-                                    Quay lại đăng nhập
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <h2>Đăng nhập tài khoản</h2>
-                                {error && (
-                                    <p className='error-message'>{error}</p>
+
+                    {error && <div className='error-message'>{error}</div>}
+
+                    <form onSubmit={handleSubmit} className='login-form'>
+                        <div className='input-group'>
+                            <Mail className='input-icon' />
+                            <input
+                                type='email'
+                                placeholder='Enter your email'
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div className='input-group'>
+                            <Lock className='input-icon' />
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder='Confirm a password'
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            <button
+                                type='button'
+                                className='password-toggle'
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? (
+                                    <EyeOff size={16} />
+                                ) : (
+                                    <Eye size={16} />
                                 )}
-                                <form onSubmit={handleSubmit}>
-                                    <div className='form-group'>
-                                        <label>Tên đăng nhập</label>
-                                        <input
-                                            type='email'
-                                            placeholder='Email'
-                                            value={email}
-                                            onChange={(e) =>
-                                                setEmail(e.target.value)
-                                            }
-                                            required
-                                        />
-                                    </div>
-                                    <div className='form-group password-wrapper'>
-                                        <label>Mật khẩu</label>
-                                        <input
-                                            type={
-                                                showPassword
-                                                    ? 'text'
-                                                    : 'password'
-                                            }
-                                            placeholder='Pass'
-                                            value={password}
-                                            onChange={(e) =>
-                                                setPassword(e.target.value)
-                                            }
-                                            required
-                                        />
-                                        <i
-                                            className='toggle-password fas fa-eye'
-                                            onClick={() =>
-                                                setShowPassword(!showPassword)
-                                            }
-                                            style={{ cursor: 'pointer' }}
-                                        ></i>
-                                    </div>
-                                    <div className='forgot-password'>
-                                        <a
-                                            href='#quenmatkhau'
-                                            onClick={() =>
-                                                setForgotPassword(true)
-                                            }
-                                        >
-                                            Quên mật khẩu?
-                                        </a>
-                                    </div>
-                                    <button type='submit' className='login-btn'>
-                                        Đăng nhập
-                                    </button>
-                                </form>
-                                <div className='create-account'>
-                                    <button
-                                        onClick={() => navigate('/Register')}
-                                    >
-                                        Đăng ký tài khoản
-                                    </button>
-                                </div>
-                            </>
-                        )}
+                            </button>
+                        </div>
+
+                        <div className='options-row'>
+                            <div className='remember-me'>
+                                <input
+                                    type='checkbox'
+                                    id='remember'
+                                    checked={rememberMe}
+                                    onChange={(e) =>
+                                        setRememberMe(e.target.checked)
+                                    }
+                                />
+                                <label htmlFor='remember'>Remember me</label>
+                            </div>
+                            <div className='forgot-password'>
+                                <Link to='/forgot-password'>
+                                    Forgot password?
+                                </Link>
+                            </div>
+                        </div>
+
+                        <button type='submit' className='login-btn'>
+                            Login Now
+                        </button>
+                    </form>
+
+                    <div className='signup-link'>
+                        <span>Don&apos;t have an account? </span>
+                        <Link to='/register'>Signup now</Link>
                     </div>
                 </div>
             </div>

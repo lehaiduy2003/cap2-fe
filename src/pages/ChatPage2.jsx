@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import SockJS from 'sockjs-client';
 import { over } from 'stompjs';
@@ -15,17 +15,45 @@ const ChatPage2 = () => {
     const chatContainerRef = useRef(null);
 
     // Initialize state
-    const [username] = useState(localStorage.getItem('chat-username'));
-    const [selectedUser, setSelectedUser] = useState(
-        JSON.parse(localStorage.getItem('selectedUser')) ||
-            location.state?.selectedUser ||
-            null,
-    );
-    const [receiver, setReceiver] = useState(
-        localStorage.getItem('selectedUserEmail') ||
-            location.state?.selectedUser?.email ||
-            '',
-    );
+    const [username] = useState(() => {
+        try {
+            return localStorage.getItem('chat-username') || '';
+        } catch (error) {
+            console.error('Error reading username from localStorage:', error);
+            return '';
+        }
+    });
+
+    const [selectedUser, setSelectedUser] = useState(() => {
+        try {
+            const savedUser = localStorage.getItem('selectedUser');
+            return savedUser
+                ? JSON.parse(savedUser)
+                : location.state?.selectedUser || null;
+        } catch (error) {
+            console.error(
+                'Error reading selectedUser from localStorage:',
+                error,
+            );
+            return location.state?.selectedUser || null;
+        }
+    });
+
+    const [receiver, setReceiver] = useState(() => {
+        try {
+            return (
+                localStorage.getItem('selectedUserEmail') ||
+                location.state?.selectedUser?.email ||
+                ''
+            );
+        } catch (error) {
+            console.error(
+                'Error reading selectedUserEmail from localStorage:',
+                error,
+            );
+            return location.state?.selectedUser?.email || '';
+        }
+    });
     const [tab, setTab] = useState(
         localStorage.getItem('selectedUserEmail') ||
             location.state?.selectedUser?.email ||
@@ -71,7 +99,17 @@ const ChatPage2 = () => {
                 connected.current = false;
             }
         };
-    }, []);
+    }, [
+        connect,
+        fetchChatHistory,
+        location.state?.selectedUser,
+        receiver,
+        selectedUser,
+        tab,
+        username,
+        handlePrivateMessage,
+        navigate,
+    ]);
 
     useEffect(() => {
         if (location.state?.selectedUser) {
@@ -93,155 +131,185 @@ const ChatPage2 = () => {
             localStorage.setItem('selectedUserEmail', user.email);
             handlePrivateMessage(user);
         }
-    }, [location.state?.selectedUser]);
+    }, [location.state?.selectedUser, handlePrivateMessage, navigate]);
 
-    const handlePrivateMessage = (user) => {
-        if (!user || !user.email) {
-            console.error('Invalid user data:', user);
-            return;
-        }
-
-        console.log('Handling private message for user:', user);
-        setSelectedUser(user);
-        setReceiver(user.email);
-        setTab(user.email);
-
-        localStorage.setItem('selectedUser', JSON.stringify(user));
-        localStorage.setItem('selectedUserEmail', user.email);
-
-        setChatUsers((prev) => {
-            const newMap = new Map(prev);
-            newMap.set(user.email, user);
-            return newMap;
-        });
-
-        if (!privateChats.has(user.email)) {
-            privateChats.set(user.email, []);
-            setPrivateChats(new Map(privateChats));
-            if (username) {
-                fetchChatHistory(username, user.email);
-            }
-        }
-    };
-
-    const onPrivateMessage = (payload) => {
-        const payloadData = JSON.parse(payload.body);
-        console.log('Private message received:', payloadData);
-
-        if (payloadData.status === 'MESSAGE') {
-            const chatKey =
-                payloadData.senderName === username
-                    ? payloadData.receiverName
-                    : payloadData.senderName;
-            if (!privateChats.has(chatKey)) {
-                privateChats.set(chatKey, []);
-            }
-            const messages = privateChats.get(chatKey);
-            messages.push(payloadData);
-            privateChats.set(chatKey, messages);
-            setPrivateChats(new Map(privateChats));
-        }
-    };
-
-    const onConnect = () => {
-        connected.current = true;
-        console.log('WebSocket connected for user:', username);
-        stompClient.subscribe(`/user/${username}/private`, onPrivateMessage);
-    };
-
-    const onError = (err) => {
-        console.error('WebSocket connection error:', err);
-    };
-
-    const connect = () => {
-        let sock = new SockJS(`${BASE_API_URL}/ws`);
-        stompClient = over(sock);
-        stompClient.connect({}, onConnect, onError);
-    };
-
-    const generateConversationId = (user1Id, user2Id) => {
-        const sortedIds = [user1Id, user2Id].sort();
-        return `conv_${sortedIds.join('_')}`;
-    };
-
-    const sendPrivate = async () => {
-        if (message.trim().length > 0 && receiver && selectedUser) {
-            const senderId = localStorage.getItem('userId');
-            const chatMessage = {
-                senderName: username,
-                senderId: senderId,
-                receiverName: selectedUser.email,
-                message: message,
-                status: 'MESSAGE',
-                type: 'PRIVATE',
-                receiverId: selectedUser.id,
-                conversationId: generateConversationId(
-                    senderId,
-                    selectedUser.id,
-                ),
-            };
-            console.log('Sending private message:', chatMessage);
-            if (!privateChats.has(receiver)) {
-                privateChats.set(receiver, []);
-            }
-            privateChats.get(receiver).push(chatMessage);
-            setPrivateChats(new Map(privateChats));
-            stompClient.send(
-                '/app/private-message',
-                {},
-                JSON.stringify(chatMessage),
-            );
-            setMessage('');
-        }
-    };
-
-    const fetchChatHistory = async (user1, user2) => {
-        if (!user1 || !user2) {
-            console.error('Invalid users for chat history:', user1, user2);
-            return;
-        }
-
-        try {
-            const token = localStorage.getItem('authToken');
-            if (!token) {
-                console.error('No authentication token found');
-                navigate('/login');
+    const handlePrivateMessage = useCallback(
+        (user) => {
+            if (!user || !user.email) {
+                console.error('Invalid user data:', user);
                 return;
             }
 
-            console.log('Fetching chat history for:', user1, user2);
-            const response = await axios.get(
-                `${BASE_API_URL}/messages/api/messages/history/${user1}/${user2}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        Accept: 'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                },
-            );
-            console.log('Chat history response:', response.data);
-            if (response.status === 200) {
-                setPrivateChats((prevChats) => {
-                    prevChats.set(
-                        user2,
-                        response.data.filter((msg) => msg.status === 'MESSAGE'),
-                    );
-                    console.log('Updated privateChats:', prevChats);
-                    return new Map(prevChats);
-                });
+            console.log('Handling private message for user:', user);
+            setSelectedUser(user);
+            setReceiver(user.email);
+            setTab(user.email);
+
+            localStorage.setItem('selectedUser', JSON.stringify(user));
+            localStorage.setItem('selectedUserEmail', user.email);
+
+            setChatUsers((prev) => {
+                const newMap = new Map(prev);
+                newMap.set(user.email, user);
+                return newMap;
+            });
+
+            if (!privateChats.has(user.email)) {
+                privateChats.set(user.email, []);
+                setPrivateChats(new Map(privateChats));
+                if (username) {
+                    fetchChatHistory(username, user.email);
+                }
             }
-        } catch (error) {
-            console.error(
-                'Error fetching chat history:',
-                error.response || error,
-            );
-            if (error.response?.status === 401) {
-                localStorage.removeItem('authToken');
-                navigate('/login');
+        },
+        [username, privateChats, fetchChatHistory],
+    );
+
+    const onPrivateMessage = useCallback(
+        (payload) => {
+            const payloadData = JSON.parse(payload.body);
+            console.log('Private message received:', payloadData);
+
+            if (payloadData.status === 'MESSAGE') {
+                const chatKey =
+                    payloadData.senderName === username
+                        ? payloadData.receiverName
+                        : payloadData.senderName;
+
+                if (!privateChats.has(chatKey)) {
+                    privateChats.set(chatKey, []);
+                }
+                const messages = privateChats.get(chatKey);
+                messages.push(payloadData);
+                privateChats.set(chatKey, messages);
+                setPrivateChats(new Map(privateChats));
+            }
+        },
+        [username, privateChats],
+    );
+
+    const onError = useCallback((err) => {
+        console.error('WebSocket connection error:', err);
+    }, []);
+
+    const onConnect = useCallback(() => {
+        connected.current = true;
+        console.log('WebSocket connected for user:', username);
+        stompClient.subscribe(`/user/${username}/private`, onPrivateMessage);
+    }, [username, onPrivateMessage]);
+
+    const connect = useCallback(() => {
+        let sock = new SockJS(`${BASE_API_URL}/ws`);
+        stompClient = over(sock);
+        stompClient.connect({}, onConnect, onError);
+    }, [onConnect, onError]);
+
+    const generateConversationId = useCallback((user1Id, user2Id) => {
+        const sortedIds = [user1Id, user2Id].sort();
+        return `conv_${sortedIds.join('_')}`;
+    }, []);
+
+    const sendPrivate = useCallback(async () => {
+        if (message.trim().length > 0 && receiver && selectedUser) {
+            try {
+                const senderId = localStorage.getItem('userId');
+                if (!senderId) {
+                    console.error('No user ID found');
+                    return;
+                }
+
+                const chatMessage = {
+                    senderName: username,
+                    senderId: senderId,
+                    receiverName: selectedUser.email,
+                    message: message,
+                    status: 'MESSAGE',
+                    type: 'PRIVATE',
+                    receiverId: selectedUser.id,
+                    conversationId: generateConversationId(
+                        senderId,
+                        selectedUser.id,
+                    ),
+                };
+                console.log('Sending private message:', chatMessage);
+
+                if (!privateChats.has(receiver)) {
+                    privateChats.set(receiver, []);
+                }
+                privateChats.get(receiver).push(chatMessage);
+                setPrivateChats(new Map(privateChats));
+
+                stompClient.send(
+                    '/app/private-message',
+                    {},
+                    JSON.stringify(chatMessage),
+                );
+                setMessage('');
+            } catch (error) {
+                console.error('Error sending private message:', error);
             }
         }
-    };
+    }, [
+        message,
+        receiver,
+        selectedUser,
+        username,
+        privateChats,
+        generateConversationId,
+    ]);
+
+    const fetchChatHistory = useCallback(
+        async (user1, user2) => {
+            if (!user1 || !user2) {
+                console.error('Invalid users for chat history:', user1, user2);
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    console.error('No authentication token found');
+                    navigate('/login');
+                    return;
+                }
+
+                console.log('Fetching chat history for:', user1, user2);
+                const response = await axios.get(
+                    `${BASE_API_URL}/messages/api/messages/history/${user1}/${user2}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                    },
+                );
+                console.log('Chat history response:', response.data);
+                if (response.status === 200) {
+                    setPrivateChats((prevChats) => {
+                        prevChats.set(
+                            user2,
+                            response.data.filter(
+                                (msg) => msg.status === 'MESSAGE',
+                            ),
+                        );
+                        console.log('Updated privateChats:', prevChats);
+                        return new Map(prevChats);
+                    });
+                }
+            } catch (error) {
+                console.error(
+                    'Error fetching chat history:',
+                    error.response || error,
+                );
+                if (error.response?.status === 401) {
+                    localStorage.removeItem('authToken');
+                    navigate('/login');
+                }
+            }
+        },
+        [navigate],
+    );
 
     return (
         <div className='w-full h-full pt-[20px] pb-[100px] gap-4'>

@@ -203,7 +203,14 @@ const LocationSearch = () => {
         if (map && isMapLoaded && locationData) {
             createMarkers(map);
         }
-    }, [map, isMapLoaded, locationData, getPlaceIcon, setSelectedPlace]);
+    }, [
+        map,
+        isMapLoaded,
+        locationData,
+        getPlaceIcon,
+        setSelectedPlace,
+        markers,
+    ]);
 
     return (
         <div className='location-search-container'>

@@ -1,4 +1,3 @@
-import React, { useRef, useState } from 'react';
 // Import Swiper React components
 import { Link } from 'react-router-dom';
 
@@ -7,15 +6,14 @@ import Room from '../assets/minimal.jpg';
 import Room2 from '../assets/minimal2.jpg';
 import Room3 from '../assets/openly.jpg';
 import Room4 from '../assets/room4.jpeg';
-import Arrow from '../assets/right-arrow.png';
 import home_icon from '../assets/house.png';
 // Import Swiper styles
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination, Navigation, Virtual } from 'swiper/modules';
+import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
-import { icon } from '@fortawesome/fontawesome-svg-core';
+// fontawesome icon import not used
 import videoSrc from '../assets/4k_building.mp4'; // Import video file
 export default function App() {
     return (

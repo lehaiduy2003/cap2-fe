@@ -1,9 +1,18 @@
 import { useState } from 'react';
-import '../styles/Login.css';
 import '../styles/Register.css';
-import { useNavigate } from 'react-router-dom';
-import bulding from '../assets/4k_building.mp4'; // Import icon nếu cần
-import { showSuccessToast } from '../components/toast'; // Import toast thông báo
+import { useNavigate, Link } from 'react-router-dom';
+import {
+    User,
+    Mail,
+    Lock,
+    Eye,
+    EyeOff,
+    Phone,
+    Calendar,
+    Users,
+    FileText,
+} from 'lucide-react';
+import { showSuccessToast } from '../components/toast';
 import { BASE_API_URL } from '../constants';
 
 export default function Register() {
@@ -19,6 +28,7 @@ export default function Register() {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [fullName, setFullName] = useState('');
     const [phone, setPhone] = useState('');
     const [gender, setGender] = useState('');
@@ -27,11 +37,25 @@ export default function Register() {
     const [role, setRole] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [acceptTerms, setAcceptTerms] = useState(false);
 
     const navigate = useNavigate();
 
     const handleRegister = async (e) => {
         e.preventDefault();
+
+        if (!acceptTerms) {
+            setError('Vui lòng chấp nhận điều khoản và điều kiện.');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            setError('Mật khẩu xác nhận không khớp.');
+            return;
+        }
+
         const phoneRegex = /^[0-9]{10,}$/;
         if (!phoneRegex.test(phone)) {
             setError(
@@ -39,6 +63,7 @@ export default function Register() {
             );
             return;
         }
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setError('Email không hợp lệ. Vui lòng nhập đúng định dạng.');
@@ -60,6 +85,7 @@ export default function Register() {
             );
             return;
         }
+
         const today = new Date();
         const birthDate = new Date(dob);
         let age = today.getFullYear() - birthDate.getFullYear();
@@ -104,12 +130,14 @@ export default function Register() {
             setError('');
             setEmail('');
             setPassword('');
+            setConfirmPassword('');
             setFullName('');
             setPhone('');
             setGender('');
             setDob('');
             setBio('');
             setRole('');
+            setAcceptTerms(false);
 
             showSuccessToast('Đăng ký thành công!');
 
@@ -127,198 +155,187 @@ export default function Register() {
     };
 
     return (
-        <div className='login-wrapper'>
-            <video autoPlay muted loop id='bg-video'>
-                <source src={bulding} type='video/mp4' />
-                Trình duyệt của bạn không hỗ trợ video.
-            </video>
-
-            <div className='video-overlay'></div>
-
+        <div className='register-page'>
             <div className='register-container'>
-                <div className='register-box'>
-                    <div className='login-image'>
-                        <img
-                            src='https://storage.googleapis.com/a1aa/image/pIX598hLKNAAlo-PMfaRY2XfJQXo-I6fQbAqm6H-2T4.jpg'
-                            alt='Modern Apartment'
-                        />
-                        <div className='overlay'>
-                            <h1>RoomieGo</h1>
-                        </div>
+                <div className='register-card'>
+                    <div className='register-header'>
+                        <h1 className='register-title'>
+                            Đăng Ký Tài Khoản
+                            <span className='title-underline'></span>
+                        </h1>
                     </div>
-                    <div className='login-form'>
-                        <h2>Đăng ký tài khoản</h2>
-                        {error && <p className='error-message'>{error}</p>}
-                        {success && (
-                            <p className='success-message'>{success}</p>
-                        )}
-                        <form onSubmit={handleRegister}>
-                            <div className='form-row'>
-                                <div className='form-group'>
-                                    <label>Họ và tên</label>
-                                    <input
-                                        type='text'
-                                        placeholder='Full Name'
-                                        value={fullName}
-                                        onChange={(e) =>
-                                            setFullName(e.target.value)
-                                        }
-                                        required
-                                    />
-                                </div>
-                            </div>
 
-                            <div className='form-row'>
-                                <div className='form-group'>
-                                    <label>Email</label>
-                                    <input
-                                        type='email'
-                                        placeholder='Email'
-                                        value={email}
-                                        onChange={(e) =>
-                                            setEmail(e.target.value)
-                                        }
-                                        required
-                                    />
-                                </div>
-                                <div className='form-group'>
-                                    <label>Mật khẩu</label>
-                                    <input
-                                        type='password'
-                                        placeholder='Password'
-                                        value={password}
-                                        onChange={(e) =>
-                                            setPassword(e.target.value)
-                                        }
-                                        required
-                                    />
-                                    <small
-                                        style={{
-                                            color: 'white',
-                                            fontSize: '12px',
-                                        }}
-                                    >
-                                        Mật khẩu cần ít nhất 6 ký tự, bao gồm 1
-                                        chữ hoa và 1 ký tự đặc biệt.
-                                    </small>
-                                </div>
-                            </div>
+                    {error && <div className='error-message'>{error}</div>}
+                    {success && (
+                        <div className='success-message'>{success}</div>
+                    )}
 
-                            <div className='form-row'>
-                                <div className='form-group'>
-                                    <label>Ngày sinh</label>
-                                    <input
-                                        type='date'
-                                        value={dob}
-                                        onChange={(e) => setDob(e.target.value)}
-                                        required
-                                    />
-                                </div>
-                                <div className='form-group'>
-                                    <label>Giới tính</label>
-                                    <select
-                                        value={gender}
-                                        onChange={(e) =>
-                                            setGender(e.target.value)
-                                        }
-                                        required
-                                        style={{
-                                            color: '#000',
-                                            backgroundColor: '#fff',
-                                            border: '1px solid #ccc',
-                                            padding: '8px',
-                                            borderRadius: '4px',
-                                            fontSize: '14px',
-                                        }}
-                                    >
-                                        <option value=''>
-                                            -- Chon gioi tinh --
-                                        </option>
-                                        {genderOptions.map((optionGender) => (
-                                            <option
-                                                key={optionGender.value}
-                                                value={optionGender.value}
-                                            >
-                                                {optionGender.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
+                    <form onSubmit={handleRegister} className='register-form'>
+                        <div className='input-group'>
+                            <User className='input-icon' />
+                            <input
+                                type='text'
+                                placeholder='Nhập họ và tên'
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                required
+                            />
+                        </div>
 
-                            <div className='form-row'>
-                                <div className='form-group'>
-                                    <label>Vai trò</label>
-                                    <select
-                                        value={role}
-                                        onChange={(e) =>
-                                            setRole(e.target.value)
-                                        }
-                                        required
-                                        style={{
-                                            color: '#000',
-                                            backgroundColor: '#fff',
-                                            border: '1px solid #ccc',
-                                            padding: '8px',
-                                            borderRadius: '4px',
-                                            fontSize: '14px',
-                                        }}
-                                    >
-                                        <option value=''>
-                                            -- Chọn vai trò --
-                                        </option>
-                                        {roleOptions.map((option) => (
-                                            <option
-                                                key={option.value}
-                                                value={option.value}
-                                            >
-                                                {option.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className='form-group'>
-                                    <label>Số điện thoại</label>
-                                    <input
-                                        type='text'
-                                        maxLength='10'
-                                        placeholder='Phone Number'
-                                        value={phone}
-                                        onChange={(e) =>
-                                            setPhone(e.target.value)
-                                        }
-                                        pattern='[0-9]*'
-                                        title='Số điện thoại chỉ được chứa các chữ số.'
-                                        required
-                                    />
-                                </div>
-                            </div>
+                        <div className='input-group'>
+                            <Mail className='input-icon' />
+                            <input
+                                type='email'
+                                placeholder='Nhập địa chỉ email'
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
 
-                            <div className='form-row'>
-                                <div className='form-group' style={{ flex: 1 }}>
-                                    <label>Tiểu sử</label>
-                                    <textarea
-                                        placeholder='Bio'
-                                        value={bio}
-                                        onChange={(e) => setBio(e.target.value)}
-                                        required
-                                        style={{
-                                            color: '#000',
-                                            backgroundColor: '#fff',
-                                            border: '1px solid #ccc',
-                                            padding: '8px',
-                                            borderRadius: '4px',
-                                            fontSize: '14px',
-                                            width: '100%',
-                                        }}
-                                    />
-                                </div>
-                            </div>
-
-                            <button type='submit' className='regis-btn'>
-                                Đăng ký
+                        <div className='input-group'>
+                            <Lock className='input-icon' />
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder='Tạo mật khẩu'
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            <button
+                                type='button'
+                                className='password-toggle'
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? (
+                                    <EyeOff size={16} />
+                                ) : (
+                                    <Eye size={16} />
+                                )}
                             </button>
-                        </form>
+                        </div>
+
+                        <div className='input-group'>
+                            <Lock className='input-icon' />
+                            <input
+                                type={showConfirmPassword ? 'text' : 'password'}
+                                placeholder='Xác nhận mật khẩu'
+                                value={confirmPassword}
+                                onChange={(e) =>
+                                    setConfirmPassword(e.target.value)
+                                }
+                                required
+                            />
+                            <button
+                                type='button'
+                                className='password-toggle'
+                                onClick={() =>
+                                    setShowConfirmPassword(!showConfirmPassword)
+                                }
+                            >
+                                {showConfirmPassword ? (
+                                    <EyeOff size={16} />
+                                ) : (
+                                    <Eye size={16} />
+                                )}
+                            </button>
+                        </div>
+
+                        <div className='input-row'>
+                            <div className='input-group'>
+                                <Phone className='input-icon' />
+                                <input
+                                    type='text'
+                                    placeholder='Số điện thoại'
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className='input-group'>
+                                <Calendar className='input-icon' />
+                                <input
+                                    type='date'
+                                    value={dob}
+                                    onChange={(e) => setDob(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div className='input-row'>
+                            <div className='input-group'>
+                                <Users className='input-icon' />
+                                <select
+                                    value={gender}
+                                    onChange={(e) => setGender(e.target.value)}
+                                    required
+                                >
+                                    <option value=''>Chọn giới tính</option>
+                                    {genderOptions.map((option) => (
+                                        <option
+                                            key={option.value}
+                                            value={option.value}
+                                        >
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className='input-group'>
+                                <FileText className='input-icon' />
+                                <select
+                                    value={role}
+                                    onChange={(e) => setRole(e.target.value)}
+                                    required
+                                >
+                                    <option value=''>Chọn vai trò</option>
+                                    {roleOptions.map((option) => (
+                                        <option
+                                            key={option.value}
+                                            value={option.value}
+                                        >
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className='input-group'>
+                            <textarea
+                                placeholder='Giới thiệu bản thân (tùy chọn)'
+                                value={bio}
+                                onChange={(e) => setBio(e.target.value)}
+                                rows={3}
+                            />
+                        </div>
+
+                        <div className='checkbox-group'>
+                            <input
+                                type='checkbox'
+                                id='terms'
+                                checked={acceptTerms}
+                                onChange={(e) =>
+                                    setAcceptTerms(e.target.checked)
+                                }
+                                required
+                            />
+                            <label htmlFor='terms'>
+                                Tôi đồng ý với tất cả điều khoản và điều kiện
+                            </label>
+                        </div>
+
+                        <button type='submit' className='register-btn'>
+                            Đăng ký ngay
+                        </button>
+                    </form>
+
+                    <div className='login-link'>
+                        <span>Đã có tài khoản? </span>
+                        <Link to='/login'>Đăng nhập ngay</Link>
                     </div>
                 </div>
             </div>

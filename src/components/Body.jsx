@@ -1,4 +1,3 @@
-import React from 'react';
 import '../styles/Body.css';
 import { Link } from 'react-router-dom';
 import room1 from '../assets/room1.jpeg';

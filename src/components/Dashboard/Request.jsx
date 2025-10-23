@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { showErrorToast, showInfoToast } from '../toast';
 import { useNavigate } from 'react-router-dom';
 // import { useNotifications } from "../NotificationComponent/NotificationContext";
@@ -207,9 +207,9 @@ const Request = () => {
             console.log('Fetching requests...');
             fetchRequests();
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, fetchRequests]);
 
-    const fetchRequests = async () => {
+    const fetchRequests = useCallback(async () => {
         if (!isAuthenticated) {
             console.log('Not authenticated, skipping fetch');
             return;
@@ -413,7 +413,7 @@ const Request = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [isAuthenticated, userRole]);
 
     // Pagination calculations
     const totalPages = Math.ceil(requests.length / itemsPerPage);

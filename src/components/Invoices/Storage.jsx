@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './Storage.css';
 import {
     ChevronLeft,
@@ -30,10 +30,10 @@ const Storage = ({ roomId }) => {
     // Fetch contracts when component mounts
     useEffect(() => {
         fetchContracts();
-    }, []);
+    }, [fetchContracts]);
 
     // Function to fetch tenant name
-    const fetchTenantName = async (tenantId) => {
+    const fetchTenantName = useCallback(async (tenantId) => {
         try {
             const token = localStorage.getItem('authToken');
             if (!token) {
@@ -109,10 +109,10 @@ const Storage = ({ roomId }) => {
                 [tenantId]: `Lỗi: ${error.message}`,
             }));
         }
-    };
+    }, []);
 
     // Function to fetch room name
-    const fetchRoomName = async (roomId) => {
+    const fetchRoomName = useCallback(async (roomId) => {
         try {
             const token = localStorage.getItem('authToken');
             if (!token) {
@@ -154,10 +154,10 @@ const Storage = ({ roomId }) => {
                 [roomId]: 'Lỗi tải thông tin',
             }));
         }
-    };
+    }, []);
 
     // Update fetchContracts to fetch room names
-    const fetchContracts = async () => {
+    const fetchContracts = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
@@ -242,7 +242,7 @@ const Storage = ({ roomId }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [fetchTenantName, fetchRoomName, roomNames, tenantNames]);
 
     /**
      * Lọc danh sách hợp đồng dựa trên tìm kiếm.
