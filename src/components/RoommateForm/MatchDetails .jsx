@@ -18,6 +18,9 @@ const MatchDetails = () => {
     useEffect(() => {
         const fetchDetails = async () => {
             const token = localStorage.getItem('authToken');
+            const recommendations = Array.isArray(match)
+                ? match.slice(0, 5)
+                : [match];
             const promises = recommendations.map(async (rec) => {
                 if (!rec.user_id) return rec;
                 const res = await fetch(
@@ -47,9 +50,6 @@ const MatchDetails = () => {
             </div>
         );
     }
-
-    // Get up to 5 recommendations
-    const recommendations = Array.isArray(match) ? match.slice(0, 5) : [match];
 
     const handleCardClick = async (recommendation) => {
         // Log dữ liệu recommendation để debug

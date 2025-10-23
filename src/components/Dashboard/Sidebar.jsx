@@ -1,7 +1,7 @@
 // Sidebar.jsx
-import back from '../../assets/back.png';
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import './css/Sidebar.css';
 
 const Sidebar = () => {
@@ -26,28 +26,38 @@ const Sidebar = () => {
         { label: 'Cài đặt', key: '/' },
     ];
 
+    const handleBackClick = () => {
+        navigate('/room');
+    };
+
     return (
         <div className='sidebar1'>
-            <div className='back-sidebar'>
-                <a href='http://localhost:5173/room'>
-                    <img className='back-sidebar' src={back} alt='' />
-                </a>
+            <div className='sidebar-header'>
+                <button
+                    className='back-button'
+                    onClick={handleBackClick}
+                    title='Quay lại trang chủ'
+                >
+                    <ArrowLeft className='back-icon' />
+                </button>
+                <div className='logo-container'>
+                    <h1 className='logo-text1'>ROOMIEGO</h1>
+                </div>
             </div>
-            <div className='logo-sideBar'>
-                <br />
-                <h1 className='logo-text1'>ROOMIEGO</h1>
-            </div>
-            <ul>
-                {menuItems.map((item) => (
-                    <li
-                        key={item.key}
-                        className={current === item.key ? 'active' : ''}
-                        onClick={() => navigate(`/dashboard/${item.key}`)}
-                    >
-                        {item.label}
-                    </li>
-                ))}
-            </ul>
+
+            <nav className='sidebar-nav'>
+                <ul>
+                    {menuItems.map((item) => (
+                        <li
+                            key={item.key}
+                            className={current === item.key ? 'active' : ''}
+                            onClick={() => navigate(`/dashboard/${item.key}`)}
+                        >
+                            {item.label}
+                        </li>
+                    ))}
+                </ul>
+            </nav>
         </div>
     );
 };

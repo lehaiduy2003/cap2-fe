@@ -1,266 +1,345 @@
-/* Video nền */
-#bg-video {
-    position: fixed;
-    top: 0;
-    left: 0;
-    min-width: 100%;
-    min-height: 100%;
-    object-fit: cover;
+/* Modern Login Page */
+.login-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
-/* Lớp overlay trên video */
-.video-overlay {
-    position: fixed;
+/* Background decoration */
+.login-page::before {
+    content: '';
+    position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.3); /* điều chỉnh độ tối nền */
-    z-index: -2;
+    width: 0;
+    height: 0;
+    border-left: 100px solid transparent;
+    border-right: 100px solid transparent;
+    border-top: 100px solid rgba(255, 255, 255, 0.1);
+    transform: rotate(45deg);
+    z-index: 1;
 }
-/* Container tổng cho Login */
+
 .login-container {
-    margin: 0;
-    background: linear-gradient(
-        135deg,
-        rgba(72, 70, 255, 0.8),
-        rgba(255, 159, 28, 0.8)
-    );
-    background-size: cover;
-    color: #fff;
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+    z-index: 2;
+    margin: 20px auto;
+    min-height: auto;
     display: flex;
     justify-content: center;
-    align-items: center;
-    padding: 50px 0; /* Khoảng cách để không che navbar/footer */
 }
 
-/* Hộp login với Glassmorphism */
-.login-box {
-    background: transparent; /* bỏ nền mờ */
-    backdrop-filter: none; /* tắt hiệu ứng glassmorphism */
-    border: none;
-    display: flex;
-    width: 900px;
-    max-width: 90%;
-    /* background: rgba(255, 255, 255, 0.1); */
-    border-radius: 12px;
-    overflow: hidden;
-    /* box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2); */
-    backdrop-filter: blur(0px);
-    /* border: 2px solid rgba(73, 70, 222, 0.2); */
+.login-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow: visible;
+    min-height: auto;
+    max-height: none;
+    margin: 0 auto;
 }
 
-/* Phần hình ảnh */
-.login-image {
-    flex: 1;
+/* Header */
+.login-header {
+    text-align: left;
+    margin-bottom: 30px;
+}
+
+.login-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0;
     position: relative;
+    display: inline-block;
 }
 
-.login-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.overlay {
+.title-underline {
     position: absolute;
-    bottom: 0;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    /* padding: 5px; */
-    text-align: center;
+    bottom: -8px;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 2px;
 }
 
-.login-image .overlay h1 {
-    font-size: 3rem; /* Kích thước chữ lớn hơn */
-    font-weight: normal; /* Đậm chữ */
-    font-family: 'Kirucoupage', sans-serif; /* Font chữ tùy chỉnh */
-    text-transform: uppercase; /* Viết hoa toàn bộ chữ */
-    background: linear-gradient(
-        to right,
-        #007bff,
-        #00d4ff
-    ); /* Hiệu ứng gradient từ xanh đậm sang xanh nhạt */
-    -webkit-background-clip: text; /* Cắt gradient theo chữ */
-    -webkit-text-fill-color: transparent; /* Làm chữ trong suốt để hiển thị gradient */
-    text-align: center; /* Căn giữa chữ */
-    margin: 0; /* Loại bỏ khoảng cách mặc định */
-    letter-spacing: 0.2rem; /* Khoảng cách giữa các chữ */
-    text-shadow: 2px 4px 8px rgba(0, 0, 0, 0.5); /* Hiệu ứng đổ bóng nhẹ */
-}
-/* Phần form đăng nhập */
+/* Form */
 .login-form {
-    flex: 1;
-    padding: 30px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    color: #fff;
-}
-
-.login-form h2 {
-    font-size: 24px;
-    margin-bottom: 15px;
-    text-align: center;
-}
-
-/* Style cho thông báo lỗi */
-.error-message {
-    color: #ff6b6b;
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-/* Input fields */
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    font-weight: bold;
-    display: block;
-    margin-bottom: 5px;
-    color: #fff;
-}
-
-.form-group input {
+    gap: 20px;
     width: 100%;
-    padding: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.2);
-    color: #fff;
-    border-radius: 5px;
-    transition: all 0.3s;
+    box-sizing: border-box;
 }
 
-.form-group input:focus {
-    border-color: #007bff;
-    background: rgba(255, 255, 255, 0.3);
-}
-
-/* Password toggle icon */
-.password-wrapper {
+/* Input Groups */
+.input-group {
     position: relative;
+    display: flex;
+    align-items: center;
 }
 
-.toggle-password {
+.input-icon {
     position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
+    left: 14px;
+    color: #a0aec0;
+    width: 18px;
+    height: 18px;
+    z-index: 1;
 }
 
-/* Link quên mật khẩu */
-.forgot-password {
-    text-align: right;
-    margin-bottom: 15px;
+.input-group input {
+    width: 100%;
+    padding: 14px 14px 14px 45px;
+    border: none;
+    border-bottom: 2px solid #e2e8f0;
+    background: transparent;
+    font-size: 15px;
+    color: #2d3748;
+    transition: all 0.3s ease;
+    outline: none;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+.input-group input:focus {
+    border-bottom-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.input-group input::placeholder {
+    color: #a0aec0;
+    font-size: 14px;
+}
+
+/* Password Toggle */
+.password-toggle {
+    position: absolute;
+    right: 16px;
+    background: none;
+    border: none;
+    color: #a0aec0;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+    color: #667eea;
+}
+
+/* Options Row */
+.options-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.remember-me input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    accent-color: #667eea;
+    cursor: pointer;
+}
+
+.remember-me label {
+    color: #4a5568;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
 }
 
 .forgot-password a {
-    color: #fff;
+    color: #667eea;
     text-decoration: none;
-    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.3s ease;
 }
 
 .forgot-password a:hover {
-    text-decoration: underline;
+    color: #764ba2;
 }
 
-/* Nút đăng nhập */
-
+/* Login Button */
 .login-btn {
-    position: relative;
-    overflow: hidden; /* Để ẩn phần overlay khi nó bên ngoài nút */
-    background: #007bff; /* Màu nền ban đầu của nút */
-    color: #fff;
-    padding: 12px;
+    background: #667eea;
+    color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 12px;
+    padding: 16px 24px;
+    font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
-    width: 100%;
-    transition: background 0.3s ease-in-out;
-}
-
-/* Tạo overlay cho hiệu ứng chuyển động màu */
-.login-btn::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%; /* Bắt đầu hoàn toàn bên trái */
-    width: 100%;
-    height: 100%;
-    background: #00d4ff; /* Màu khi di chuyển - bạn có thể tùy chỉnh */
-    transform: skewX(-30deg); /* Tạo hiệu ứng góc nghiêng */
-    transition: left 0.5s ease-out; /* Hiệu ứng chuyển vị trí của overlay */
-    z-index: 0; /* Để overlay nằm dưới nội dung nút */
-}
-
-/* Khi hover, overlay di chuyển hết qua nút từ trái sang phải */
-.login-btn:hover::after {
-    left: 100%;
-}
-
-/* Đảm bảo nội dung nút (text, icon, ...) hiển thị trên overlay */
-.login-btn > * {
-    position: relative;
-    z-index: 1;
-}
-
-/* Nút quay lại (cho phần quên mật khẩu) */
-.back-btn {
-    margin-top: 10px;
-    background: #555;
-    color: #fff;
-    padding: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
-    text-align: center;
-    border: none;
-    transition: background 0.3s;
-}
-
-.back-btn:hover {
-    background: #333;
-}
-
-/* Phần đăng ký tài khoản */
-.create-account {
-    text-align: center;
+    transition: all 0.3s ease;
     margin-top: 20px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
-.create-account button {
-    position: relative;
-    overflow: hidden; /* Để ẩn pseudo-element khi nó nằm ngoài nút */
-    padding: 12px;
-    border: none;
-    border-radius: 5px;
-    width: 100%;
-    cursor: pointer;
-    background-color: #007bff; /* Màu nền mặc định */
-    color: #fff;
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    background: #5a67d8;
 }
 
-.create-account button::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%; /* Bắt đầu hoàn toàn bên trái */
-    width: 100%;
-    height: 100%;
-    background: #00d4ff; /* Màu hiển thị khi hover */
-    transform: skewX(-30deg); /* Hiệu ứng góc nghiêng tạo chiều sâu */
-    transition: left 0.5s ease-in-out; /* Thời gian chuyển động của overlay */
-    z-index: 0; /* Để overlay nằm dưới nội dung của nút */
+.login-btn:active {
+    transform: translateY(0);
 }
 
-/* Để nội dung (text, icon) luôn hiển thị trên overlay */
-.create-account button > * {
-    position: relative;
-    z-index: 1;
+/* Signup Link */
+.signup-link {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 14px;
+    color: #4a5568;
 }
 
-.create-account button:hover::after {
-    left: 100%; /* Di chuyển overlay sang bên phải khi hover */
+.signup-link a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.signup-link a:hover {
+    color: #764ba2;
+}
+
+/* Messages */
+.error-message {
+    background: #fed7d7;
+    color: #c53030;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 16px;
+    border-left: 4px solid #e53e3e;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .login-page {
+        padding: 16px;
+        align-items: center;
+        padding-top: 40px;
+        padding-bottom: 40px;
+    }
+
+    .login-container {
+        max-width: 100%;
+        margin: 0 auto;
+        min-height: auto;
+        display: flex;
+        justify-content: center;
+    }
+
+    .login-card {
+        padding: 30px;
+        border-radius: 16px;
+        margin: 0 auto;
+        overflow: visible;
+        min-height: auto;
+    }
+
+    .login-title {
+        font-size: 1.8rem;
+    }
+
+    .login-form {
+        gap: 18px;
+    }
+
+    .input-group input {
+        padding: 12px 12px 12px 40px;
+        font-size: 14px;
+    }
+
+    .input-icon {
+        width: 16px;
+        height: 16px;
+        left: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-page {
+        padding: 12px;
+        align-items: center;
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+
+    .login-container {
+        max-width: 100%;
+        margin: 0 auto;
+        min-height: auto;
+        display: flex;
+        justify-content: center;
+    }
+
+    .login-card {
+        padding: 24px;
+        border-radius: 16px;
+        margin: 0 auto;
+        overflow: visible;
+        min-height: auto;
+    }
+
+    .login-title {
+        font-size: 1.6rem;
+    }
+
+    .title-underline {
+        width: 50px;
+        height: 3px;
+    }
+
+    .login-form {
+        gap: 16px;
+    }
+
+    .input-group input {
+        padding: 10px 10px 10px 35px;
+        font-size: 13px;
+    }
+
+    .input-icon {
+        width: 14px;
+        height: 14px;
+        left: 10px;
+    }
+
+    .login-btn {
+        padding: 12px 18px;
+        font-size: 14px;
+    }
+
+    .options-row {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
 }

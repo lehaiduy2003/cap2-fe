@@ -1,11 +1,11 @@
 .room-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center; /* căn giữa toàn bộ các thẻ */
-    gap: 30px; /* khoảng cách giữa các thẻ */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px; /* Giảm khoảng cách để tối ưu không gian */
     padding: 20px;
-    max-width: 1283px; /* giới hạn chiều rộng tối đa */
+    max-width: 1400px; /* Tăng chiều rộng tối đa */
     margin: 0 auto; /* căn giữa container */
+    justify-items: center; /* Căn giữa các card trong grid */
 }
 
 .text_title {
@@ -44,14 +44,17 @@
 /* Thẻ chính */
 /* Card tổng thể */
 .card {
-    height: 420px;
-    width: 14vw; /* 260px ≈ 18vw trên màn hình desktop ~1440px */
-    border-radius: 2.5vh; /* 20px ≈ 2.5vh nếu chiều cao màn hình khoảng 800px */
+    height: 450px;
+    width: 320px; /* Fixed width thay vì vw để tránh bị bóp */
+    min-width: 280px; /* Đảm bảo chiều rộng tối thiểu */
+    max-width: 350px; /* Giới hạn chiều rộng tối đa */
+    border-radius: 16px;
     background: #fff;
-    box-shadow: 0 1vh 3vh rgba(0, 0, 0, 0.08); /* chuyển shadow theo vh cho đồng nhất */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     transition: all 0.3s ease;
     margin-bottom: 30px;
+    flex-shrink: 0; /* Ngăn card bị co lại */
 }
 
 .card:hover {
@@ -61,16 +64,19 @@
 /* Ảnh phòng */
 .card-image_big {
     width: 100%;
-    height: 160px;
+    height: 200px; /* Tăng chiều cao để tỷ lệ hợp lý hơn */
     object-fit: cover;
+    object-position: center;
 }
 
 /* Nội dung bên trong thẻ */
 .card-body {
-    padding: 14px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
+    height: calc(100% - 200px); /* Đảm bảo nội dung chiếm phần còn lại */
+    justify-content: space-between; /* Phân bố đều nội dung */
 }
 
 /* Phần trên cùng: tiêu đề + trạng thái */
@@ -81,9 +87,10 @@
 }
 
 .card-top h2 {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 700;
     margin: 0;
+    color: #1f2937;
 }
 
 .status-badge {
@@ -104,21 +111,24 @@
 
 /* Địa chỉ */
 .card-address {
-    font-size: 12px;
+    font-size: 13px;
     color: #6b7280;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 6px;
+    line-height: 1.4;
+    flex-wrap: wrap; /* Cho phép xuống dòng nếu cần */
 }
 
 /* Các chỉ số: diện tích, giường, phòng tắm */
 .card-features {
     display: flex;
     justify-content: space-between;
-    border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
-    padding: 8px 0;
-    font-size: 11px;
+    border-top: 1px solid #f3f4f6;
+    border-bottom: 1px solid #f3f4f6;
+    padding: 12px 0;
+    font-size: 12px;
+    margin: 8px 0;
 }
 
 .card-feature-item {
@@ -279,4 +289,71 @@
 }
 .district_find:hover img {
     filter: brightness(1.2) drop-shadow(0 0 4px #1976d2);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .room-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        padding: 16px;
+    }
+
+    .card {
+        width: 300px;
+        height: 430px;
+    }
+}
+
+@media (max-width: 768px) {
+    .room-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+        padding: 12px;
+    }
+
+    .card {
+        width: 280px;
+        height: 420px;
+    }
+
+    .card-image_big {
+        height: 180px;
+    }
+
+    .card-body {
+        padding: 12px;
+        height: calc(100% - 180px);
+    }
+
+    .card-top h2 {
+        font-size: 16px;
+    }
+
+    .card-address {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .room-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 8px;
+    }
+
+    .card {
+        width: 100%;
+        max-width: 350px;
+        height: 400px;
+    }
+
+    .card-image_big {
+        height: 160px;
+    }
+
+    .card-body {
+        padding: 10px;
+        height: calc(100% - 160px);
+    }
 }

@@ -10,8 +10,6 @@ import { BASE_API_URL } from '../../constants';
 const RegisterForm = ({ onClose, onRegister }) => {
     const [formData, setFormData] = useState({
         title: '',
-        location: '',
-        addressDetails: '',
         price: '',
         roomSize: '',
         numBedrooms: '',
@@ -30,6 +28,16 @@ const RegisterForm = ({ onClose, onRegister }) => {
     const [provinces, setProvinces] = useState([]);
     const [districts, setDistricts] = useState([]);
     const [wards, setWards] = useState([]);
+
+    useEffect(() => {
+        try {
+            const provincesData = getProvinces();
+            console.log('Loaded provinces:', provincesData.length);
+            setProvinces(provincesData);
+        } catch (error) {
+            console.error('Error loading provinces:', error);
+        }
+    }, []);
 
     const handleChange = (e) => {
         const { name, value, files, type, checked } = e.target;
@@ -69,8 +77,6 @@ const RegisterForm = ({ onClose, onRegister }) => {
         try {
             const form = new FormData();
             form.append('title', formData.title);
-            form.append('location', formData.location);
-            form.append('addressDetails', formData.addressDetails);
             form.append('price', formData.price);
             form.append('roomSize', formData.roomSize);
             form.append('numBedrooms', formData.numBedrooms);
@@ -115,10 +121,6 @@ const RegisterForm = ({ onClose, onRegister }) => {
         setImagePreviews((prev) => prev.filter((_, i) => i !== index));
     };
 
-    useEffect(() => {
-        setProvinces(getProvinces());
-    }, []);
-
     const handleProvinceChange = (e) => {
         const provinceCode = e.target.value;
         const province = provinces.find((p) => p.code === provinceCode);
@@ -128,9 +130,23 @@ const RegisterForm = ({ onClose, onRegister }) => {
             district: '',
             ward: '',
         }));
+
         if (provinceCode) {
-            setDistricts(getDistrictsByProvinceCode(provinceCode));
-            setWards([]);
+            console.log(`Selected province: ${province?.name}`);
+            try {
+                // Load districts first to get wards
+                const districtsData = getDistrictsByProvinceCode(provinceCode);
+                console.log(
+                    `Loaded districts for ${province?.name}:`,
+                    districtsData.length,
+                );
+                setDistricts(districtsData);
+                setWards([]);
+            } catch (error) {
+                console.error('Error loading districts:', error);
+                setDistricts([]);
+                setWards([]);
+            }
         } else {
             setDistricts([]);
             setWards([]);
@@ -146,7 +162,17 @@ const RegisterForm = ({ onClose, onRegister }) => {
             ward: '',
         }));
         if (districtCode) {
-            setWards(getWardsByDistrictCode(districtCode));
+            try {
+                const wardsData = getWardsByDistrictCode(districtCode);
+                console.log(
+                    `Loaded wards for ${district?.name}:`,
+                    wardsData.length,
+                );
+                setWards(wardsData);
+            } catch (error) {
+                console.error('Error loading wards:', error);
+                setWards([]);
+            }
         } else {
             setWards([]);
         }
@@ -169,8 +195,6 @@ const RegisterForm = ({ onClose, onRegister }) => {
                     <div className='form-section'>
                         {[
                             { label: 'Tiêu đề', name: 'title' },
-                            { label: 'Vị trí', name: 'location' },
-                            { label: 'Địa Chỉ', name: 'addressDetails' },
                             { label: 'Giá', name: 'price' },
                             { label: 'Diện tích phòng', name: 'roomSize' },
                             { label: 'Số phòng ngủ', name: 'numBedrooms' },
@@ -180,7 +204,6 @@ const RegisterForm = ({ onClose, onRegister }) => {
                                 name: 'availableFrom',
                                 type: 'date',
                             },
-                            { label: 'Đường phố', name: 'street' },
                         ].map(({ label, name, type = 'text' }) => (
                             <div className='form-field' key={name}>
                                 <label>{label}</label>
@@ -196,7 +219,9 @@ const RegisterForm = ({ onClose, onRegister }) => {
 
                         {/* Thành phố */}
                         <div className='form-field'>
-                            <label>Thành phố</label>
+                            <label>
+                                Thành phố/Tỉnh ({provinces.length} tỉnh/thành)
+                            </label>
                             <select
                                 style={{
                                     padding: '10px 12px',
@@ -226,7 +251,9 @@ const RegisterForm = ({ onClose, onRegister }) => {
 
                         {/* Quận/Huyện */}
                         <div className='form-field'>
-                            <label>Quận/Huyện</label>
+                            <label>
+                                Quận/Huyện ({districts.length} quận/huyện)
+                            </label>
                             <select
                                 style={{
                                     padding: '10px 12px',
@@ -257,7 +284,7 @@ const RegisterForm = ({ onClose, onRegister }) => {
 
                         {/* Phường/Xã */}
                         <div className='form-field'>
-                            <label>Phường/Xã</label>
+                            <label>Phường/Xã ({wards.length} phường/xã)</label>
                             <select
                                 style={{
                                     padding: '10px 12px',
@@ -283,6 +310,18 @@ const RegisterForm = ({ onClose, onRegister }) => {
                                     </option>
                                 ))}
                             </select>
+                        </div>
+
+                        {/* Đường phố */}
+                        <div className='form-field'>
+                            <label>Đường phố</label>
+                            <input
+                                type='text'
+                                name='street'
+                                placeholder='Đường phố'
+                                value={formData.street || ''}
+                                onChange={handleChange}
+                            />
                         </div>
 
                         <div
