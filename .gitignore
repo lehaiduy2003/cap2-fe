@@ -1,2 +1,10 @@
+# File .gitignore đã gộp
+# Ghi chú: Xóa bất kỳ dòng nào bị trùng lặp
+
+# Từ máy của bạn
 node_modules/
 .env
+
+# Từ GitHub (ví dụ)
+*.log
+*.tmp
