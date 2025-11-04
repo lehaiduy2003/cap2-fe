@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viết Đánh giá</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+        form { display: flex; flex-direction: column; gap: 15px; }
+        form div { display: flex; flex-direction: column; }
+        label { margin-bottom: 5px; font-weight: bold; }
+        input[type="number"], input[type="text"], textarea, select {
+            padding: 10px; border: 1px solid #ccc; border-radius: 4px;
+        }
+        button { padding: 12px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        #status { margin-top: 15px; font-weight: bold; }
+
+        /* CSS cho 5 sao */
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse; /* Đảo ngược để khi hover sao đầu tiên (bên phải) là 1* */
+            justify-content: flex-end;
+        }
+        .star-rating input { display: none; }
+        .star-rating label {
+            font-size: 2rem;
+            color: #ddd;
+            cursor: pointer;
+        }
+        .star-rating input:checked ~ label, /* Các sao BÊN TRÁI của sao được chọn */
+        .star-rating label:hover,
+        .star-rating label:hover ~ label { /* Các sao bên trái của sao đang hover */
+            color: #f5a623;
+        }
+    </style>
+</head>
+<body>
+    <h1>Đánh giá Phòng trọ</h1>
+    <form id="review-form">
+        <hr>
+        
+        <div>
+            <label>Bạn đánh giá An toàn thế nào?</label>
+            <div class="star-rating">
+                <input type="radio" id="starSa5" name="safety_rating" value="5"><label for="starSa5">★</label>
+                <input type="radio" id="starSa4" name="safety_rating" value="4"><label for="starSa4">★</label>
+                <input type="radio" id="starSa3" name="safety_rating" value="3"><label for="starSa3">★</label>
+                <input type="radio" id="starSa2" name="safety_rating" value="2"><label for="starSa2">★</label>
+                <input type="radio" id="starSa1" name="safety_rating" value="1"><label for="starSa1">★</label>
+            </div>
+        </div>
+
+        <div>
+            <label>Bạn đánh giá Vệ sinh thế nào?</label>
+            <div class="star-rating">
+                <input type="radio" id="starCl5" name="cleanliness_rating" value="5"><label for="starCl5">★</label>
+                <input type="radio" id="starCl4" name="cleanliness_rating" value="4"><label for="starCl4">★</label>
+                <input type="radio" id="starCl3" name="cleanliness_rating" value="3"><label for="starCl3">★</label>
+                <input type="radio" id="starCl2" name="cleanliness_rating" value="2"><label for="starCl2">★</label>
+                <input type="radio" id="starCl1" name="cleanliness_rating" value="1"><label for="starCl1">★</label>
+            </div>
+        </div>
+
+        <div>
+            <label>Bạn đánh giá Tiện nghi thế nào?</label>
+            <div class="star-rating">
+                <input type="radio" id="starAm5" name="amenities_rating" value="5"><label for="starAm5">★</label>
+                <input type="radio" id="starAm4" name="amenities_rating" value="4"><label for="starAm4">★</label>
+                <input type="radio" id="starAm3" name="amenities_rating" value="3"><label for="starAm3">★</label>
+                <input type="radio" id="starAm2" name="amenities_rating" value="2"><label for="starAm2">★</label>
+                <input type="radio" id="starAm1" name="amenities_rating" value="1"><label for="starAm1">★</label>
+            </div>
+        </div>
+
+        <div>
+            <label>Bạn đánh giá Chủ nhà thế nào?</label>
+            <div class="star-rating">
+                <input type="radio" id="starHo5" name="host_rating" value="5"><label for="starHo5">★</label>
+                <input type="radio" id="starHo4" name="host_rating" value="4"><label for="starHo4">★</label>
+                <input type="radio" id="starHo3" name="host_rating" value="3"><label for="starHo3">★</label>
+                <input type="radio" id="starHo2" name="host_rating" value="2"><label for="starHo2">★</label>
+                <input type="radio" id="starHo1" name="host_rating" value="1"><label for="starHo1">★</label>
+            </div>
+        </div>
+        
+        <hr>
+
+        <div>
+            <label for="review-text">góp ý thêm:</label>
+            <textarea id="review-text" rows="5"></textarea>
+        </div>
+
+        <button type="submit">Gửi Đánh giá</button>
+    </form>
+    
+    <div id="status"></div>
+    <script src="review.js"></script>
+</body>
+</html>
+</html>

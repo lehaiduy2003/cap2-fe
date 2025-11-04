@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết Phòng trọ</title>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: grid;
+            place-items: center;
+        }
+        .card {
+            width: 100%;
+            max-width: 500px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 24px;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #eee;
+        }
+        .card-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        .card-body {
+            padding: 24px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            border: 8px solid #eee; /* Màu mặc định khi tải */
+        }
+        .score-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+        .score-text {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        /* Trạng thái màu */
+        .score-circle.good { border-color: #28a745; }
+        .score-circle.medium { border-color: #ffc107; }
+        .score-circle.bad { border-color: #dc3545; }
+
+        .score-details ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .score-details li {
+            font-size: 1rem;
+            color: #444;
+            margin-bottom: 12px;
+        }
+        .score-details li b {
+            color: #000;
+            min-width: 40px;
+            display: inline-block;
+        }
+        .card-footer {
+            padding: 16px 24px;
+            background-color: #f9f9f9;
+            border-top: 1px solid #eee;
+            font-size: 0.8rem;
+            color: #777;
+            text-align: center;
+        }
+        
+        /* Trạng thái Loading */
+        #loading-state {
+            text-align: center;
+            padding: 40px;
+            font-weight: 500;
+        }
+        #score-data {
+            display: none; /* Ẩn đi cho đến khi dữ liệu sẵn sàng */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="card-header">
+            <h1>Đánh giá An toàn Khu vực</h1>
+        </div>
+
+        <div id="loading-state">
+            <p>Đang tải dữ liệu, vui lòng chờ...</p>
+        </div>
+        
+        <div id="error-state" style="display: none;">
+            <p style="color: red; text-align: center; padding: 20px;">
+                Lỗi: Không thể tải được dữ liệu an toàn.
+            </p>
+        </div>
+
+        <div id="score-data">
+            <div class="card-body">
+                <div id="score-circle" class="score-circle">
+                    <div>
+                        <span id="overall-score" class="score-value">...</span>
+                        <div id="overall-text" class="score-text">...</div>
+                    </div>
+                </div>
+                <div class="score-details">
+                    <ul>
+                        <li>🛡️ An ninh (Admin): <b id="crime-score">...</b> / 10</li>
+                        <li>👥 Cộng đồng (User): <b id="user-score">...</b> / 10</li>
+                        <li>🌳 Môi trường (POI): <b id="env-score">...</b> / 10</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-footer">
+                Cập nhật lần cuối: <i id="last-updated">...</i>
+            </div>
+        </div>
+    </div>
+
+    <script src="property-detail.js" defer></script>
+
+</body>
+</html>

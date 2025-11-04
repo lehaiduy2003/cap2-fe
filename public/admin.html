@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Thêm Sự cố</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+        form { display: flex; flex-direction: column; gap: 15px; }
+        form div { display: flex; flex-direction: column; }
+        label { margin-bottom: 5px; font-weight: bold; }
+        input, textarea, select {
+            padding: 10px; border: 1px solid #ccc; border-radius: 4px;
+        }
+        button { padding: 12px; background-color: #dc3545; color: white; border: none; cursor: pointer; }
+        #status { margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Admin Panel - Báo cáo Sự cố Mới</h1>
+    <form id="incident-form">
+        <div>
+            <label for="admin-key">Admin API Key:</label>
+            <input type="password" id="admin-key" required>
+            <small>Lấy từ file .env (ADMIN_API_KEY)</small>
+        </div>
+        
+        <hr>
+
+        <div>
+            <label for="property-id">Property ID (Bị ảnh hưởng):</label>
+            <input type="number" id="property-id" required>
+        </div>
+
+        <div>
+            <label for="incident-type">Loại Sự cố:</label>
+            <select id="incident-type" required>
+                <option value="theft">Trộm cắp vặt (theft)</option>
+                <option value="robbery">Cướp giật (robbery)</option>
+                <option value="harassment">Quấy rối (harassment)</option>
+                <option value="noise">Gây rối ồn ào (noise)</option>
+                <option value="accident">Tai nạn (accident)</option>
+                <option value="other">Khác (other)</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="severity">Mức độ Nghiêm trọng:</label>
+            <select id="severity" required>
+                <option value="low">Thấp (low)</option>
+                <option value="medium">Trung bình (medium)</option>
+                <option value="high">Cao (high)</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="incident-date">Ngày xảy ra:</label>
+            <input type="date" id="incident-date" required>
+        </div>
+
+        <div>
+            <label for="notes">Ghi chú (Không bắt buộc):</label>
+            <textarea id="notes" rows="3"></textarea>
+        </div>
+
+        <button type="submit">Gửi Báo cáo</button>
+    </form>
+    
+    <div id="status"></div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

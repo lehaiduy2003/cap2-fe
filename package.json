@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "axios": "^1.12.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "fs-extra": "^11.3.2",
+    "node-cron": "^4.2.1",
+    "pg": "^8.16.3",
+    "rss-parser": "^3.13.0"
+  },
+  "name": "safety_module",
+  "version": "1.0.0",
+  "description": "Module chấm điểm an toàn phòng trọ",
+  "main": "server/apiServer.js",
+  "scripts": {
+    "start": "node server/apiServer.js",
+    "dev": "nodemon server/apiServer.js",
+    "run-job-manually": "node server/runSafetyScoreJob.js"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20" 
+  }
+}
+
+
