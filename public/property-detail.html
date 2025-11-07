@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chi tiết Phòng trọ</title>
-    
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -27,11 +26,7 @@
             background-color: #f9f9f9;
             border-bottom: 1px solid #eee;
         }
-        .card-header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            color: #333;
-        }
+        .card-header h1 { margin: 0; font-size: 1.5rem; color: #333; }
         .card-body {
             padding: 24px;
             display: flex;
@@ -45,39 +40,37 @@
             display: grid;
             place-items: center;
             flex-shrink: 0;
-            border: 8px solid #eee; /* Màu mặc định khi tải */
+            border: 8px solid #eee; 
         }
-        .score-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #333;
-        }
-        .score-text {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #555;
-        }
+        .score-value { font-size: 2.5rem; font-weight: 700; color: #333; }
+        .score-text { font-size: 1rem; font-weight: 600; color: #555; }
         
         /* Trạng thái màu */
         .score-circle.good { border-color: #28a745; }
         .score-circle.medium { border-color: #ffc107; }
         .score-circle.bad { border-color: #dc3545; }
 
-        .score-details ul {
-            list-style: none;
-            padding: 0;
+        .score-details ul { list-style: none; padding: 0; margin: 0; }
+        .score-details li { font-size: 1rem; color: #444; margin-bottom: 12px; }
+        .score-details li b { color: #000; min-width: 40px; display: inline-block; }
+        
+        /* [MỚI] CSS cho phần AI */
+        .ai-summary {
+            padding: 0 24px 24px 24px;
+            border-top: 1px solid #eee;
+            margin-top: -1px; /* Khớp với card-body */
+        }
+        .ai-summary h4 {
+            margin-top: 24px;
+            margin-bottom: 10px;
+        }
+        .ai-summary p {
+            font-style: italic;
+            color: #555;
             margin: 0;
+            line-height: 1.6;
         }
-        .score-details li {
-            font-size: 1rem;
-            color: #444;
-            margin-bottom: 12px;
-        }
-        .score-details li b {
-            color: #000;
-            min-width: 40px;
-            display: inline-block;
-        }
+        
         .card-footer {
             padding: 16px 24px;
             background-color: #f9f9f9;
@@ -87,15 +80,9 @@
             text-align: center;
         }
         
-        /* Trạng thái Loading */
-        #loading-state {
-            text-align: center;
-            padding: 40px;
-            font-weight: 500;
-        }
-        #score-data {
-            display: none; /* Ẩn đi cho đến khi dữ liệu sẵn sàng */
-        }
+        #loading-state, #error-state { text-align: center; padding: 40px; font-weight: 500; }
+        #error-state { display: none; color: red; }
+        #score-data { display: none; }
     </style>
 </head>
 <body>
@@ -105,15 +92,8 @@
             <h1>Đánh giá An toàn Khu vực</h1>
         </div>
 
-        <div id="loading-state">
-            <p>Đang tải dữ liệu, vui lòng chờ...</p>
-        </div>
-        
-        <div id="error-state" style="display: none;">
-            <p style="color: red; text-align: center; padding: 20px;">
-                Lỗi: Không thể tải được dữ liệu an toàn.
-            </p>
-        </div>
+        <div id="loading-state"><p>Đang tải dữ liệu, vui lòng chờ...</p></div>
+        <div id="error-state"></div>
 
         <div id="score-data">
             <div class="card-body">
@@ -131,6 +111,12 @@
                     </ul>
                 </div>
             </div>
+            
+            <div class="ai-summary">
+                <h4>🤖 Nhận xét Tổng quan (AI)</h4>
+                <p id="ai-summary">Đang tạo nhận xét...</p>
+            </div>
+
             <div class="card-footer">
                 Cập nhật lần cuối: <i id="last-updated">...</i>
             </div>

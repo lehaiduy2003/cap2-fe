@@ -232,12 +232,6 @@ async function runJob(targetPropertyId = null) {
         console.log(`[JOB END] Đã đóng kết nối. Job cho ${jobType} hoàn thành.`);
     }
 }
-
-
-// ===========================================
-// EXPORT HÀM ĐỂ CÁC FILE KHÁC SỬ DỤNG
-// ===========================================
-
 module.exports = {
     runJob
 };

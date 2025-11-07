@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "axios": "^1.12.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
@@ -19,8 +20,6 @@
     "run-job-manually": "node server/runSafetyScoreJob.js"
   },
   "devDependencies": {
-    "nodemon": "^2.0.20" 
+    "nodemon": "^2.0.20"
   }
 }
-
-
