@@ -24,9 +24,7 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/server ./server
 COPY --from=build /app/migrations ./migrations
 COPY --from=build /app/package.json ./
-
-# Run migrations
-RUN npm run migration:run
+COPY --from=build /app/entrypoint.sh ./entrypoint.sh
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
@@ -38,4 +36,4 @@ USER nodejs
 EXPOSE 3000
 
 # Start the application
-CMD ["npm", "start"]
+ENTRYPOINT ["sh", "./entrypoint.sh"]
