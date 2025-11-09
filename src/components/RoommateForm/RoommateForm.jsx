@@ -365,13 +365,6 @@ const RoommateForm = () => {
             // 2. Get AI model recommendations using the original user ID
             const recommendResponse = await fetch(
                 `${FINDER_AI_API_URL}/recommend?user_id=${userId}`,
-                {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                },
             );
 
             if (!recommendResponse.ok) {
