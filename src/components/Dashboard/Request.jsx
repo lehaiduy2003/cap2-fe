@@ -200,15 +200,6 @@ const Request = () => {
         }
     };
 
-    // Fetch requests when authenticated
-    useEffect(() => {
-        console.log('Auth state changed:', isAuthenticated);
-        if (isAuthenticated) {
-            console.log('Fetching requests...');
-            fetchRequests();
-        }
-    }, [isAuthenticated, fetchRequests]);
-
     const fetchRequests = useCallback(async () => {
         if (!isAuthenticated) {
             console.log('Not authenticated, skipping fetch');
@@ -233,7 +224,7 @@ const Request = () => {
 
             // Fetch view requests
             const viewResponse = await fetch(
-                '${BSE_API_URL}/api/view-requests/owner',
+                `${BASE_API_URL}/api/view-requests/owner`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -298,7 +289,7 @@ const Request = () => {
                 try {
                     console.log('Fetching rental requests for role:', userRole);
                     const rentalResponse = await fetch(
-                        '${BSE_API_URL}/api/rent-requests/owner',
+                        `${BASE_API_URL}/api/rent-requests/owner`,
                         {
                             headers: {
                                 Authorization: `Bearer ${token}`,
@@ -414,6 +405,15 @@ const Request = () => {
             setLoading(false);
         }
     }, [isAuthenticated, userRole]);
+
+    // Fetch requests when authenticated
+    useEffect(() => {
+        console.log('Auth state changed:', isAuthenticated);
+        if (isAuthenticated) {
+            console.log('Fetching requests...');
+            fetchRequests();
+        }
+    }, [isAuthenticated, fetchRequests]);
 
     // Pagination calculations
     const totalPages = Math.ceil(requests.length / itemsPerPage);
@@ -540,7 +540,7 @@ const Request = () => {
     ) => {
         try {
             const response = await fetch(
-                '${BSE_API_URL}/api/view-requests/respond',
+                `${BASE_API_URL}/api/view-requests/respond`,
                 {
                     method: 'POST',
                     headers: {
@@ -729,7 +729,7 @@ const Request = () => {
 
             // Create contract using the same endpoint as InvoiceForm
             const contractResponse = await fetch(
-                '${BSE_API_URL}/api/contracts',
+                `${BASE_API_URL}/api/contracts`,
                 {
                     method: 'POST',
                     headers: {

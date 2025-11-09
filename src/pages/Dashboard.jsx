@@ -14,15 +14,12 @@ function Dashboard() {
             <Sidebar />
             <div style={{ flex: 1 }}>
                 <Routes>
+                    <Route index element={<Navigate to='bookings' replace />} />
                     <Route path='bookings' element={<BookingsPage />} />
                     <Route path='requests' element={<Request />} />
                     <Route path='report' element={<ReportPage />} />
                     <Route path='invoices' element={<Storage />} />
                     {/* <Route path="setting" element={<SettingPage />} /> */}
-                    <Route
-                        path='/'
-                        element={<Navigate to='bookings' replace />}
-                    />
                 </Routes>
             </div>
         </div>

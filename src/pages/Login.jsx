@@ -73,7 +73,10 @@ export default function Login() {
 
             if (profileData && profileData.statusCode === 200) {
                 // Tạo user data từ response
+                const extractedUserId =
+                    profileData.id ?? profileData.user?.id ?? null;
                 const userData = {
+                    id: extractedUserId,
                     fullName: profileData.fullName,
                     email: profileData.email,
                     phone: profileData.phone,
@@ -88,6 +91,9 @@ export default function Login() {
                 // Lưu role và thông tin user
                 localStorage.setItem('userRole', userData.role);
                 localStorage.setItem('userData', JSON.stringify(userData));
+                if (extractedUserId) {
+                    localStorage.setItem('userId', extractedUserId.toString());
+                }
 
                 showSuccessToast('Đăng nhập thành công!');
 
