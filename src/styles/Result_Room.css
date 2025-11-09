@@ -825,3 +825,126 @@
         position: static;
     }
 }
+
+/* Reviews Section */
+.reviews-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.reviews-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: #1f2937;
+}
+
+.loading-reviews,
+.no-reviews {
+    text-align: center;
+    padding: 2rem;
+    color: #6b7280;
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.review-item {
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f9fafb;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.review-date {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.review-ratings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.rating-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.rating-item span {
+    font-weight: 500;
+    color: #374151;
+}
+
+.stars {
+    color: #fbbf24;
+    font-size: 1rem;
+}
+
+.review-text {
+    font-size: 0.875rem;
+    color: #374151;
+    line-height: 1.5;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.pagination-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    background: white;
+    color: #374151;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-info {
+    font-size: 0.875rem;
+    color: #6b7280;
+}

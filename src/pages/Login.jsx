@@ -52,6 +52,7 @@ export default function Login() {
             localStorage.setItem('authToken', responseData.token);
             localStorage.setItem('Email', email);
             localStorage.setItem('chat-username', email);
+            localStorage.setItem('authUser', JSON.stringify(responseData));
 
             // Lấy thông tin user từ API profile
             const profileResponse = await fetch(

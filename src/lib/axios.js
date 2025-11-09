@@ -10,14 +10,14 @@ export const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
     (config) => {
         try {
-            const token = localStorage.getItem('authToken');
+            const token = localStorage.getItem('accessToken');
             if (token) {
                 config.headers = config.headers || {};
                 config.headers.Authorization = `Bearer ${token}`;
             }
         } catch (err) {
             // localStorage might not be available in some environments
-            console.warn('Unable to read authToken from localStorage', err);
+            console.warn('Unable to read accessToken from localStorage', err);
         }
         return config;
     },
