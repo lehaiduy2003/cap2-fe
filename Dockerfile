@@ -12,12 +12,6 @@ RUN npm ci --only=production
 # Copy source code
 COPY . .
 
-# Migration stage
-FROM build AS migration
-
-# Run migrations (requires DB connection, may fail if DB not available during build)
-RUN npm run migration:run
-
 # Deploy stage
 FROM node:18-alpine AS deploy
 
@@ -30,6 +24,9 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/server ./server
 COPY --from=build /app/migrations ./migrations
 COPY --from=build /app/package.json ./
+
+# Run migrations
+RUN npm run migration:run
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
