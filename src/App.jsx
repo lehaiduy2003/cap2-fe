@@ -12,10 +12,7 @@ import About from './pages/About';
 import ResultRoom from './pages/Result_Room';
 import './App.css';
 import { Route, Routes, useLocation } from 'react-router-dom'; // ❌ Không import Router
-import { useAuthStore } from './store/useAuthStore';
 import { useThemeStore } from './store/useThemeStore';
-import { useEffect } from 'react';
-import { Loader } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
 import Navbar from './components/Navbar';
 import Map from './pages/Map';
@@ -26,30 +23,14 @@ import MatchDetails from './components/RoommateForm/MatchDetails ';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ReportPage from './components/Dashboard/ReportPage';
-import Profile from './pages/Profile';
 import { ToastContainer } from 'react-toastify';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import LocationSearch from './pages/LocationSearch';
+import ProfileLayout from './pages/ProfileLayout';
 
 const App = () => {
-    const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
     const { theme } = useThemeStore();
     const location = useLocation(); // Get the current route
-
-    console.log({ onlineUsers });
-
-    useEffect(() => {
-        checkAuth();
-    }, [checkAuth]);
-
-    console.log({ authUser });
-
-    if (isCheckingAuth && !authUser)
-        return (
-            <div className='flex items-center justify-center h-screen'>
-                <Loader className='size-10 animate-spin' />
-            </div>
-        );
 
     // Define routes where Navbarchatbox should be visible
     const showNavbarchatbox = ['/chatbox', '/settings'].includes(
@@ -110,7 +91,8 @@ const App = () => {
                 <Route path='/dashboard/*' element={<Dashboard />} />
                 <Route path='/q' element={<ReportPage />} />
                 <Route path='/dashboard/*' element={<Dashboard />} />
-                <Route path='/profile' element={<Profile />} />
+                <Route path='/profile' element={<ProfileLayout />} />
+                <Route path='/rent-history' element={<ProfileLayout />} />
                 <Route path='/chat' element={<ChatPage2 />} />
                 <Route path='/location' element={<LocationSearch />} />
 

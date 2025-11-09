@@ -36,6 +36,9 @@ export const THEMES = [
 export const BASE_API_URL =
     import.meta.env.VITE_PUBLIC_API_URL || 'http://localhost:8080';
 
+export const VAT_API_URL =
+    import.meta.env.VITE_PUBLIC_VAT_API_URL || 'http://localhost:3000';
+
 export const FINDER_AI_API_URL =
     import.meta.env.VITE_PUBLIC_FINDER_AI_API_URL || 'http://localhost:8000';
 

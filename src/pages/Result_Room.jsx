@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import '../styles/Result_Room.css';
 import { axiosInstance } from '../lib/axios';
@@ -10,7 +10,7 @@ import {
     showSuccessToast,
     showInfoToast,
 } from '../components/toast';
-import { BASE_API_URL } from '../constants';
+import { BASE_API_URL, VAT_API_URL } from '../constants';
 import LocationSummary from '../components/LocationSummary';
 function Result_Room() {
     const { id } = useParams();
@@ -31,6 +31,11 @@ function Result_Room() {
     const [rentalRequestMessage, setRentalRequestMessage] = useState('');
 
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+    const [reviews, setReviews] = useState([]);
+    const [reviewsPagination, setReviewsPagination] = useState(null);
+    const [currentReviewPage, setCurrentReviewPage] = useState(1);
+    const [loadingReviews, setLoadingReviews] = useState(false);
 
     useEffect(() => {
         const fetchRoomDetails = async () => {
@@ -54,6 +59,52 @@ function Result_Room() {
 
         fetchRoomDetails();
     }, [id]);
+
+    const fetchReviews = useCallback(
+        async (page = 1) => {
+            setLoadingReviews(true);
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(
+                    `${VAT_API_URL}/api/v1/reviews/${id}?page=${page}&limit=5`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token && { Authorization: `Bearer ${token}` }),
+                            'x-user-id':
+                                JSON.parse(
+                                    localStorage.getItem('authUser') || '{}',
+                                ).id || '',
+                        },
+                    },
+                );
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setReviews(data.reviews || []);
+                    setReviewsPagination(data.pagination);
+                } else {
+                    console.error('Failed to fetch reviews');
+                    setReviews([]);
+                    setReviewsPagination(null);
+                }
+            } catch (error) {
+                console.error('Error fetching reviews:', error);
+                setReviews([]);
+                setReviewsPagination(null);
+            } finally {
+                setLoadingReviews(false);
+            }
+        },
+        [id],
+    );
+
+    useEffect(() => {
+        if (room) {
+            fetchReviews(currentReviewPage);
+        }
+    }, [room, currentReviewPage, fetchReviews]);
 
     // Keyboard navigation for gallery
     useEffect(() => {
@@ -395,6 +446,126 @@ function Result_Room() {
                         </div>
                     </section>
                 </div>
+            </section>
+
+            {/* Reviews Section */}
+            <section className='reviews-section section-card'>
+                <h2 className='reviews-title'>Đánh giá từ người dùng</h2>
+
+                {loadingReviews ? (
+                    <div className='loading-reviews'>Đang tải đánh giá...</div>
+                ) : reviews.length > 0 ? (
+                    <>
+                        <div className='reviews-list'>
+                            {reviews.map((review, index) => (
+                                <div key={index} className='review-item'>
+                                    <div className='review-header'>
+                                        <div className='reviewer-name'>
+                                            {review.reviewer_name}
+                                        </div>
+                                        <div className='review-date'>
+                                            {new Date(
+                                                review.created_at,
+                                            ).toLocaleDateString('vi-VN')}
+                                        </div>
+                                    </div>
+                                    <div className='review-ratings'>
+                                        <div className='rating-item'>
+                                            <span>An toàn:</span>
+                                            <div className='stars'>
+                                                {'★'.repeat(
+                                                    review.safety_rating,
+                                                )}
+                                                {'☆'.repeat(
+                                                    5 - review.safety_rating,
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className='rating-item'>
+                                            <span>Sạch sẽ:</span>
+                                            <div className='stars'>
+                                                {'★'.repeat(
+                                                    review.cleanliness_rating,
+                                                )}
+                                                {'☆'.repeat(
+                                                    5 -
+                                                        review.cleanliness_rating,
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className='rating-item'>
+                                            <span>Tiện nghi:</span>
+                                            <div className='stars'>
+                                                {'★'.repeat(
+                                                    review.amenities_rating,
+                                                )}
+                                                {'☆'.repeat(
+                                                    5 - review.amenities_rating,
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className='rating-item'>
+                                            <span>Chủ nhà:</span>
+                                            <div className='stars'>
+                                                {'★'.repeat(review.host_rating)}
+                                                {'☆'.repeat(
+                                                    5 - review.host_rating,
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {review.review_text && (
+                                        <div className='review-text'>
+                                            {review.review_text}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Pagination */}
+                        {reviewsPagination &&
+                            reviewsPagination.totalPages > 1 && (
+                                <div className='pagination'>
+                                    <button
+                                        onClick={() =>
+                                            setCurrentReviewPage((prev) =>
+                                                Math.max(1, prev - 1),
+                                            )
+                                        }
+                                        disabled={!reviewsPagination.hasPrev}
+                                        className='pagination-btn'
+                                    >
+                                        ‹ Trước
+                                    </button>
+
+                                    <span className='pagination-info'>
+                                        Trang {reviewsPagination.currentPage} /{' '}
+                                        {reviewsPagination.totalPages}
+                                    </span>
+
+                                    <button
+                                        onClick={() =>
+                                            setCurrentReviewPage((prev) =>
+                                                Math.min(
+                                                    reviewsPagination.totalPages,
+                                                    prev + 1,
+                                                ),
+                                            )
+                                        }
+                                        disabled={!reviewsPagination.hasNext}
+                                        className='pagination-btn'
+                                    >
+                                        Sau ›
+                                    </button>
+                                </div>
+                            )}
+                    </>
+                ) : (
+                    <div className='no-reviews'>
+                        Chưa có đánh giá nào cho phòng này.
+                    </div>
+                )}
             </section>
 
             {showReportForm && (
