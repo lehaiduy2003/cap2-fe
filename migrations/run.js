@@ -11,9 +11,6 @@ async function runMigrations() {
     password: process.env.PGPASSWORD,
     port: parseInt(process.env.PGPORT, 10),
   };
-  if (process.env.NODE_ENV === "production") {
-    dbConfig.ssl = { rejectUnauthorized: false };
-  }
   const client = new Client(dbConfig);
 
   try {

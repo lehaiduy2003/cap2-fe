@@ -28,9 +28,6 @@ const dbConfig = {
     password: process.env.PGPASSWORD,
     port: parseInt(process.env.PGPORT, 10),
 };
-if (process.env.NODE_ENV === "production") {
-    dbConfig.ssl = { rejectUnauthorized: false };
-}
 
 const pool = new Pool(dbConfig);
 pool.on('error', (err) => {
