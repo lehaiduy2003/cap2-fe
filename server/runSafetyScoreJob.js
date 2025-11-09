@@ -12,6 +12,9 @@ const dbConfig = {
     password: process.env.PGPASSWORD,
     port: parseInt(process.env.PGPORT, 10),
 };
+if (process.env.NODE_ENV === "production") {
+    dbConfig.ssl = { rejectUnauthorized: false };
+}
 
 // --- HẰNG SỐ CỦA THUẬT TOÁN ---
 

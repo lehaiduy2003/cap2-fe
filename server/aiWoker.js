@@ -10,8 +10,10 @@ const dbConfig = {
     database: process.env.PGDATABASE,
     password: process.env.PGPASSWORD,
     port: parseInt(process.env.PGPORT, 10),
-    max: 5, // Worker không cần nhiều kết nối
 };
+if (process.env.NODE_ENV === "production") {
+    dbConfig.ssl = { rejectUnauthorized: false };
+}
 
 const pool = new Pool(dbConfig);
 pool.on('error', (err) => {

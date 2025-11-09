@@ -27,9 +27,10 @@ const dbConfig = {
     database: process.env.PGDATABASE,
     password: process.env.PGPASSWORD,
     port: parseInt(process.env.PGPORT, 10),
-    max: 20,
-    idleTimeoutMillis: 30000,
 };
+if (process.env.NODE_ENV === "production") {
+    dbConfig.ssl = { rejectUnauthorized: false };
+}
 
 const pool = new Pool(dbConfig);
 pool.on('error', (err) => {

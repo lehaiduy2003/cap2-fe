@@ -4,13 +4,17 @@ const { Client } = require("pg");
 require("dotenv").config();
 
 async function runMigrations() {
-  const client = new Client({
+  const dbConfig = {
     user: process.env.PGUSER,
     host: process.env.PGHOST,
     database: process.env.PGDATABASE,
     password: process.env.PGPASSWORD,
     port: parseInt(process.env.PGPORT, 10),
-  });
+  };
+  if (process.env.NODE_ENV === "production") {
+    dbConfig.ssl = { rejectUnauthorized: false };
+  }
+  const client = new Client(dbConfig);
 
   try {
     await client.connect();
