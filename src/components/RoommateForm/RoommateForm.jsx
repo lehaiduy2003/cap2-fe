@@ -8,7 +8,7 @@ import warm from '../../assets/clean&warm.jpg';
 import friend_video from '../../assets/4k_building.mp4';
 import Select from 'react-select'; // Import Select component from react-select
 import { getProvinces } from 'sub-vn'; // Import getProvinces function
-import { BASE_API_URL, FINDER_AI_API_URL } from '../../constants';
+import { BASE_API_URL } from '../../constants';
 const provincesOptions = getProvinces().map((province) => ({
     value: province.name,
     label: province.name,
@@ -362,9 +362,16 @@ const RoommateForm = () => {
                 FEMALE: 'Nữ',
             };
 
-            // 2. Get AI model recommendations using the original user ID
+            // 2. Get AI model recommendations via backend API proxy
             const recommendResponse = await fetch(
-                `${FINDER_AI_API_URL}/recommend?user_id=${userId}`,
+                `${BASE_API_URL}/api/roommates/recommend/${userId}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                },
             );
 
             if (!recommendResponse.ok) {
@@ -374,7 +381,8 @@ const RoommateForm = () => {
                 );
             }
 
-            const recommendations = await recommendResponse.json();
+            const recommendData = await recommendResponse.json();
+            const recommendations = recommendData.data;
 
             // Process recommendations to include phone and convert gender
             const processedRecommendations = recommendations.map((rec) => ({
