@@ -88,7 +88,6 @@ const App = () => {
                 <Route path='/match' element={<MatchDetails />} />
                 <Route path='/dashboard/*' element={<Dashboard />} />
                 <Route path='/q' element={<ReportPage />} />
-                <Route path='/dashboard/*' element={<Dashboard />} />
                 <Route path='/profile' element={<ProfileLayout />} />
                 <Route path='/rent-history' element={<ProfileLayout />} />
                 <Route path='/chat' element={<ChatPage2 />} />

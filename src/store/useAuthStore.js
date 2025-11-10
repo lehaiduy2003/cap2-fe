@@ -10,7 +10,7 @@ export const useAuthStore = create(
     persist(
         (set, get) => ({
             authUser: null,
-            accessToken: null,
+            authToken: null,
             refreshToken: null,
             isSigningUp: false,
             isLoggingIn: false,
@@ -31,7 +31,7 @@ export const useAuthStore = create(
                     });
 
                     set({
-                        accessToken: res.data.token,
+                        authToken: res.data.token,
                         refreshToken: res.data.refreshToken,
                         authUser: res.data,
                     });
@@ -53,7 +53,7 @@ export const useAuthStore = create(
                     const res = await axiosInstance.post('/auth/signup', data);
                     set({
                         authUser: res.data,
-                        accessToken: res.data.token,
+                        authToken: res.data.token,
                         refreshToken: res.data.refreshToken,
                     });
                     toast.success('Account created successfully');
@@ -71,7 +71,7 @@ export const useAuthStore = create(
                     const res = await axiosInstance.post('/auth/login', data);
                     set({
                         authUser: res.data,
-                        accessToken: res.data.token,
+                        authToken: res.data.token,
                         refreshToken: res.data.refreshToken,
                     });
                     toast.success('Logged in successfully');
@@ -89,7 +89,7 @@ export const useAuthStore = create(
                     await axiosInstance.post('/auth/logout');
                     set({
                         authUser: null,
-                        accessToken: null,
+                        authToken: null,
                         refreshToken: null,
                     });
                     toast.success('Logged out successfully');
@@ -141,7 +141,7 @@ export const useAuthStore = create(
             name: 'auth-storage',
             partialize: (state) => ({
                 authUser: state.authUser,
-                accessToken: state.accessToken,
+                authToken: state.authToken,
                 refreshToken: state.refreshToken,
             }),
         },
