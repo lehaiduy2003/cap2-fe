@@ -1,0 +1,105 @@
+/* src/components/Dashboard/css/AddIncidentForm.css */
+.add-incident-container {
+    /* Style này sẽ làm component lấp đầy không gian bên phải Sidebar */
+    padding: 24px;
+    background-color: #fff;
+    border-radius: 8px;
+    /* Thêm bóng đổ nhẹ để C.H.I.A tách biệt với nền */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    max-width: 800px;
+    margin: 20px; /* Tạo khoảng cách với Sidebar và lề */
+}
+
+.add-incident-container h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.add-incident-container p {
+    margin-bottom: 24px;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.incident-form .form-group {
+    margin-bottom: 1.2rem;
+}
+
+.incident-form .form-group label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #bfbbbb;
+}
+
+.incident-form input[type='number'],
+.incident-form input[type='date'],
+.incident-form select,
+.incident-form textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+    box-sizing: border-box; /* Bắt buộc để padding không phá vỡ layout */
+}
+
+.incident-form input:focus,
+.incident-form select:focus,
+.incident-form textarea:focus {
+    border-color: #007bff; /* Thay bằng màu chủ đạo của bạn */
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.incident-form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.submit-btn {
+    background-color: #007bff; /* Thay bằng màu chủ đạo của bạn */
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: inline-block;
+    width: auto;
+}
+
+.submit-btn:hover {
+    background-color: #0056b3;
+}
+
+.submit-btn:disabled {
+    background-color: #cce0ff;
+    cursor: not-allowed;
+}
+
+/* Kiểu thông báo Lỗi / Thành công */
+.incident-alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+
+.incident-alert.error {
+    background-color: #fbebee;
+    color: #d9534f;
+    border-color: #f5c6cb;
+}
+
+.incident-alert.success {
+    background-color: #dff0d8;
+    color: #3c763d;
+    border-color: #d6e9c6;
+}

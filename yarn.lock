@@ -1334,10 +1334,10 @@
   resolved "https://registry.npmjs.org/@emotion/weak-memoize/-/weak-memoize-0.4.0.tgz"
   integrity sha512-snKqtPW01tN0ui7yu9rGv69aJXr/a/Ywvl11sUjNtEcRc+ng/mQriFL0wLXMef74iHa/EkftbDzU9F8iFbH+zg==
 
-"@esbuild/linux-x64@0.25.10":
+"@esbuild/win32-x64@0.25.10":
   version "0.25.10"
-  resolved "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.25.10.tgz"
-  integrity sha512-QSX81KhFoZGwenVyPoberggdW1nrQZSvfVDAIUXr3WqLRZGZqWk/P4T8p2SP+de2Sr5HPcvjhcJzEiulKgnxtA==
+  resolved "https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.25.10.tgz"
+  integrity sha512-9KpxSVFCu0iK1owoez6aC/s/EdUQLDN3adTxGCqxMVhrPDj6bt5dbrHDXUuq+Bs2vATFBBrQS5vdQ/Ed2P+nbw==
 
 "@eslint-community/eslint-utils@^4.2.0", "@eslint-community/eslint-utils@^4.8.0":
   version "4.9.0"
@@ -1928,10 +1928,15 @@
     estree-walker "^1.0.1"
     picomatch "^2.2.2"
 
-"@rollup/rollup-linux-x64-gnu@4.52.4":
+"@rollup/rollup-win32-x64-gnu@4.52.4":
   version "4.52.4"
-  resolved "https://registry.npmjs.org/@rollup/rollup-linux-x64-gnu/-/rollup-linux-x64-gnu-4.52.4.tgz"
-  integrity sha512-Wi6AXf0k0L7E2gteNsNHUs7UMwCIhsCTs6+tqQ5GPwVRWMaflqGec4Sd8n6+FNFDw9vGcReqk2KzBDhCa1DLYg==
+  resolved "https://registry.npmjs.org/@rollup/rollup-win32-x64-gnu/-/rollup-win32-x64-gnu-4.52.4.tgz"
+  integrity sha512-UF9KfsH9yEam0UjTwAgdK0anlQ7c8/pWPU2yVjyWcF1I1thABt6WXE47cI71pGiZ8wGvxohBoLnxM04L/wj8mQ==
+
+"@rollup/rollup-win32-x64-msvc@4.52.4":
+  version "4.52.4"
+  resolved "https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.52.4.tgz"
+  integrity sha512-bf9PtUa0u8IXDVxzRToFQKsNCRz9qLYfR/MpECxl4mRoWYjAeFjgxj1XdZr2M/GNVpT05p+LgQOHopYDlUu6/w==
 
 "@rtsao/scc@^1.1.0":
   version "1.1.0"
@@ -2094,10 +2099,10 @@
     jiti "^2.4.2"
     tailwindcss "4.0.15"
 
-"@tailwindcss/oxide-linux-x64-gnu@4.0.15":
+"@tailwindcss/oxide-win32-x64-msvc@4.0.15":
   version "4.0.15"
-  resolved "https://registry.npmjs.org/@tailwindcss/oxide-linux-x64-gnu/-/oxide-linux-x64-gnu-4.0.15.tgz"
-  integrity sha512-g76GxlKH124RuGqacCEFc2nbzRl7bBrlC8qDQMiUABkiifDRHOIUjgKbLNG4RuR9hQAD/MKsqZ7A8L08zsoBrw==
+  resolved "https://registry.npmjs.org/@tailwindcss/oxide-win32-x64-msvc/-/oxide-win32-x64-msvc-4.0.15.tgz"
+  integrity sha512-JQ5H+5MLhOjpgNp6KomouE0ZuKmk3hO5h7/ClMNAQ8gZI2zkli3IH8ZqLbd2DVfXDbdxN2xvooIEeIlkIoSCqw==
 
 "@tailwindcss/oxide@4.0.15":
   version "4.0.15"
@@ -7264,10 +7269,10 @@ levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
-lightningcss-linux-x64-gnu@1.29.2:
+lightningcss-win32-x64-msvc@1.29.2:
   version "1.29.2"
-  resolved "https://registry.npmjs.org/lightningcss-linux-x64-gnu/-/lightningcss-linux-x64-gnu-1.29.2.tgz"
-  integrity sha512-0v6idDCPG6epLXtBH/RPkHvYx74CVziHo6TMYga8O2EiQApnUPZsbR9nFNrg2cgBzk1AYqEd95TlrsL7nYABQg==
+  resolved "https://registry.npmjs.org/lightningcss-win32-x64-msvc/-/lightningcss-win32-x64-msvc-1.29.2.tgz"
+  integrity sha512-EdIUW3B2vLuHmv7urfzMI/h2fmlnOQBk1xlsDxkN1tCWKjNFjfLhGxYk8C8mzpSfr+A6jFFIi8fU6LbQGsRWjA==
 
 lightningcss@^1.21.0, lightningcss@1.29.2:
   version "1.29.2"
@@ -10555,7 +10560,7 @@ type-detect@4.0.8:
   resolved "https://registry.npmjs.org/type-detect/-/type-detect-4.0.8.tgz"
   integrity sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==
 
-type-fest@^0.16.0, "type-fest@>=0.17.0 <5.0.0":
+type-fest@^0.16.0:
   version "0.16.0"
   resolved "https://registry.npmjs.org/type-fest/-/type-fest-0.16.0.tgz"
   integrity sha512-eaBzG6MxNzEn9kiwvtre90cXaNLkmadMWa1zQMs3XORCXNbsH/OewwbxC5ia9dCxIxnTAsSxXJaa/p5y8DlvJg==
@@ -10569,6 +10574,11 @@ type-fest@^0.21.3:
   version "0.21.3"
   resolved "https://registry.npmjs.org/type-fest/-/type-fest-0.21.3.tgz"
   integrity sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==
+
+"type-fest@>=0.17.0 <5.0.0":
+  version "4.41.0"
+  resolved "https://registry.npmjs.org/type-fest/-/type-fest-4.41.0.tgz"
+  integrity sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==
 
 type-is@~1.6.18:
   version "1.6.18"
@@ -10636,9 +10646,9 @@ typedarray-to-buffer@^3.1.5:
     is-typedarray "^1.0.0"
 
 "typescript@^3.2.1 || ^4", "typescript@>= 2.7", "typescript@>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta":
-  version "5.9.3"
-  resolved "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz"
-  integrity sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==
+  version "4.9.5"
+  resolved "https://registry.npmjs.org/typescript/-/typescript-4.9.5.tgz"
+  integrity sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==
 
 unbox-primitive@^1.1.0:
   version "1.1.0"
