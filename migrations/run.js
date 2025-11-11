@@ -1,6 +1,7 @@
 const fs = require("fs-extra");
 const path = require("path");
 const { Client } = require("pg");
+const crypto = require("crypto");
 require("dotenv").config();
 
 async function runMigrations() {
@@ -13,6 +14,10 @@ async function runMigrations() {
   };
   const client = new Client(dbConfig);
 
+  function calculateChecksum(content) {
+    return crypto.createHash("sha256").update(content, "utf8").digest("hex");
+  }
+
   try {
     await client.connect();
     console.log("Connected to database");
@@ -21,7 +26,8 @@ async function runMigrations() {
       CREATE TABLE IF NOT EXISTS public.migrations (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) UNIQUE NOT NULL,
-        executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        checksum VARCHAR(64)
       );
     `);
 
@@ -31,26 +37,40 @@ async function runMigrations() {
     const sqlFiles = files.filter((file) => /^V\d+_.+\.sql$/.test(file)).sort();
 
     // Get all executed migrations
-    const executedResult = await client.query("SELECT name FROM public.migrations");
-    const executedMigrations = new Set(executedResult.rows.map((row) => row.name));
+    const executedResult = await client.query("SELECT name, checksum FROM public.migrations");
+    const executedMigrations = new Map(executedResult.rows.map((row) => [row.name, row.checksum]));
 
-    // Filter out migrations that have already been executed
-    const pendingMigrations = sqlFiles.filter((file) => !executedMigrations.has(file));
-    if (pendingMigrations.length === 0) {
-      console.log("No pending migrations to run");
-      return;
-    }
-    console.log(`Start running ${pendingMigrations.length} pending migrations...`);
-    for (const file of pendingMigrations) {
+    console.log(`Checking ${sqlFiles.length} migration files...`);
+    for (const file of sqlFiles) {
       const filePath = path.join(migrationsDir, file);
       const sql = await fs.readFile(filePath, "utf8");
-      console.log(`Running migration: ${file}`);
-      await client.query(sql);
-      await client.query("INSERT INTO public.migrations (name) VALUES ($1)", [file]);
-      console.log(`Migration ${file} completed`);
+      const checksum = calculateChecksum(sql);
+
+      if (executedMigrations.has(file)) {
+        const storedChecksum = executedMigrations.get(file);
+        if (storedChecksum && storedChecksum !== checksum) {
+          console.error(
+            `Checksum mismatch for migration ${file}. File has been modified after execution.`
+          );
+          console.error(`Stored: ${storedChecksum}\nCurrent: ${checksum}`);
+          process.exit(1);
+        } else if (!storedChecksum) {
+          console.warn(
+            `Migration ${file} executed but no checksum stored (legacy). Skipping verification.`
+          );
+        }
+      } else {
+        console.log(`Running migration: ${file}`);
+        await client.query(sql);
+        await client.query("INSERT INTO public.migrations (name, checksum) VALUES ($1, $2)", [
+          file,
+          checksum,
+        ]);
+        console.log(`Migration ${file} completed`);
+      }
     }
 
-    console.log("All migrations completed successfully");
+    console.log("All migrations checked and up to date");
   } catch (err) {
     console.error("Error running migrations:", err);
     process.exit(1);

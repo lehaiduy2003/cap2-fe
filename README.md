@@ -9,9 +9,6 @@ copy .env.example .env
 Windows PowerShell:
 Copy-Item .env.example .env
 
-Create migration file:
-npm run migration:create
-
 Run migrations:
 npm run migration:run
 
