@@ -18,8 +18,7 @@
     "start": "node server/apiServer.js",
     "dev": "nodemon server/apiServer.js",
     "run-job-manually": "node server/runSafetyScoreJob.js",
-    "migration:run": "node migrations/run.js",
-    "migration:create": "node migrations/create.js"
+    "migration:run": "node migrations/run.js"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"

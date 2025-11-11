@@ -184,10 +184,11 @@ async function generateAISummary(
 
         **CẤU TRÚC NHẬN XÉT:**
         - **Tóm tắt ngắn gọn** (1-2 câu): Tổng quan nhanh về ưu điểm chính
-        - **Phân tích chi tiết** (3-5 câu): Giá trị, vị trí, an ninh, tiện ích
+        - **Phân tích chi tiết** (2-3 câu): Giá trị, vị trí, an ninh, tiện ích
         - **Khuyến nghị** (1-2 câu): Đối tượng phù hợp và lưu ý quan trọng
 
-        Giọng văn chuyên nghiệp, trung thực, cân bằng giữa ưu và nhược điểm. Sử dụng kiến thức thị trường chung để làm giàu phân tích, không chỉ dựa vào dữ liệu có sẵn.
+        Giọng văn chuyên nghiệp, trung thực, cân bằng giữa ưu và nhược điểm. Sử dụng kiến thức thị trường chung để làm giàu phân tích, không chỉ dựa vào dữ liệu có sẵn. đi thẳng vào vấn đề, không chào hỏi hay nói lảm nhảm, lan man.
+        Định dạng phản hồi dưới dạng markdown với các tiêu đề con rõ ràng cho từng phần.
     `;
 
   try {
