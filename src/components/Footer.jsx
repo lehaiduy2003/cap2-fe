@@ -48,7 +48,7 @@ const Footer = () => {
                     <a href='/team'>Đội ngũ</a>
                 </div>
                 <div className='footer-copy'>
-                    <p>Copyright ©2025; Designed by C1SE.01</p>
+                    <p>Copyright ©2025; Designed by C2SE.06</p>
                 </div>
             </div>
         </footer>
