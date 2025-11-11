@@ -26,9 +26,12 @@ async function runMigrations() {
       CREATE TABLE IF NOT EXISTS public.migrations (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) UNIQUE NOT NULL,
-        executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        checksum VARCHAR(64)
+        executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+    `);
+
+    await client.query(`
+        ALTER TABLE public.migrations ADD COLUMN IF NOT EXISTS checksum VARCHAR(64);
     `);
 
     // Get all SQL files in migrations folder that match the pattern V{number}_{description}.sql
