@@ -12,10 +12,22 @@ import {
 } from '../components/toast';
 import { BASE_API_URL, VAT_API_URL } from '../constants';
 import LocationSummary from '../components/LocationSummary';
+import ReactMarkdown from 'react-markdown';
+
 function Result_Room() {
     const { id } = useParams();
     const navigate = useNavigate();
     // const { sendNotification, isConnected } = useNotifications();
+
+    // Helper function to get initials from name
+    const getInitials = (name) => {
+        if (!name) return '?';
+        const parts = name.trim().split(' ');
+        if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+        return (
+            parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
+        ).toUpperCase();
+    };
 
     const [room, setRoom] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -36,6 +48,17 @@ function Result_Room() {
     const [reviewsPagination, setReviewsPagination] = useState(null);
     const [currentReviewPage, setCurrentReviewPage] = useState(1);
     const [loadingReviews, setLoadingReviews] = useState(false);
+
+    const [safetyData, setSafetyData] = useState(null);
+    const [loadingSafety, setLoadingSafety] = useState(false);
+    const [locationData, setLocationData] = useState(null);
+
+    // Build address from parts
+    const addressParts = room
+        ? [room.addressDetails, room.ward, room.district, room.city]
+              .filter((part) => part)
+              .join(', ')
+        : '';
 
     useEffect(() => {
         const fetchRoomDetails = async () => {
@@ -59,6 +82,72 @@ function Result_Room() {
 
         fetchRoomDetails();
     }, [id]);
+
+    // Fetch safety data after room is loaded
+    useEffect(() => {
+        if (!room) return;
+
+        const fetchSafetyData = async () => {
+            setLoadingSafety(true);
+            try {
+                // First, get nearby places data
+                const nearbyResponse = await axiosInstance.post(
+                    '/maps/locations',
+                    {
+                        address: addressParts,
+                    },
+                );
+                // Store the complete location data response
+                setLocationData(nearbyResponse.data);
+
+                // Format property data for the API
+                const propertyData = {
+                    id: room.id,
+                    title: room.title,
+                    description: room.description,
+                    price: room.price,
+                    roomSize: room.roomSize,
+                    numBedrooms: room.numBedrooms,
+                    numBathrooms: room.numBathrooms,
+                    availableFrom: room.availableFrom,
+                    isRoomAvailable: room.isRoomAvailable,
+                    ownerId: room.ownerId,
+                    ownerName: room.ownerName,
+                    imageUrls: room.imageUrls,
+                    location: nearbyResponse.data?.location || null,
+                };
+
+                // Call VAT API for safety analysis
+                const safetyResponse = await fetch(
+                    `${VAT_API_URL}/api/v1/properties/${id}/safety`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            property: propertyData,
+                            nearbyPlaces:
+                                nearbyResponse.data?.nearbyPlaces || [],
+                        }),
+                    },
+                );
+
+                if (safetyResponse.ok) {
+                    const safetyResult = await safetyResponse.json();
+                    setSafetyData(safetyResult);
+                } else {
+                    console.error('Failed to fetch safety data');
+                }
+            } catch (error) {
+                console.error('Error fetching safety data:', error);
+            } finally {
+                setLoadingSafety(false);
+            }
+        };
+
+        fetchSafetyData();
+    }, [room, addressParts, id]);
 
     const fetchReviews = useCallback(
         async (page = 1) => {
@@ -260,14 +349,20 @@ function Result_Room() {
     return (
         <div className='result-room'>
             <nav className='breadcrumb'>
-                <Link to='/Room'>Phòng trọ</Link>
-                <span className='divider'>/</span>
-                <span>Chi tiết phòng</span>
+                <Link to='/Room' style={{ color: 'white' }}>
+                    Phòng trọ
+                </Link>
+                <span className='divider' style={{ color: 'white' }}>
+                    /
+                </span>
+                <span style={{ color: 'white' }}>Chi tiết phòng</span>
             </nav>
 
             <header className='page-header'>
                 <h1 className='hotel-title'>{room.title}</h1>
-                <p className='hotel-location'>{room.addressDetails}</p>
+                <p className='hotel-location' style={{ color: 'white' }}>
+                    {room.addressDetails}
+                </p>
             </header>
 
             {/* Two-column layout: left = images (50%), right = details + actions */}
@@ -283,7 +378,7 @@ function Result_Room() {
                             tabIndex={0}
                             aria-label='Ảnh lớn của phòng'
                         >
-                            <button
+                            {/* <button
                                 className='gallery-nav-btn prev'
                                 onClick={() =>
                                     setSelectedImageIndex((prev) =>
@@ -295,15 +390,15 @@ function Result_Room() {
                                 aria-label='Previous image'
                             >
                                 &#8592;
-                            </button>
+                            </button> */}
                             <img
-                                src={mainImageUrl}
+                                src='https://offer.rever.vn/hubfs/cho_thue_phong_tro_moi_xay_gia_re_ngay_phuong_15_tan_binh3.jpg'
                                 alt='Main Room'
                                 onError={(e) => {
                                     e.target.src = '/default-room.jpg';
                                 }}
                             />
-                            <button
+                            {/* <button
                                 className='gallery-nav-btn next'
                                 onClick={() =>
                                     setSelectedImageIndex((prev) =>
@@ -315,9 +410,9 @@ function Result_Room() {
                                 aria-label='Next image'
                             >
                                 &#8594;
-                            </button>
+                            </button> */}
                         </div>
-                        <div className='thumbnail-container'>
+                        {/* <div className='thumbnail-container'>
                             {imageUrls.map((url, index) => (
                                 <div
                                     key={index}
@@ -336,8 +431,85 @@ function Result_Room() {
                                     />
                                 </div>
                             ))}
-                        </div>
+                        </div> */}
                     </div>
+                    {/* Safety Analysis Section */}
+                    <section className='safety-section section-card'>
+                        <h2 className='safety-title'>
+                            Phân tích an toàn khu vực
+                        </h2>
+
+                        {loadingSafety ? (
+                            <div className='loading-safety'>
+                                Đang phân tích an toàn...
+                            </div>
+                        ) : safetyData ? (
+                            <div className='safety-content'>
+                                {/* Safety Scores */}
+                                <div className='safety-scores'>
+                                    <div className='score-item'>
+                                        <div className='score-label'>
+                                            Điểm tổng thể
+                                        </div>
+                                        <div className='score-value'>
+                                            {safetyData.overall_score}/10
+                                        </div>
+                                        <div className='score-bar'>
+                                            <div
+                                                className='score-fill'
+                                                style={{
+                                                    width: `${(safetyData.overall_score / 10) * 100}%`,
+                                                }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                    <div className='score-breakdown'>
+                                        <div className='score-item small'>
+                                            <div className='score-label'>
+                                                An ninh
+                                            </div>
+                                            <div className='score-value'>
+                                                {safetyData.crime_score}/10
+                                            </div>
+                                        </div>
+                                        <div className='score-item small'>
+                                            <div className='score-label'>
+                                                Cộng đồng
+                                            </div>
+                                            <div className='score-value'>
+                                                {safetyData.user_score}/10
+                                            </div>
+                                        </div>
+                                        <div className='score-item small'>
+                                            <div className='score-label'>
+                                                Môi trường
+                                            </div>
+                                            <div className='score-value'>
+                                                {safetyData.environment_score}
+                                                /10
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* AI Summary */}
+                                {safetyData.ai_summary && (
+                                    <div className='ai-summary'>
+                                        <h3>Đánh giá AI</h3>
+                                        <div className='summary-text'>
+                                            <ReactMarkdown>
+                                                {safetyData.ai_summary}
+                                            </ReactMarkdown>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className='no-safety-data'>
+                                Không thể tải dữ liệu phân tích an toàn.
+                            </div>
+                        )}
+                    </section>
                 </div>
 
                 {/* RIGHT: Combined details + actions */}
@@ -381,6 +553,15 @@ function Result_Room() {
                                     room.availableFrom,
                                 ).toLocaleDateString('vi-VN')}
                             </p>
+                            <div className='owner-info'>
+                                <div className='owner-avatar'>
+                                    {getInitials(room.ownerName)}
+                                </div>
+                                <div className='owner-details'>
+                                    <strong>Chủ sở hữu:</strong>{' '}
+                                    {room.ownerName}
+                                </div>
+                            </div>
                         </div>
 
                         <div className='cta-group'>
@@ -400,23 +581,6 @@ function Result_Room() {
                                 className='primary-cta'
                             >
                                 Gửi yêu cầu xem phòng
-                            </button>
-                            <button
-                                onClick={() => {
-                                    const token =
-                                        localStorage.getItem('authToken');
-                                    if (!token) {
-                                        showInfoToast(
-                                            'Vui lòng đăng nhập để gửi yêu cầu.',
-                                        );
-                                        navigate('/login');
-                                        return;
-                                    }
-                                    setShowRentalRequestForm(true);
-                                }}
-                                className='secondary-cta'
-                            >
-                                Gửi yêu cầu thuê phòng
                             </button>
                             <button
                                 className='report-button'
@@ -441,7 +605,9 @@ function Result_Room() {
                         {/* Location map + nearby summary */}
                         <div className='location-wrapper'>
                             <LocationSummary
-                                address={room.addressDetails || room.location}
+                                address={addressParts}
+                                nearbyPlaces={locationData?.nearbyPlaces}
+                                location={locationData?.location}
                             />
                         </div>
                     </section>

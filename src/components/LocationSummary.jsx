@@ -1,19 +1,22 @@
-import { useEffect, useMemo, useState } from 'react';
-import { axiosInstance } from '../lib/axios';
+import { useMemo } from 'react';
 import MapPreview from './MapPreview';
 
 const typeIcon = (type) => {
     const map = {
         restaurant: '🍽️',
         school: '🏫',
+        university: '🏫',
         hospital: '🏥',
         bank: '🏦',
         gas_station: '⛽',
+        train_station: '🚉',
+        fire_station: '🚒',
         pharmacy: '💊',
         supermarket: '🛒',
         cafe: '☕',
         park: '🌳',
         lodging: '🏨',
+        police: '👮‍♂️',
         default: '📍',
     };
     if (!type) return map.default;
@@ -21,49 +24,23 @@ const typeIcon = (type) => {
     return map[key] || map.default;
 };
 
-export default function LocationSummary({ address, maxItems = 8 }) {
+export default function LocationSummary({
+    address,
+    maxItems, // Remove default value to show all items
+    nearbyPlaces: propNearbyPlaces,
+    location: propLocation,
+}) {
     const query = useMemo(() => (address || '').trim(), [address]);
-    const [locationData, setLocationData] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
 
-    useEffect(() => {
-        let cancelled = false;
-        const fetchData = async () => {
-            if (!query) return;
-            setLoading(true);
-            setError('');
-            try {
-                const res = await axiosInstance.post('/maps/locations', {
-                    address: query,
-                });
-                if (!cancelled) {
-                    setLocationData(res.data);
-                }
-            } catch (err) {
-                if (!cancelled) {
-                    setError(
-                        err?.response?.data?.message ||
-                            'Không tải được vị trí xung quanh',
-                    );
-                }
-            } finally {
-                if (!cancelled) setLoading(false);
-            }
-        };
-        fetchData();
-        return () => {
-            cancelled = true;
-        };
-    }, [query]);
-
-    const nearby = locationData?.nearbyPlaces || [];
-    const placeItems = maxItems > 0 ? nearby.slice(0, maxItems) : nearby;
-    const mapLocation = locationData?.location
+    // Use prop data directly, show all items by default unless maxItems is specified
+    const nearby = propNearbyPlaces || [];
+    const placeItems =
+        maxItems && maxItems > 0 ? nearby.slice(0, maxItems) : nearby;
+    const mapLocation = propLocation
         ? {
-              latitude: locationData.location.latitude,
-              longitude: locationData.location.longitude,
-              formattedAddress: locationData.location.formattedAddress,
+              latitude: propLocation.latitude,
+              longitude: propLocation.longitude,
+              formattedAddress: propLocation.formattedAddress,
           }
         : query; // fallback to address string
 
@@ -73,17 +50,18 @@ export default function LocationSummary({ address, maxItems = 8 }) {
 
             <div className='nearby-mini'>
                 <div className='nearby-header'>
-                    <h5>Địa điểm xung quanh (≤ 1km)</h5>
-                    {loading && <span className='nearby-badge'>Đang tải…</span>}
-                    {error && <span className='nearby-error'>{error}</span>}
+                    <h5>Địa điểm xung quanh (≤ 500m)</h5>
                 </div>
-                {placeItems.length === 0 && !loading && !error && (
+                {placeItems.length === 0 && (
                     <p className='nearby-empty'>
                         Không tìm thấy địa điểm lân cận.
                     </p>
                 )}
                 {placeItems.length > 0 && (
-                    <ul className='nearby-mini-list'>
+                    <ul
+                        className='nearby-mini-list'
+                        style={{ maxHeight: '400px', overflowY: 'auto' }}
+                    >
                         {placeItems.map((p, i) => (
                             <li
                                 key={`${p.latitude}-${p.longitude}-${p.name}-${i}`}
