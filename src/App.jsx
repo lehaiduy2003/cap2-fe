@@ -90,6 +90,7 @@ const App = () => {
                 <Route path='/q' element={<ReportPage />} />
                 <Route path='/profile' element={<ProfileLayout />} />
                 <Route path='/rent-history' element={<ProfileLayout />} />
+                <Route path='/id-verification' element={<ProfileLayout />} />
                 <Route path='/chat' element={<ChatPage2 />} />
                 <Route path='/location' element={<LocationSearch />} />
 

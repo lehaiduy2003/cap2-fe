@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Profile from './Profile';
 import RentHistory from './RentHistory';
+import IdVerification from './IdVerification';
 
 const ProfileLayout = () => {
     const navigate = useNavigate();
@@ -18,6 +19,8 @@ const ProfileLayout = () => {
             return <Profile />;
         } else if (activeTab === '/rent-history') {
             return <RentHistory />;
+        } else if (activeTab === '/id-verification') {
+            return <IdVerification />;
         }
         return <Profile />;
     };
@@ -56,6 +59,19 @@ const ProfileLayout = () => {
                                 >
                                     <i className='fas fa-history mr-3'></i>
                                     Lịch sử thuê
+                                </button>
+                                <button
+                                    onClick={() =>
+                                        handleTabChange('/id-verification')
+                                    }
+                                    className={`w-full text-left px-4 py-3 rounded-lg font-medium transition duration-200 ${
+                                        activeTab === '/id-verification'
+                                            ? 'bg-blue-600 text-white shadow-md'
+                                            : 'text-gray-700 hover:bg-gray-100'
+                                    }`}
+                                >
+                                    <i className='fas fa-id-card mr-3'></i>
+                                    Xác thực CMND/CCCD
                                 </button>
                             </nav>
                         </div>
