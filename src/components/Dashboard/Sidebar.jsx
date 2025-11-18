@@ -27,8 +27,6 @@ const Sidebar = () => {
                   { label: 'Thêm sự cố', key: 'add-incident' },
               ]
             : []),
-        { label: 'Hóa đơn', key: 'invoices' },
-        { label: 'Cài đặt', key: '/' },
     ];
 
     const handleBackClick = () => {

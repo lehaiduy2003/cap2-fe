@@ -16,13 +16,7 @@ const BookingCard = ({ initialHotel, onEditClick, onDeleteClick }) => {
     return (
         <div className='booking-card'>
             <div className='booking-image'>
-                <img
-                    src={getImageUrl()}
-                    alt={hotelInfo.title}
-                    onError={(e) => {
-                        e.target.src = '/default-room.jpg';
-                    }}
-                />
+                <img src={getImageUrl()} alt={hotelInfo.title} />
                 <div className='price-tag'>{hotelInfo.price} VND/Tháng</div>
             </div>
             <div className='booking-info'>
@@ -35,7 +29,9 @@ const BookingCard = ({ initialHotel, onEditClick, onDeleteClick }) => {
                     {hotelInfo.numBathrooms}
                 </div>
                 <div>{hotelInfo.addressDetails}</div>
-                <div>Mô tả: {hotelInfo.description}</div>
+                <div className='hotel-description'>
+                    Mô tả: {hotelInfo.description}
+                </div>
                 <div className='card-actions'>
                     <button
                         className='edit-btn'

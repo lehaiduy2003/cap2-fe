@@ -9,11 +9,14 @@
     transition:
         transform 0.2s,
         box-shadow 0.2s;
+    width: 100%;
+    position: relative;
 }
 
 .booking-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    z-index: 1;
 }
 
 /* Image section */
@@ -71,6 +74,18 @@
     font-size: 0.9rem;
     color: #444;
     margin-bottom: 6px;
+}
+
+.hotel-description {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+    max-height: 4.5em;
+    line-height: 1.5em;
 }
 
 /* Action buttons */

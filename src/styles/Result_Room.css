@@ -32,6 +32,13 @@
     margin-bottom: 1.25rem;
 }
 
+.hotel-description {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+}
+
 /* Layout: two columns - left images, right details/actions */
 .room-layout {
     display: grid;

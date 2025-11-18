@@ -27,6 +27,7 @@ import { ToastContainer } from 'react-toastify';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import LocationSearch from './pages/LocationSearch';
 import ProfileLayout from './pages/ProfileLayout';
+import ChatPage from './pages/ChatPageNew';
 
 const App = () => {
     const { theme } = useThemeStore();
@@ -91,7 +92,7 @@ const App = () => {
                 <Route path='/profile' element={<ProfileLayout />} />
                 <Route path='/rent-history' element={<ProfileLayout />} />
                 <Route path='/id-verification' element={<ProfileLayout />} />
-                <Route path='/chat' element={<ChatPage2 />} />
+                <Route path='/chat' element={<ChatPage />} />
                 <Route path='/location' element={<LocationSearch />} />
 
                 {/* Add other routes here */}

@@ -145,6 +145,7 @@
     position: relative;
     flex: 1;
     min-width: 200px;
+    padding-top: 20px;
 }
 
 .search-icon {
@@ -155,6 +156,7 @@
     color: #9ca3af;
     font-size: 14px;
     z-index: 1;
+    padding-top: 20px;
 }
 
 .search-container .search-input {

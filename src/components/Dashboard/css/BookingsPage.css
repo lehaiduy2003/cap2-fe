@@ -1,66 +1,92 @@
 /* Booking page layout */
 .BookingsPage-content {
     flex: 1;
-    padding: 20px;
-    background-color: #f5f5f5;
-}
-
-.booking-actions {
-    display: flex;
-    align-items: center;
-    margin: 24px 0;
-}
-
-.search-input {
-    flex: 1;
-    padding: 8px 16px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    margin-right: 16px;
-}
-
-.action-btn {
-    background: #2574fb;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    width: 36px;
-    height: 36px;
-    font-size: 1.5rem;
-    cursor: pointer;
-}
-
-/* Booking page layout */
-.BookingsPage-content {
-    flex: 1;
-    padding: 24px;
+    padding: 0;
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     min-height: 100vh;
 }
 
-.booking-actions {
+/* Filter bar with light theme */
+.filter-bar {
     display: flex;
     align-items: center;
-    margin: 24px 0;
+    gap: 16px;
+    padding: 16px 24px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    margin-bottom: 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Search container */
+.search-container {
+    position: relative;
+    flex: 1;
+    max-width: 600px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 14px;
+    pointer-events: none;
 }
 
 .search-input {
-    flex: 1;
-    padding: 8px 16px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    margin-right: 16px;
+    width: 100%;
+    padding: 12px 16px 12px 42px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f9fafb;
+    color: #1f2937;
+    font-size: 14px;
+    transition: all 0.2s ease;
 }
 
-.action-btn {
-    background: #2574fb;
+.search-input::placeholder {
+    color: #9ca3af;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #4a90e2;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+/* Add button */
+.add-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
     color: #fff;
     border: none;
-    border-radius: 6px;
-    width: 36px;
-    height: 36px;
-    font-size: 1.5rem;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(74, 144, 226, 0.3);
+    white-space: nowrap;
+}
+
+.add-btn:hover {
+    background: linear-gradient(135deg, #357abd 0%, #2d6aa5 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(74, 144, 226, 0.4);
+}
+
+.add-btn:active {
+    transform: translateY(0);
+}
+
+.add-btn svg {
+    font-size: 16px;
 }
 
 /* Grid layout */
@@ -68,8 +94,9 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 24px;
-    padding: 0;
-    margin-top: 20px;
+    padding: 24px;
+    margin-top: 0;
+    align-items: start;
 }
 
 /* No rooms message */
@@ -114,24 +141,37 @@
 
 /* Responsive Design */
 @media (max-width: 1200px) {
-    .BookingsPage-content {
-        padding: 20px;
+    .filter-bar {
+        padding: 16px 20px;
     }
 
     .booking-list {
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 20px;
+        padding: 20px;
     }
 }
 
 @media (max-width: 768px) {
-    .BookingsPage-content {
-        padding: 16px;
+    .filter-bar {
+        flex-wrap: wrap;
+        padding: 12px 16px;
+        gap: 12px;
+    }
+
+    .search-container {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+
+    .add-btn {
+        flex: 1;
     }
 
     .booking-list {
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         gap: 16px;
+        padding: 16px;
     }
 
     .no-rooms-message {
@@ -144,13 +184,23 @@
 }
 
 @media (max-width: 480px) {
-    .BookingsPage-content {
+    .filter-bar {
         padding: 12px;
+    }
+
+    .add-btn span {
+        display: none;
+    }
+
+    .add-btn {
+        min-width: 48px;
+        padding: 12px 16px;
     }
 
     .booking-list {
         grid-template-columns: 1fr;
         gap: 12px;
+        padding: 12px;
     }
 
     .no-rooms-message {

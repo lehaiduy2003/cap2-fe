@@ -1,27 +1,48 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import BookingCard from './BookingCard';
-import FilterBar from './FilterBar';
 import RegisterForm from './RegisterForm';
 import EditForm from './EditForm';
 import './css/BookingsPage.css';
 import { BASE_API_URL } from '../../constants';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus, faSearch } from '@fortawesome/free-solid-svg-icons';
 
 const BookingsPage = () => {
     const [hotels, setHotels] = useState([]);
     const [showRegisterForm, setShowRegisterForm] = useState(false);
     const [editingHotel, setEditingHotel] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [initialLoading, setInitialLoading] = useState(true);
+    const [searching, setSearching] = useState(false);
     const [error, setError] = useState(null);
 
     const token = localStorage.getItem('authToken');
     const userRole = localStorage.getItem('userRole');
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [inputValue, setInputValue] = useState('');
+    const isFirstLoad = useRef(true);
+
+    // Debounce effect
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearchTerm(inputValue);
+        }, 300);
+
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [inputValue]);
+
+    const handleSearch = (e) => {
+        setInputValue(e.target.value);
+    };
 
     useEffect(() => {
         console.log('Current user role:', userRole); // Debug log
 
         if (!token) {
             setError('Vui lòng đăng nhập để xem danh sách phòng');
-            setLoading(false);
+            setInitialLoading(false);
             return;
         }
 
@@ -29,18 +50,26 @@ const BookingsPage = () => {
         if (userRole !== 'ADMIN' && userRole !== 'OWNER') {
             console.log('Invalid role:', userRole); // Debug log
             setError('Bạn không có quyền truy cập trang này');
-            setLoading(false);
+            setInitialLoading(false);
             return;
         }
 
         const fetchMyRooms = async () => {
             try {
-                setLoading(true);
+                // Show searching indicator for subsequent searches, not first load
+                if (!isFirstLoad.current) {
+                    setSearching(true);
+                }
+
                 // Nếu là ADMIN thì dùng endpoint khác
-                const endpoint =
+                let endpoint =
                     userRole === 'ADMIN'
                         ? `${BASE_API_URL}/api/rooms`
                         : `${BASE_API_URL}/api/rooms/owner`;
+
+                if (searchTerm && searchTerm.trim() !== '') {
+                    endpoint += `?search=${encodeURIComponent(searchTerm.trim())}`;
+                }
 
                 console.log('Fetching from endpoint:', endpoint); // Debug log
                 const response = await fetch(endpoint, {
@@ -54,7 +83,8 @@ const BookingsPage = () => {
                     // Không throw error nếu không tìm thấy phòng
                     if (response.status === 404) {
                         setHotels([]);
-                        setLoading(false);
+                        setInitialLoading(false);
+                        setSearching(false);
                         return;
                     }
                     throw new Error(
@@ -78,12 +108,14 @@ const BookingsPage = () => {
                 console.error('Lỗi khi fetch danh sách phòng:', err);
                 setError(err.message);
             } finally {
-                setLoading(false);
+                setInitialLoading(false);
+                setSearching(false);
+                isFirstLoad.current = false;
             }
         };
 
         fetchMyRooms();
-    }, [token, userRole]);
+    }, [token, userRole, searchTerm]);
 
     const handleAddHotel = (newHotel) => {
         if (newHotel && newHotel.id) {
@@ -134,7 +166,7 @@ const BookingsPage = () => {
         }
     };
 
-    if (loading) {
+    if (initialLoading) {
         return <div className='BookingsPage-content'>Đang tải...</div>;
     }
 
@@ -144,7 +176,27 @@ const BookingsPage = () => {
 
     return (
         <div className='BookingsPage-content'>
-            <FilterBar onAddClick={() => setShowRegisterForm(true)} />
+            <div className='filter-bar'>
+                <div className='search-container'>
+                    <FontAwesomeIcon icon={faSearch} className='search-icon' />
+                    <input
+                        className='search-input'
+                        type='text'
+                        placeholder='Tìm kiếm phòng trọ...'
+                        value={inputValue}
+                        onChange={handleSearch}
+                    />
+                </div>
+
+                <button
+                    className='add-btn extended'
+                    onClick={() => setShowRegisterForm(true)}
+                    title='Thêm phòng mới'
+                >
+                    <FontAwesomeIcon icon={faPlus} />
+                    <span>Thêm phòng mới</span>
+                </button>
+            </div>
 
             {showRegisterForm && (
                 <RegisterForm
@@ -162,7 +214,11 @@ const BookingsPage = () => {
             )}
 
             <div className='booking-list'>
-                {hotels.length > 0 ? (
+                {searching ? (
+                    <div className='no-rooms-message'>
+                        <p>Đang tìm kiếm...</p>
+                    </div>
+                ) : hotels.length > 0 ? (
                     hotels.map((hotel) => (
                         <BookingCard
                             key={hotel.id}
@@ -173,7 +229,11 @@ const BookingsPage = () => {
                     ))
                 ) : (
                     <div className='no-rooms-message'>
-                        <p>Chưa có phòng nào được đăng.</p>
+                        <p>
+                            {searchTerm
+                                ? 'Không tìm thấy phòng nào phù hợp.'
+                                : 'Chưa có phòng nào được đăng.'}
+                        </p>
                     </div>
                 )}
             </div>
