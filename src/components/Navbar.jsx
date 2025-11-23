@@ -210,7 +210,7 @@ function Navbar() {
                 console.log('Disconnected from WebSocket');
             });
         }
-        localStorage.removeItem('authToken');
+        localStorage.clear();
         setIsLoggedIn(false);
         setFullName('');
         setNotifications([]);

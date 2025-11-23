@@ -49,6 +49,17 @@ function Result_Room() {
     const [currentReviewPage, setCurrentReviewPage] = useState(1);
     const [loadingReviews, setLoadingReviews] = useState(false);
 
+    const [showReviewForm, setShowReviewForm] = useState(false);
+    const [reviewData, setReviewData] = useState({
+        safety_rating: 5,
+        cleanliness_rating: 5,
+        amenities_rating: 5,
+        host_rating: 5,
+        review_text: '',
+    });
+    const [submittingReview, setSubmittingReview] = useState(false);
+    const [userReview, setUserReview] = useState(null);
+
     const [safetyData, setSafetyData] = useState(null);
     const [loadingSafety, setLoadingSafety] = useState(false);
     const [locationData, setLocationData] = useState(null);
@@ -154,6 +165,11 @@ function Result_Room() {
             setLoadingReviews(true);
             try {
                 const token = localStorage.getItem('authToken');
+                const authUser = JSON.parse(
+                    localStorage.getItem('authUser') || '{}',
+                );
+                const userId = authUser.id;
+
                 const response = await fetch(
                     `${VAT_API_URL}/api/v1/reviews/${id}?page=${page}&limit=5`,
                     {
@@ -161,27 +177,38 @@ function Result_Room() {
                         headers: {
                             'Content-Type': 'application/json',
                             ...(token && { Authorization: `Bearer ${token}` }),
-                            'x-user-id':
-                                JSON.parse(
-                                    localStorage.getItem('authUser') || '{}',
-                                ).id || '',
+                            'x-user-id': userId || '',
                         },
                     },
                 );
 
                 if (response.ok) {
                     const data = await response.json();
-                    setReviews(data.reviews || []);
+                    const reviewsData = data.reviews || [];
+
+                    // Check if current user has already reviewed
+                    const currentUserReview = reviewsData.find(
+                        (review) => review.user_id === userId,
+                    );
+                    setUserReview(currentUserReview || null);
+
+                    // Filter out user's review from the general reviews list
+                    const otherReviews = reviewsData.filter(
+                        (review) => review.user_id !== userId,
+                    );
+                    setReviews(otherReviews);
                     setReviewsPagination(data.pagination);
                 } else {
                     console.error('Failed to fetch reviews');
                     setReviews([]);
                     setReviewsPagination(null);
+                    setUserReview(null);
                 }
             } catch (error) {
                 console.error('Error fetching reviews:', error);
                 setReviews([]);
                 setReviewsPagination(null);
+                setUserReview(null);
             } finally {
                 setLoadingReviews(false);
             }
@@ -331,6 +358,56 @@ function Result_Room() {
         } catch (error) {
             console.error('Error sending rental request:', error);
             showErrorToast(error.message || 'Đã xảy ra lỗi khi gửi yêu cầu.');
+        }
+    };
+
+    const handleSubmitReview = async (e) => {
+        e.preventDefault();
+        setSubmittingReview(true);
+        const token = localStorage.getItem('authToken');
+        const authUser = JSON.parse(localStorage.getItem('authUser'));
+
+        if (!token || !authUser) {
+            showInfoToast('Vui lòng đăng nhập để gửi đánh giá.');
+            navigate('/login');
+            setSubmittingReview(false);
+            return;
+        }
+
+        try {
+            const response = await fetch(`${VAT_API_URL}/api/v1/reviews`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                    'x-user-id': authUser.id,
+                },
+                body: JSON.stringify({
+                    property_id: room.id,
+                    ...reviewData,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            showSuccessToast('Đánh giá đã được gửi thành công!');
+            setShowReviewForm(false);
+            setReviewData({
+                safety_rating: 5,
+                cleanliness_rating: 5,
+                amenities_rating: 5,
+                host_rating: 5,
+                review_text: '',
+            });
+            // Refresh reviews to show the new user review
+            fetchReviews(currentReviewPage);
+        } catch (error) {
+            console.error('Lỗi khi gửi đánh giá:', error);
+            showErrorToast('Không thể gửi đánh giá. Vui lòng thử lại.');
+        } finally {
+            setSubmittingReview(false);
         }
     };
 
@@ -616,7 +693,81 @@ function Result_Room() {
 
             {/* Reviews Section */}
             <section className='reviews-section section-card'>
-                <h2 className='reviews-title'>Đánh giá từ người dùng</h2>
+                <div className='reviews-header'>
+                    <h2 className='reviews-title'>Đánh giá từ người dùng</h2>
+                    {localStorage.getItem('authToken') && !userReview && (
+                        <button
+                            onClick={() => setShowReviewForm(true)}
+                            className='write-review-btn'
+                        >
+                            Viết đánh giá
+                        </button>
+                    )}
+                </div>
+
+                {/* User's Review */}
+                {userReview && (
+                    <div className='user-review-section'>
+                        <h3 className='user-review-title'>Đánh giá của bạn</h3>
+                        <div className='review-item user-review'>
+                            <div className='review-header'>
+                                <div className='reviewer-name'>
+                                    {userReview.reviewer_name}
+                                </div>
+                                <div className='review-date'>
+                                    {new Date(
+                                        userReview.created_at,
+                                    ).toLocaleDateString('vi-VN')}
+                                </div>
+                            </div>
+                            <div className='review-ratings'>
+                                <div className='rating-item'>
+                                    <span>An toàn:</span>
+                                    <div className='stars'>
+                                        {'★'.repeat(userReview.safety_rating)}
+                                        {'☆'.repeat(
+                                            5 - userReview.safety_rating,
+                                        )}
+                                    </div>
+                                </div>
+                                <div className='rating-item'>
+                                    <span>Sạch sẽ:</span>
+                                    <div className='stars'>
+                                        {'★'.repeat(
+                                            userReview.cleanliness_rating,
+                                        )}
+                                        {'☆'.repeat(
+                                            5 - userReview.cleanliness_rating,
+                                        )}
+                                    </div>
+                                </div>
+                                <div className='rating-item'>
+                                    <span>Tiện nghi:</span>
+                                    <div className='stars'>
+                                        {'★'.repeat(
+                                            userReview.amenities_rating,
+                                        )}
+                                        {'☆'.repeat(
+                                            5 - userReview.amenities_rating,
+                                        )}
+                                    </div>
+                                </div>
+                                <div className='rating-item'>
+                                    <span>Chủ nhà:</span>
+                                    <div className='stars'>
+                                        {'★'.repeat(userReview.host_rating)}
+                                        {'☆'.repeat(5 - userReview.host_rating)}
+                                    </div>
+                                </div>
+                            </div>
+                            {userReview.review_text && (
+                                <div className='review-text'>
+                                    {userReview.review_text}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {loadingReviews ? (
                     <div className='loading-reviews'>Đang tải đánh giá...</div>
@@ -727,11 +878,11 @@ function Result_Room() {
                                 </div>
                             )}
                     </>
-                ) : (
+                ) : !userReview ? (
                     <div className='no-reviews'>
                         Chưa có đánh giá nào cho phòng này.
                     </div>
-                )}
+                ) : null}
             </section>
 
             {showReportForm && (
@@ -810,6 +961,127 @@ function Result_Room() {
                                 Hủy
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {showReviewForm && (
+                <div className='report-overlay'>
+                    <div className='report-form'>
+                        <h3>Đánh giá phòng</h3>
+                        <form onSubmit={handleSubmitReview}>
+                            <div className='review-rating-field'>
+                                <label>An toàn</label>
+                                <select
+                                    value={reviewData.safety_rating}
+                                    onChange={(e) =>
+                                        setReviewData({
+                                            ...reviewData,
+                                            safety_rating: parseInt(
+                                                e.target.value,
+                                            ),
+                                        })
+                                    }
+                                >
+                                    {[1, 2, 3, 4, 5].map((n) => (
+                                        <option key={n} value={n}>
+                                            {n} sao
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className='review-rating-field'>
+                                <label>Sạch sẽ</label>
+                                <select
+                                    value={reviewData.cleanliness_rating}
+                                    onChange={(e) =>
+                                        setReviewData({
+                                            ...reviewData,
+                                            cleanliness_rating: parseInt(
+                                                e.target.value,
+                                            ),
+                                        })
+                                    }
+                                >
+                                    {[1, 2, 3, 4, 5].map((n) => (
+                                        <option key={n} value={n}>
+                                            {n} sao
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className='review-rating-field'>
+                                <label>Tiện nghi</label>
+                                <select
+                                    value={reviewData.amenities_rating}
+                                    onChange={(e) =>
+                                        setReviewData({
+                                            ...reviewData,
+                                            amenities_rating: parseInt(
+                                                e.target.value,
+                                            ),
+                                        })
+                                    }
+                                >
+                                    {[1, 2, 3, 4, 5].map((n) => (
+                                        <option key={n} value={n}>
+                                            {n} sao
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className='review-rating-field'>
+                                <label>Chủ nhà</label>
+                                <select
+                                    value={reviewData.host_rating}
+                                    onChange={(e) =>
+                                        setReviewData({
+                                            ...reviewData,
+                                            host_rating: parseInt(
+                                                e.target.value,
+                                            ),
+                                        })
+                                    }
+                                >
+                                    {[1, 2, 3, 4, 5].map((n) => (
+                                        <option key={n} value={n}>
+                                            {n} sao
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className='review-text-field'>
+                                <label>Nhận xét</label>
+                                <textarea
+                                    value={reviewData.review_text}
+                                    onChange={(e) =>
+                                        setReviewData({
+                                            ...reviewData,
+                                            review_text: e.target.value,
+                                        })
+                                    }
+                                    placeholder='Viết nhận xét của bạn...'
+                                    rows={3}
+                                />
+                            </div>
+                            <div className='report-buttons'>
+                                <button
+                                    type='submit'
+                                    disabled={submittingReview}
+                                    className='send-request'
+                                >
+                                    {submittingReview
+                                        ? 'Đang gửi...'
+                                        : 'Gửi đánh giá'}
+                                </button>
+                                <button
+                                    type='button'
+                                    onClick={() => setShowReviewForm(false)}
+                                >
+                                    Hủy
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

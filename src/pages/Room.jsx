@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import room1 from '../assets/room1.jpeg';
 import room2 from '../assets/room2.jpeg';
 import room3 from '../assets/room3.jpeg';
-import SearchBar from '../components/SearchBar';
 import '../styles/Room.css';
 // Import Swiper styles
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -45,6 +44,33 @@ function Room() {
     const [error, setError] = useState(null);
     const [sortOrder, setSortOrder] = useState(null);
     const navigate = useNavigate();
+
+    // Search and Filter states
+    const [searchQuery, setSearchQuery] = useState('');
+    const [appliedSearchQuery, setAppliedSearchQuery] = useState('');
+    const [filters, setFilters] = useState({
+        minPrice: '',
+        maxPrice: '',
+        minSize: '',
+        maxSize: '',
+        bedrooms: '',
+        bathrooms: '',
+        city: '',
+        district: '',
+        availableOnly: false,
+    });
+    const [appliedFilters, setAppliedFilters] = useState({
+        minPrice: '',
+        maxPrice: '',
+        minSize: '',
+        maxSize: '',
+        bedrooms: '',
+        bathrooms: '',
+        city: '',
+        district: '',
+        availableOnly: false,
+    });
+    const [showFilterPanel, setShowFilterPanel] = useState(false);
     const slides = [
         { image: a1, alt: 'Phòng 1' },
         { image: a2, alt: 'Phòng 2' },
@@ -83,11 +109,62 @@ function Room() {
         }
     };
 
+    const handleSearch = () => {
+        setAppliedSearchQuery(searchQuery);
+        setAppliedFilters(filters);
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
     const fetchRooms = async () => {
         try {
-            const response = await fetch(`${BASE_API_URL}/api/rooms`);
-            if (!response.ok) throw new Error('Network error');
+            // Build query parameters
+            const params = new URLSearchParams();
+
+            if (appliedSearchQuery) {
+                params.append('search', appliedSearchQuery);
+            }
+
+            // Build filter string for backend
+            const filterConditions = [];
+            if (appliedFilters.minPrice)
+                filterConditions.push(`price:>${appliedFilters.minPrice}`);
+            if (appliedFilters.maxPrice)
+                filterConditions.push(`price:<${appliedFilters.maxPrice}`);
+            if (appliedFilters.minSize)
+                filterConditions.push(`size:>${appliedFilters.minSize}`);
+            if (appliedFilters.maxSize)
+                filterConditions.push(`size:<${appliedFilters.maxSize}`);
+            if (appliedFilters.bedrooms)
+                filterConditions.push(`bedrooms:${appliedFilters.bedrooms}`);
+            if (appliedFilters.bathrooms)
+                filterConditions.push(`bathrooms:${appliedFilters.bathrooms}`);
+            if (appliedFilters.city)
+                filterConditions.push(`city:${appliedFilters.city}`);
+            if (appliedFilters.district)
+                filterConditions.push(`district:${appliedFilters.district}`);
+            if (appliedFilters.availableOnly)
+                filterConditions.push(`available:true`);
+
+            if (filterConditions.length > 0) {
+                params.append('filter', filterConditions.join(','));
+            }
+
+            const url = `${BASE_API_URL}/api/rooms${params.toString() ? '?' + params.toString() : ''}`;
+            const response = await fetch(url);
             const data = await response.json();
+
+            // Handle 404 or empty results
+            if (!response.ok || !data.data || data.data.length === 0) {
+                setRooms([]);
+                setLoading(false);
+                setError(null);
+                return;
+            }
 
             // Fetch owner information for each room
             const roomsWithOwnerInfo = await Promise.all(
@@ -122,15 +199,19 @@ function Room() {
 
             setRooms(roomsWithOwnerInfo);
             setLoading(false);
+            setError(null);
         } catch (err) {
-            setError(err.message);
+            console.error('Error fetching rooms:', err);
+            setRooms([]);
+            setError(null);
             setLoading(false);
         }
     };
 
     useEffect(() => {
         fetchRooms();
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [appliedSearchQuery, appliedFilters]);
 
     const getValidImageUrl = (imageUrls) => {
         if (!imageUrls || !Array.isArray(imageUrls) || imageUrls.length === 0) {
@@ -143,7 +224,6 @@ function Room() {
         return baseURL + imageUrls[0];
     };
     // loc theo thanh pho
-    const tabs = ['Tất Cả', 'Đà Nẵng', 'Thành phố Hồ Chí Minh', 'Hà Nội'];
     const filteredRooms = rooms.filter((room) => {
         const matchCity =
             activeTab === 'Tất Cả' ||
@@ -162,48 +242,313 @@ function Room() {
         sortedRooms.sort((a, b) => b.price - a.price);
     }
 
-    if (loading) return <p>Đang tải phòng trọ...</p>;
-    if (error) return <p>Lỗi: {error}</p>;
+    if (loading) {
+        return (
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    minHeight: '400px',
+                }}
+            >
+                <p style={{ fontSize: '18px', color: '#666' }}>
+                    Đang tải phòng trọ...
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className='body'>
-            <SearchBar onSortChange={handleSortChange} />
-
             <div
                 className='map-button-container'
                 style={{
                     padding: '20px',
                     display: 'flex',
+                    flexDirection: 'column',
                     justifyContent: 'center',
                     alignItems: 'center',
+                    gap: '15px',
                 }}
             >
-                <div className='relative mr-2 mb-2'>
-                    <input
-                        type='text'
-                        className='border border-gray-300 rounded-lg py-2 pl-4 pr-10 w-80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                        placeholder='Tìm kiếm phòng...'
-                    />
+                <div
+                    style={{
+                        display: 'flex',
+                        gap: '10px',
+                        alignItems: 'center',
+                    }}
+                >
+                    <div className='relative'>
+                        <input
+                            type='text'
+                            className='border border-gray-300 rounded-lg py-2 pl-4 pr-10 w-80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                            placeholder='Tìm kiếm phòng...'
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                        />
+                        <button
+                            onClick={handleSearch}
+                            className='absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500 transition-colors duration-200'
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            <i className='fas fa-search'></i>
+                        </button>
+                    </div>
                     <button
-                        className='absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500 transition-colors duration-200'
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                        }}
+                        onClick={() => setShowFilterPanel(!showFilterPanel)}
+                        className='bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200'
                     >
-                        <i className='fas fa-search'></i>
+                        <i className='fas fa-filter'></i>
+                        Bộ lọc
+                    </button>
+                    <button
+                        onClick={() =>
+                            navigate('/map', { state: { rooms: sortedRooms } })
+                        }
+                        className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200'
+                    >
+                        <i className='fas fa-map-marked-alt'></i>
+                        Bản đồ
                     </button>
                 </div>
-                <button
-                    onClick={() =>
-                        navigate('/map', { state: { rooms: sortedRooms } })
-                    }
-                    className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200'
-                    style={{ marginBottom: '10px' }}
-                >
-                    <i className='fas fa-map-marked-alt'></i>
-                </button>
+
+                {/* Filter Panel */}
+                {showFilterPanel && (
+                    <div
+                        style={{
+                            background: 'white',
+                            padding: '20px',
+                            borderRadius: '10px',
+                            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                            width: '90%',
+                            maxWidth: '900px',
+                        }}
+                    >
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns:
+                                    'repeat(auto-fit, minmax(200px, 1fr))',
+                                gap: '15px',
+                            }}
+                        >
+                            <div>
+                                <label
+                                    style={{
+                                        display: 'block',
+                                        marginBottom: '5px',
+                                        fontWeight: 'bold',
+                                        fontSize: '14px',
+                                    }}
+                                >
+                                    Giá tối thiểu (VND)
+                                </label>
+                                <input
+                                    type='number'
+                                    className='border border-gray-300 rounded-lg py-2 px-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500'
+                                    placeholder='0'
+                                    value={filters.minPrice}
+                                    onChange={(e) =>
+                                        setFilters({
+                                            ...filters,
+                                            minPrice: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    style={{
+                                        display: 'block',
+                                        marginBottom: '5px',
+                                        fontWeight: 'bold',
+                                        fontSize: '14px',
+                                    }}
+                                >
+                                    Giá tối đa (VND)
+                                </label>
+                                <input
+                                    type='number'
+                                    className='border border-gray-300 rounded-lg py-2 px-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500'
+                                    placeholder='10000000'
+                                    value={filters.maxPrice}
+                                    onChange={(e) =>
+                                        setFilters({
+                                            ...filters,
+                                            maxPrice: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    style={{
+                                        display: 'block',
+                                        marginBottom: '5px',
+                                        fontWeight: 'bold',
+                                        fontSize: '14px',
+                                    }}
+                                >
+                                    Diện tích tối thiểu (m²)
+                                </label>
+                                <input
+                                    type='number'
+                                    className='border border-gray-300 rounded-lg py-2 px-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500'
+                                    placeholder='0'
+                                    value={filters.minSize}
+                                    onChange={(e) =>
+                                        setFilters({
+                                            ...filters,
+                                            minSize: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    style={{
+                                        display: 'block',
+                                        marginBottom: '5px',
+                                        fontWeight: 'bold',
+                                        fontSize: '14px',
+                                    }}
+                                >
+                                    Diện tích tối đa (m²)
+                                </label>
+                                <input
+                                    type='number'
+                                    className='border border-gray-300 rounded-lg py-2 px-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500'
+                                    placeholder='100'
+                                    value={filters.maxSize}
+                                    onChange={(e) =>
+                                        setFilters({
+                                            ...filters,
+                                            maxSize: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    style={{
+                                        display: 'block',
+                                        marginBottom: '5px',
+                                        fontWeight: 'bold',
+                                        fontSize: '14px',
+                                    }}
+                                >
+                                    Số phòng ngủ
+                                </label>
+                                <select
+                                    className='border border-gray-300 rounded-lg py-2 px-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500'
+                                    value={filters.bedrooms}
+                                    onChange={(e) =>
+                                        setFilters({
+                                            ...filters,
+                                            bedrooms: e.target.value,
+                                        })
+                                    }
+                                >
+                                    <option value=''>Tất cả</option>
+                                    <option value='1'>1</option>
+                                    <option value='2'>2</option>
+                                    <option value='3'>3</option>
+                                    <option value='4'>4+</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label
+                                    style={{
+                                        display: 'block',
+                                        marginBottom: '5px',
+                                        fontWeight: 'bold',
+                                        fontSize: '14px',
+                                    }}
+                                >
+                                    Số phòng tắm
+                                </label>
+                                <select
+                                    className='border border-gray-300 rounded-lg py-2 px-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500'
+                                    value={filters.bathrooms}
+                                    onChange={(e) =>
+                                        setFilters({
+                                            ...filters,
+                                            bathrooms: e.target.value,
+                                        })
+                                    }
+                                >
+                                    <option value=''>Tất cả</option>
+                                    <option value='1'>1</option>
+                                    <option value='2'>2</option>
+                                    <option value='3'>3+</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div
+                            style={{
+                                marginTop: '15px',
+                                display: 'flex',
+                                gap: '10px',
+                                justifyContent: 'flex-end',
+                            }}
+                        >
+                            <label
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '5px',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                <input
+                                    type='checkbox'
+                                    checked={filters.availableOnly}
+                                    onChange={(e) =>
+                                        setFilters({
+                                            ...filters,
+                                            availableOnly: e.target.checked,
+                                        })
+                                    }
+                                />
+                                Chỉ hiển thị phòng còn trống
+                            </label>
+                            <button
+                                onClick={() => {
+                                    const emptyFilters = {
+                                        minPrice: '',
+                                        maxPrice: '',
+                                        minSize: '',
+                                        maxSize: '',
+                                        bedrooms: '',
+                                        bathrooms: '',
+                                        city: '',
+                                        district: '',
+                                        availableOnly: false,
+                                    };
+                                    setFilters(emptyFilters);
+                                    setAppliedFilters(emptyFilters);
+                                    setSearchQuery('');
+                                    setAppliedSearchQuery('');
+                                }}
+                                className='bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg'
+                            >
+                                Xóa bộ lọc
+                            </button>
+                            <button
+                                onClick={handleSearch}
+                                className='bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg'
+                            >
+                                Áp dụng
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className='swiper-container1'>
@@ -256,77 +601,72 @@ function Room() {
                     ))}
                 </Swiper>
             </div>
-            <div className='button-group_city'>
-                {tabs.map((tab) => (
-                    <div
-                        key={tab}
-                        className={`button-tab_city ${activeTab === tab ? 'active' : ''}`}
-                        onClick={() => {
-                            setActiveTab(tab);
-                            if (tab === 'Tất Cả') {
-                                setSelectedDistrict(''); //Xoá bộ lọc quận khi chọn Tất Cả
-                            }
-                        }}
-                        style={{ cursor: 'pointer' }}
-                    >
-                        {tab}
-                    </div>
-                ))}
-                <div className='district_find ' onClick={handleShowDistricts}>
-                    <img src={dot} alt='' />
-                </div>
-                {showDistricts && (
-                    <div
-                        style={{
-                            marginTop: '10px',
-                            padding: '10px',
-                            background: '#f9f9f9',
-                            border: '1px solid #ccc',
-                            borderRadius: '8px',
-                            maxWidth: '300px',
-                        }}
-                    >
-                        <label
-                            style={{
-                                fontWeight: 'bold',
-                                marginBottom: '5px',
-                                display: 'block',
-                            }}
-                        >
-                            Chọn quận tại Đà Nẵng:
-                        </label>
-                        <select
-                            value={selectedDistrict}
-                            onChange={(e) =>
-                                setSelectedDistrict(e.target.value)
-                            }
-                            style={{
-                                width: '100%',
-                                padding: '10px',
-                                borderRadius: '6px',
-                                border: '1px solid #ccc',
-                                fontSize: '14px',
-                            }}
-                        >
-                            <option value=''>-- Chọn quận --</option>
-                            {districts.map((district) => (
-                                <option
-                                    key={district.code}
-                                    value={district.name}
-                                >
-                                    {district.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                )}
-            </div>
+
             <div className='text_title'>
                 <h3>Phòng đặc trưng </h3>{' '}
             </div>
             <div className='room-grid'>
                 {sortedRooms.length === 0 ? (
-                    <p>Không tìm thấy phòng trọ.</p>
+                    <div
+                        style={{
+                            gridColumn: '1 / -1',
+                            textAlign: 'center',
+                            padding: '60px 20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '20px',
+                        }}
+                    >
+                        <i
+                            className='fas fa-home'
+                            style={{ fontSize: '64px', color: '#ccc' }}
+                        ></i>
+                        <h3
+                            style={{
+                                color: '#666',
+                                fontSize: '24px',
+                                margin: 0,
+                            }}
+                        >
+                            Không tìm thấy phòng trọ
+                        </h3>
+                        <p
+                            style={{
+                                color: '#999',
+                                fontSize: '16px',
+                                margin: 0,
+                            }}
+                        >
+                            Vui lòng thử lại với từ khóa hoặc bộ lọc khác
+                        </p>
+                        {(appliedSearchQuery ||
+                            Object.values(appliedFilters).some((v) => v)) && (
+                            <button
+                                onClick={() => {
+                                    const emptyFilters = {
+                                        minPrice: '',
+                                        maxPrice: '',
+                                        minSize: '',
+                                        maxSize: '',
+                                        bedrooms: '',
+                                        bathrooms: '',
+                                        city: '',
+                                        district: '',
+                                        availableOnly: false,
+                                    };
+                                    setFilters(emptyFilters);
+                                    setAppliedFilters(emptyFilters);
+                                    setSearchQuery('');
+                                    setAppliedSearchQuery('');
+                                }}
+                                className='bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg'
+                                style={{ marginTop: '10px' }}
+                            >
+                                Xóa bộ lọc và tìm kiếm
+                            </button>
+                        )}
+                    </div>
                 ) : (
                     <>
                         {(showAllRooms

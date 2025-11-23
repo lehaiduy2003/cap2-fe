@@ -897,6 +897,29 @@
     color: #1f2937;
 }
 
+.reviews-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.write-review-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.write-review-btn:hover {
+    background-color: #0056b3;
+}
+
 .loading-reviews,
 .no-reviews {
     text-align: center;
@@ -1110,4 +1133,74 @@
     padding: 2rem;
     color: #ef4444;
     font-style: italic;
+}
+
+/* Review Form Styles */
+.review-rating-field {
+    margin-bottom: 1rem;
+}
+
+.review-rating-field label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #374151;
+}
+
+.review-rating-field select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    background-color: white;
+}
+
+.review-text-field {
+    margin-bottom: 1rem;
+}
+
+.review-text-field label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #374151;
+}
+
+.review-text-field textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    resize: vertical;
+    min-height: 80px;
+    background-color: white;
+}
+
+/* User Review Styles */
+.user-review-section {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #f0f9ff;
+    border: 2px solid #3b82f6;
+    border-radius: 8px;
+}
+
+.user-review-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e40af;
+    margin-bottom: 1rem;
+}
+
+.review-item.user-review {
+    background: #ffffff;
+    border: 2px solid #3b82f6;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.review-item.user-review .reviewer-name {
+    color: #1e40af;
+    font-weight: 600;
 }

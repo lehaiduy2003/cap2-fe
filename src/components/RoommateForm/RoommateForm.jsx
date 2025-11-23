@@ -7,10 +7,10 @@ import openly from '../../assets/openly.jpg';
 import warm from '../../assets/clean&warm.jpg';
 import friend_video from '../../assets/4k_building.mp4';
 import Select from 'react-select'; // Import Select component from react-select
-import { getProvinces } from 'sub-vn'; // Import getProvinces function
+import { getProvinces, getDistricts } from 'sub-vn'; // Import getProvinces function
 import { BASE_API_URL } from '../../constants';
 const provincesOptions = getProvinces().map((province) => ({
-    value: province.name,
+    value: province.code,
     label: province.name,
 }));
 
@@ -89,27 +89,70 @@ const StepOne = ({ formData, errors, handleChange }) => (
     </>
 );
 
-const StepTwo = ({ formData, errors, handleChange }) => (
-    <>
-        <label>Thành phố:</label>
-        <input
-            type='text'
-            name='city'
-            value={formData.city}
-            onChange={handleChange}
-        />
-        {errors.city && <div className='error'>{errors.city}</div>}
+const StepTwo = ({ formData, errors, setFormData, setErrors }) => {
+    // Get districts filtered by selected province
+    const districtsOptions = formData.province
+        ? getDistricts()
+              .filter(
+                  (district) => district.province_code === formData.province,
+              )
+              .map((district) => ({
+                  value: district.name,
+                  label: district.name,
+              }))
+        : [];
 
-        <label>Quận:</label>
-        <input
-            type='text'
-            name='district'
-            value={formData.district}
-            onChange={handleChange}
-        />
-        {errors.district && <div className='error'>{errors.district}</div>}
-    </>
-);
+    const handleProvinceChange = (selected) => {
+        const provinceValue = selected ? selected.value : '';
+        const provinceNameValue = selected ? selected.label : '';
+        setFormData((prev) => ({
+            ...prev,
+            province: provinceValue,
+            provinceName: provinceNameValue,
+            district: '', // Reset district when province changes
+        }));
+        setErrors((prev) => ({ ...prev, province: '', district: '' }));
+    };
+
+    const handleDistrictChange = (selected) => {
+        const districtValue = selected ? selected.value : '';
+        setFormData((prev) => ({
+            ...prev,
+            district: districtValue,
+        }));
+        setErrors((prev) => ({ ...prev, district: '' }));
+    };
+
+    return (
+        <>
+            <label>Tỉnh/Thành phố:</label>
+            <Select
+                options={provincesOptions}
+                value={provincesOptions.find(
+                    (opt) => opt.value === formData.province,
+                )}
+                onChange={handleProvinceChange}
+                placeholder='Chọn tỉnh/thành phố'
+                isClearable
+            />
+            {errors.province && <div className='error'>{errors.province}</div>}
+
+            <label>Quận/Huyện:</label>
+            <Select
+                key={formData.province || 'no-province'}
+                options={districtsOptions}
+                value={districtsOptions.find(
+                    (opt) => opt.value === formData.district,
+                )}
+                onChange={handleDistrictChange}
+                placeholder='Chọn quận/huyện'
+                isDisabled={!formData.province}
+                isClearable
+            />
+            {errors.district && <div className='error'>{errors.district}</div>}
+        </>
+    );
+};
 
 const StepThree = ({ formData, errors, handleChange }) => {
     const hobbiesList = ['Nuôi thú cưng', 'Hút thuốc', 'Ăn Chay'];
@@ -191,6 +234,8 @@ const RoommateForm = () => {
     const initialFormData = {
         sex: 'Nam', // Default to Vietnamese
         hometown: '',
+        province: '', // Province code
+        provinceName: '', // Province name for display and backend
         city: '',
         district: '',
         phone: '',
@@ -247,10 +292,10 @@ const RoommateForm = () => {
                 newErrors.phone = 'Số điện thoại phải gồm 10 chữ số';
             }
         } else if (step === 2) {
-            if (!formData.city.trim())
-                newErrors.city = 'Vui lòng nhập thành phố';
+            if (!formData.province.trim())
+                newErrors.province = 'Vui lòng chọn tỉnh/thành phố';
             if (!formData.district.trim())
-                newErrors.district = 'Vui lòng nhập quận';
+                newErrors.district = 'Vui lòng chọn quận/huyện';
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -317,10 +362,9 @@ const RoommateForm = () => {
                 Nữ: 'FEMALE',
             };
 
-            // 1. Create roommate record
             const dataToSend = {
                 hometown: formData.hometown,
-                city: formData.city,
+                city: formData.provinceName, // Use province name for backend
                 district: formData.district,
                 yob: formData.dob,
                 job: formData.job,
@@ -440,6 +484,8 @@ const RoommateForm = () => {
                             formData={formData}
                             errors={errors}
                             handleChange={handleChange}
+                            setFormData={setFormData}
+                            setErrors={setErrors}
                         />
                     )}
                     {step === 3 && (
