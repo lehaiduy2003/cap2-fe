@@ -9,21 +9,23 @@ const dbConfig = {
   port: parseInt(process.env.PGPORT, 10),
 };
 
-// CẤU HÌNH TRỌNG SỐ
+// --- HẰNG SỐ CẤU HÌNH ---
 const WEIGHTS = { USER_SCORE: 0.4, CRIME_SCORE: 0.4, ENV_SCORE: 0.2 };
 const SEVERITY_WEIGHTS = { low: 1.0, medium: 4.0, high: 8.0 };
-const CRIME_HALF_LIFE_DAYS = 180;
-const ENV_SEARCH_RADIUS_METERS = 1000;
+const CRIME_HALF_LIFE_DAYS = 180; // Chu kỳ bán rã (ngày)
+const ENV_SEARCH_RADIUS_METERS = 1000; // 1km cho tiện ích
 
-// === HÀM HỖ TRỢ: ĐỒNG BỘ DỮ LIỆU TỪ API GỐC ===
+// ===========================================
+// HÀM HỖ TRỢ: ĐỒNG BỘ DỮ LIỆU TỪ API GỐC
+// ===========================================
 async function syncProperty(propertyId, client) {
   if (!propertyId) return [];
 
   console.log(`[SYNC] Đang đồng bộ thông tin phòng ID ${propertyId} từ API gốc...`);
   try {
+    // Gọi API của hệ thống Java Core
     const url = `${process.env.BASE_API_URL}/api/rooms/${propertyId}`;
     
-    // Sử dụng fetch (Node.js 18+ đã hỗ trợ native fetch)
     const res = await fetch(url, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -35,16 +37,14 @@ async function syncProperty(propertyId, client) {
     }
 
     const json = await res.json();
-    // Giả định API trả về: { data: { id, title, addressDetails, ward, district, city, latitude, longitude, ... } }
-    // Hoặc trả về trực tiếp object tùy cấu trúc API của bạn. Tôi xử lý cả 2 trường hợp.
-    const roomData = json.data || json; 
+    const roomData = json.data || json; // Handle tùy cấu trúc response
 
     if (!roomData || !roomData.id) {
        console.warn(`[SYNC FAIL] Dữ liệu API không hợp lệ cho ID ${propertyId}`);
        return [];
     }
 
-    // Tạo địa chỉ đầy đủ
+    // Tạo địa chỉ hiển thị đầy đủ
     const addressParts = [
       roomData.addressDetails,
       roomData.ward,
@@ -52,7 +52,7 @@ async function syncProperty(propertyId, client) {
       roomData.city
     ].filter(p => p).join(", ");
 
-    // UPSERT vào DB
+    // UPSERT vào DB Local (Node.js)
     const insertQuery = {
       text: `
         INSERT INTO properties (id, name, address, latitude, longitude)
@@ -84,23 +84,30 @@ async function syncProperty(propertyId, client) {
   }
 }
 
-// === 1. TÍNH ĐIỂM USER ===
+// ===========================================
+// 1. TÍNH ĐIỂM CỘNG ĐỒNG (USER)
+// ===========================================
 async function calculateUserScore(propertyId, client) {
   try {
     const res = await client.query(
       "SELECT AVG(safety_rating) as avg_rating FROM reviews WHERE property_id = $1",
       [propertyId]
     );
-    if (!res.rows[0] || res.rows[0].avg_rating === null) return 5.0;
-    return parseFloat(res.rows[0].avg_rating) * 2.0;
+    if (!res.rows[0] || res.rows[0].avg_rating === null) return 5.0; // Mặc định 5 điểm
+    
+    const avgRating = parseFloat(res.rows[0].avg_rating);
+    return isNaN(avgRating) ? 5.0 : avgRating * 2.0; // Chuẩn hóa hệ 10
   } catch (err) {
     console.error(`[JOB ERROR] UserScore ID ${propertyId}: ${err.message}`);
     return 5.0;
   }
 }
 
-// === 2. TÍNH ĐIỂM TỘI PHẠM (LOGIC SPATIAL: 1km - 5km - 10km) ===
+// ===========================================
+// 2. TÍNH ĐIỂM TỘI PHẠM (NÂNG CẤP SPATIAL)
+// ===========================================
 async function calculateCrimeScore(property, client) {
+  // Logic: Lấy sự cố gắn ID trực tiếp HOẶC sự cố trong bán kính 10km
   const query = {
     text: `
       SELECT 
@@ -108,8 +115,8 @@ async function calculateCrimeScore(property, client) {
         incident_date,
         property_id,
         ST_Distance(
-            ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography, 
-            ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography
+            ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography, -- Vị trí phòng trọ
+            ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography -- Vị trí sự cố
         ) as distance_meters
       FROM security_incidents 
       WHERE 
@@ -119,7 +126,7 @@ async function calculateCrimeScore(property, client) {
           AND ST_DWithin(
             ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography,
             ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography,
-            10000 
+            10000 -- Quét tối đa 10km
           )
         )
     `,
@@ -131,36 +138,51 @@ async function calculateCrimeScore(property, client) {
 
   try {
     const res = await client.query(query);
-    if (res.rows.length === 0) return 10.0;
+    if (res.rows.length === 0) return 10.0; // An toàn tuyệt đối
 
     for (const incident of res.rows) {
+      // a. Trọng số mức độ
       const baseSeverity = SEVERITY_WEIGHTS[incident.severity] || 0.0;
-      
+
+      // b. Trọng số thời gian (Time Decay)
       const incidentDate = new Date(incident.incident_date);
       const daysOld = (today - incidentDate) / (1000 * 60 * 60 * 24);
-      if (daysOld > 730 || daysOld < 0) continue; 
+      if (daysOld > 730 || daysOld < 0) continue; // Quá 2 năm bỏ qua
       const timeDecay = 0.5 ** (daysOld / CRIME_HALF_LIFE_DAYS);
 
+      // c. Trọng số khoảng cách (Distance Decay - Logic mới)
       let distanceWeight = 0;
       const dist = incident.distance_meters;
 
-      if (incident.property_id === property.id) distanceWeight = 1.0;
-      else if (dist <= 1000) distanceWeight = 1.0;
-      else if (dist <= 5000) distanceWeight = 0.5;
-      else if (dist <= 10000) distanceWeight = 0.2;
-      else distanceWeight = 0.0;
+      if (incident.property_id === property.id) {
+          distanceWeight = 1.0; // Tại nhà: 100%
+      } else if (dist <= 1000) {
+          distanceWeight = 1.0; // < 1km: 100% (Vùng Đỏ)
+      } else if (dist <= 5000) {
+          distanceWeight = 0.5; // 1km - 5km: 50% (Vùng Cam)
+      } else if (dist <= 10000) {
+          distanceWeight = 0.2; // 5km - 10km: 20% (Vùng Vàng)
+      } else {
+          distanceWeight = 0.0; // > 10km: 0%
+      }
 
+      // Tổng phạt = Mức độ * Thời gian * Khoảng cách
       totalPenalty += baseSeverity * timeDecay * distanceWeight;
     }
 
-    return Math.max(0.0, 10.0 - totalPenalty);
+    // Điểm sàn là 0
+    const finalScore = 10.0 - totalPenalty;
+    return Math.max(0.0, finalScore);
+
   } catch (err) {
     console.error(`[JOB ERROR] CrimeScore ID ${property.id}: ${err.message}`);
-    return 10.0;
+    return 10.0; // Fallback an toàn
   }
 }
 
-// === 3. TÍNH ĐIỂM MÔI TRƯỜNG ===
+// ===========================================
+// 3. TÍNH ĐIỂM MÔI TRƯỜNG (ENV)
+// ===========================================
 async function calculateEnvScore(property, client) {
   const query = {
     text: `
@@ -178,15 +200,17 @@ async function calculateEnvScore(property, client) {
   try {
     const res = await client.query(query);
     const totalWeightScore = parseFloat(res.rows[0].total_weight_score || 0);
-    const finalScore = 5.0 + totalWeightScore;
-    return Math.max(0.0, Math.min(10.0, finalScore));
+    const finalScore = 5.0 + totalWeightScore; // Base 5.0
+    return Math.max(0.0, Math.min(10.0, finalScore)); // Kẹp 0-10
   } catch (err) {
     console.error(`[JOB ERROR] EnvScore ID ${property.id}: ${err.message}`);
     return 5.0;
   }
 }
 
-// === MAIN JOB ===
+// ===========================================
+// MAIN JOB (BATCH PROCESSING)
+// ===========================================
 async function runJob(targetPropertyId = null) {
   const client = new Client(dbConfig);
   try {
@@ -200,13 +224,13 @@ async function runJob(targetPropertyId = null) {
       const res = await client.query("SELECT * FROM properties WHERE id = $1", [targetPropertyId]);
       properties = res.rows;
 
-      // 2. [QUAN TRỌNG] Nếu không thấy trong DB Local, gọi API Sync ngay lập tức
+      // [QUAN TRỌNG] Nếu không thấy trong DB Local, gọi API Sync ngay lập tức
       if (properties.length === 0) {
         console.log(`[JOB INFO] Phòng ID ${targetPropertyId} chưa có trong DB. Đang gọi Sync...`);
         properties = await syncProperty(targetPropertyId, client);
       }
     } else {
-      // Nếu chạy toàn bộ (Cron Job), chỉ lấy những gì đã có trong DB
+      // Cron Job: Lấy toàn bộ
       const res = await client.query("SELECT * FROM properties");
       properties = res.rows;
     }
@@ -218,14 +242,15 @@ async function runJob(targetPropertyId = null) {
 
     console.log(`[JOB] Bắt đầu tính điểm cho ${properties.length} phòng trọ...`);
 
-    // 3. Batch Processing (Xử lý song song)
+    // 2. Xử lý theo Batch (Lô) để tránh treo DB
     const BATCH_SIZE = 50; 
     for (let i = 0; i < properties.length; i += BATCH_SIZE) {
         const batch = properties.slice(i, i + BATCH_SIZE);
         
+        // Chạy song song các phòng trong 1 Batch
         await Promise.all(batch.map(async (prop) => {
             try {
-                // Kiểm tra dữ liệu tọa độ bắt buộc phải có
+                // Kiểm tra tọa độ
                 if (prop.latitude == null || prop.longitude == null) {
                     console.warn(`[JOB SKIP] Phòng ID ${prop.id} thiếu tọa độ.`);
                     return;
@@ -233,7 +258,7 @@ async function runJob(targetPropertyId = null) {
 
                 const [userScore, crimeScore, envScore] = await Promise.all([
                     calculateUserScore(prop.id, client),
-                    calculateCrimeScore(prop, client),
+                    calculateCrimeScore(prop, client), // Truyền cả object prop
                     calculateEnvScore(prop, client)
                 ]);
 
@@ -241,6 +266,7 @@ async function runJob(targetPropertyId = null) {
                                      (crimeScore * WEIGHTS.CRIME_SCORE) + 
                                      (envScore * WEIGHTS.ENV_SCORE);
 
+                // Lưu kết quả (UPSERT)
                 await client.query(`
                     INSERT INTO property_safety_scores 
                         (property_id, overall_score, user_score, crime_score, environment_score, last_updated_at)
