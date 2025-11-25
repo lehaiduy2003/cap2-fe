@@ -1,105 +1,187 @@
 /* src/components/Dashboard/css/AddIncidentForm.css */
+
+/* --- LAYOUT CHÍNH --- */
 .add-incident-container {
-    /* Style này sẽ làm component lấp đầy không gian bên phải Sidebar */
-    padding: 24px;
-    background-color: #fff;
-    border-radius: 8px;
-    /* Thêm bóng đổ nhẹ để C.H.I.A tách biệt với nền */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    max-width: 800px;
-    margin: 20px; /* Tạo khoảng cách với Sidebar và lề */
+    padding: 0;
+    background-color: #f8f9fa;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    max-width: 1200px; /* Tăng chiều rộng để chứa 2 cột */
+    margin: 20px auto;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
 }
 
-.add-incident-container h2 {
+/* Header */
+.form-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    padding: 20px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.form-header h2 {
+    margin: 0;
     font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* --- CONTENT WRAPPER (GRID) --- */
+.form-content {
+    display: grid;
+    grid-template-columns: 400px 1fr; /* Cột Form cố định 400px, Map chiếm phần còn lại */
+    min-height: 600px;
+}
+
+/* --- CỘT TRÁI: FORM INPUT --- */
+.form-sidebar {
+    padding: 25px;
+    background: white;
+    overflow-y: auto;
+    border-right: 1px solid #eee;
+    max-height: 800px; /* Scroll nếu form quá dài */
+}
+
+.incident-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group label {
     font-weight: 600;
-    margin-bottom: 8px;
-    color: #333;
-}
-
-.add-incident-container p {
-    margin-bottom: 24px;
-    color: #666;
-    font-size: 0.95rem;
-}
-
-.incident-form .form-group {
-    margin-bottom: 1.2rem;
-}
-
-.incident-form .form-group label {
-    display: block;
-    font-weight: 500;
+    color: #444;
+    font-size: 0.9rem;
     margin-bottom: 6px;
-    color: #bfbbbb;
+    display: block;
 }
 
-.incident-form input[type='number'],
-.incident-form input[type='date'],
-.incident-form select,
-.incident-form textarea {
+.form-group input,
+.form-group select,
+.form-group textarea {
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    border: 1px solid #dfe6e9;
+    border-radius: 8px;
     font-size: 0.95rem;
-    transition: border-color 0.2s;
-    box-sizing: border-box; /* Bắt buộc để padding không phá vỡ layout */
+    transition: all 0.2s;
+    box-sizing: border-box;
+    background: #fdfdfd;
 }
 
-.incident-form input:focus,
-.incident-form select:focus,
-.incident-form textarea:focus {
-    border-color: #007bff; /* Thay bằng màu chủ đạo của bạn */
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #3498db;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
     outline: none;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
 }
 
-.incident-form textarea {
-    min-height: 100px;
-    resize: vertical;
+/* Highlight box (Vàng) */
+.highlight-box {
+    background-color: #fffbf0;
+    border: 1px dashed #f1c40f;
+    padding: 15px;
+    border-radius: 8px;
 }
 
-.submit-btn {
-    background-color: #007bff; /* Thay bằng màu chủ đạo của bạn */
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    display: inline-block;
-    width: auto;
+/* --- CỘT PHẢI: MAP --- */
+.map-sidebar {
+    position: relative;
+    height: 100%;
+    min-height: 500px;
 }
 
-.submit-btn:hover {
-    background-color: #0056b3;
+/* Thanh tìm kiếm nổi trên Map */
+.map-controls {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    z-index: 10; /* Đè lên Google Maps */
+    display: flex;
+    gap: 10px;
 }
 
-.submit-btn:disabled {
-    background-color: #cce0ff;
-    cursor: not-allowed;
-}
-
-/* Kiểu thông báo Lỗi / Thành công */
-.incident-alert {
+.google-search-input {
+    flex: 1;
     padding: 12px 16px;
-    border-radius: 6px;
-    margin-bottom: 16px;
-    font-weight: 500;
-    border: 1px solid transparent;
+    border-radius: 30px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-size: 1rem;
 }
 
-.incident-alert.error {
-    background-color: #fbebee;
-    color: #d9534f;
-    border-color: #f5c6cb;
+.locate-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: none;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: transform 0.2s;
 }
 
-.incident-alert.success {
-    background-color: #dff0d8;
-    color: #3c763d;
-    border-color: #d6e9c6;
+.locate-btn:hover {
+    transform: scale(1.1);
+    background: #f8f9fa;
+}
+
+/* Info Bar ở đáy Map */
+.map-info-bar {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 10px 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    font-size: 0.9rem;
+    color: #555;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* --- BUTTONS --- */
+.submit-btn {
+    background: linear-gradient(to right, #e74c3c, #c0392b);
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: 0 4px 6px rgba(231, 76, 60, 0.2);
+    transition: transform 0.1s;
+}
+
+.submit-btn:active {
+    transform: scale(0.98);
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 900px) {
+    .form-content {
+        grid-template-columns: 1fr; /* Chuyển về 1 cột */
+    }
+    .map-sidebar {
+        height: 400px; /* Map nằm trên hoặc dưới tùy thứ tự HTML */
+        order: -1; /* Đẩy map lên đầu */
+    }
 }
