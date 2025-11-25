@@ -398,9 +398,59 @@ app.post("/api/v1/reviews", userAuth, async (req, res) => {
     res.status(500).json({ error: "Lỗi máy chủ nội bộ khi thêm review." });
   }
 });
+/**
+ * API CHO ADMIN: Tìm kiếm phòng trọ để gợi ý trong Dropdown
+ * Hỗ trợ tìm theo Tên/Địa chỉ HOẶC Tìm theo Vị trí gần nhất (PostGIS)
+ */
+app.get("/api/v1/admin/properties-search", adminAuth, async (req, res) => {
+    const { q, lat, lng, radius } = req.query;
 
-// --- 6. ROUTE DỰ PHÒNG VÀ KHỞI ĐỘNG ---
+    try {
+        let queryText = "";
+        let queryValues = [];
 
+        // TRƯỜNG HỢP 1: Tìm theo Vị trí (Lat/Lng) - Ưu tiên cao nhất
+        // Dùng để gợi ý các trọ xung quanh điểm ghim map
+        if (lat && lng) {
+            const searchRadius = radius || 50; // Mặc định tìm trong 50m (trực tiếp bị ảnh hưởng)
+            queryText = `
+                SELECT id, name, address, 
+                       ST_Distance(
+                           ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography,
+                           ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography
+                       ) as dist
+                FROM properties
+                WHERE ST_DWithin(
+                    ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography,
+                    ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
+                    $3
+                )
+                ORDER BY dist ASC
+                LIMIT 20;
+            `;
+            queryValues = [parseFloat(lng), parseFloat(lat), parseInt(searchRadius)];
+        } 
+        // TRƯỜNG HỢP 2: Tìm theo Từ khóa (Tên hoặc Địa chỉ)
+        else if (q) {
+            queryText = `
+                SELECT id, name, address
+                FROM properties
+                WHERE name ILIKE $1 OR address ILIKE $1
+                LIMIT 20;
+            `;
+            queryValues = [`%${q}%`];
+        } else {
+            return res.json([]); // Không có tham số thì trả về rỗng
+        }
+
+        const result = await pool.query(queryText, queryValues);
+        res.json(result.rows);
+
+    } catch (err) {
+        console.error("[SEARCH ERROR]", err.message);
+        res.status(500).json({ error: "Lỗi tìm kiếm phòng trọ" });
+    }
+});
 // Endpoint "Health Check"
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "API Server is running healthy." });
