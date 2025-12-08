@@ -64,11 +64,8 @@ function Room() {
         maxPrice: '',
         minSize: '',
         maxSize: '',
-        bedrooms: '',
-        bathrooms: '',
         city: '',
         district: '',
-        availableOnly: false,
     });
     const [showFilterPanel, setShowFilterPanel] = useState(false);
     const slides = [
@@ -92,22 +89,8 @@ function Room() {
     ];
     const [activeTab, setActiveTab] = useState('Tất Cả');
     const [selectedDistrict, setSelectedDistrict] = useState('');
-    const [expandedCardIds, setExpandedCardIds] = useState({});
-    const [showAllRooms, setShowAllRooms] = useState(false);
-
-    const handleSortChange = (order) => {
-        setSortOrder(order);
-    };
-    const [showDistricts, setShowDistricts] = useState(false);
-    const [districts, setDistricts] = useState([]);
-    const handleShowDistricts = () => {
-        const danang = getProvinces().find((p) => p.name.includes('Đà Nẵng'));
-        if (danang) {
-            const danangDistricts = getDistrictsByProvinceCode(danang.code);
-            setDistricts(danangDistricts);
-            setShowDistricts(!showDistricts);
-        }
-    };
+    const [currentPage, setCurrentPage] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
 
     const handleSearch = () => {
         setAppliedSearchQuery(searchQuery);
@@ -120,10 +103,13 @@ function Room() {
         }
     };
 
-    const fetchRooms = async () => {
+    const fetchRooms = async (page = 0) => {
         try {
             // Build query parameters
             const params = new URLSearchParams();
+
+            params.append('page', page.toString());
+            params.append('size', '10'); // Load 12 rooms per page
 
             if (appliedSearchQuery) {
                 params.append('search', appliedSearchQuery);
@@ -139,17 +125,10 @@ function Room() {
                 filterConditions.push(`size:>${appliedFilters.minSize}`);
             if (appliedFilters.maxSize)
                 filterConditions.push(`size:<${appliedFilters.maxSize}`);
-            if (appliedFilters.bedrooms)
-                filterConditions.push(`bedrooms:${appliedFilters.bedrooms}`);
-            if (appliedFilters.bathrooms)
-                filterConditions.push(`bathrooms:${appliedFilters.bathrooms}`);
             if (appliedFilters.city)
                 filterConditions.push(`city:${appliedFilters.city}`);
             if (appliedFilters.district)
                 filterConditions.push(`district:${appliedFilters.district}`);
-            if (appliedFilters.availableOnly)
-                filterConditions.push(`available:true`);
-
             if (filterConditions.length > 0) {
                 params.append('filter', filterConditions.join(','));
             }
@@ -159,12 +138,18 @@ function Room() {
             const data = await response.json();
 
             // Handle 404 or empty results
-            if (!response.ok || !data.data || data.data.length === 0) {
-                setRooms([]);
-                setLoading(false);
+            if (!response.ok || !data.data) {
+                if (page === 0) {
+                    setRooms([]);
+                    setLoading(false);
+                }
+                setHasMore(false);
                 setError(null);
                 return;
             }
+
+            // Check if we have more rooms
+            setHasMore(data.data.length === 10);
 
             // Fetch owner information for each room
             const roomsWithOwnerInfo = await Promise.all(
@@ -197,21 +182,36 @@ function Room() {
                 }),
             );
 
-            setRooms(roomsWithOwnerInfo);
-            setLoading(false);
+            if (page === 0) {
+                setRooms(roomsWithOwnerInfo);
+                setLoading(false);
+            } else {
+                setRooms((prev) => [...prev, ...roomsWithOwnerInfo]);
+            }
             setError(null);
         } catch (err) {
             console.error('Error fetching rooms:', err);
-            setRooms([]);
+            if (page === 0) {
+                setRooms([]);
+                setLoading(false);
+            }
             setError(null);
-            setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchRooms();
+        setCurrentPage(0);
+        setHasMore(true);
+        fetchRooms(0);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [appliedSearchQuery, appliedFilters]);
+
+    useEffect(() => {
+        if (currentPage > 0) {
+            fetchRooms(currentPage);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentPage]);
 
     const getValidImageUrl = (imageUrls) => {
         if (!imageUrls || !Array.isArray(imageUrls) || imageUrls.length === 0) {
@@ -434,61 +434,6 @@ function Room() {
                                     }
                                 />
                             </div>
-                            <div>
-                                <label
-                                    style={{
-                                        display: 'block',
-                                        marginBottom: '5px',
-                                        fontWeight: 'bold',
-                                        fontSize: '14px',
-                                    }}
-                                >
-                                    Số phòng ngủ
-                                </label>
-                                <select
-                                    className='border border-gray-300 rounded-lg py-2 px-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500'
-                                    value={filters.bedrooms}
-                                    onChange={(e) =>
-                                        setFilters({
-                                            ...filters,
-                                            bedrooms: e.target.value,
-                                        })
-                                    }
-                                >
-                                    <option value=''>Tất cả</option>
-                                    <option value='1'>1</option>
-                                    <option value='2'>2</option>
-                                    <option value='3'>3</option>
-                                    <option value='4'>4+</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label
-                                    style={{
-                                        display: 'block',
-                                        marginBottom: '5px',
-                                        fontWeight: 'bold',
-                                        fontSize: '14px',
-                                    }}
-                                >
-                                    Số phòng tắm
-                                </label>
-                                <select
-                                    className='border border-gray-300 rounded-lg py-2 px-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500'
-                                    value={filters.bathrooms}
-                                    onChange={(e) =>
-                                        setFilters({
-                                            ...filters,
-                                            bathrooms: e.target.value,
-                                        })
-                                    }
-                                >
-                                    <option value=''>Tất cả</option>
-                                    <option value='1'>1</option>
-                                    <option value='2'>2</option>
-                                    <option value='3'>3+</option>
-                                </select>
-                            </div>
                         </div>
                         <div
                             style={{
@@ -498,26 +443,6 @@ function Room() {
                                 justifyContent: 'flex-end',
                             }}
                         >
-                            <label
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '5px',
-                                    cursor: 'pointer',
-                                }}
-                            >
-                                <input
-                                    type='checkbox'
-                                    checked={filters.availableOnly}
-                                    onChange={(e) =>
-                                        setFilters({
-                                            ...filters,
-                                            availableOnly: e.target.checked,
-                                        })
-                                    }
-                                />
-                                Chỉ hiển thị phòng còn trống
-                            </label>
                             <button
                                 onClick={() => {
                                     const emptyFilters = {
@@ -668,204 +593,103 @@ function Room() {
                         )}
                     </div>
                 ) : (
-                    <>
-                        {(showAllRooms
-                            ? sortedRooms
-                            : sortedRooms.slice(0, 12)
-                        ).map((room) => (
-                            <Link
-                                to={`/ResultRoom/${room.id}`}
-                                className='card-link'
-                                key={room.id}
-                            >
-                                <div className='card'>
-                                    <img
-                                        src={getValidImageUrl(room.imageUrls)}
-                                        alt='Room'
-                                        className='card-image_big'
-                                        onError={(e) => {
-                                            e.target.src = getValidImageUrl([]);
-                                        }}
-                                    />
-                                    <div className='card-body'>
-                                        <div className='card-top'>
-                                            <h2>
-                                                {room.price?.toLocaleString() ??
-                                                    'N/A'}{' '}
-                                                VND
-                                            </h2>
-                                            <div className='status-badge'>
-                                                Cho thuê
-                                            </div>
-                                        </div>
-                                        <div className='card-address'>
-                                            <i className='fas fa-map-marker-alt'></i>
-                                            <span>{room.city}</span>{' '}
-                                            <span>{room.district}</span>
-                                            <span>
-                                                {room.addressDetails ??
-                                                    'Địa chỉ không có sẵn'}
-                                            </span>
-                                        </div>
-                                        <div className='card-features'>
-                                            {(() => {
-                                                const features = [
-                                                    {
-                                                        icon: (
-                                                            <i className='fas fa-expand-arrows-alt'></i>
-                                                        ),
-                                                        label: `${room.roomSize} m²`,
-                                                    },
-                                                    {
-                                                        icon: (
-                                                            <img
-                                                                src={bedrooms}
-                                                                alt=''
-                                                            />
-                                                        ),
-                                                        label: `${room.numBedrooms ?? '?'} Giường`,
-                                                    },
-                                                    {
-                                                        icon: (
-                                                            <img
-                                                                src={sink}
-                                                                alt=''
-                                                            />
-                                                        ),
-                                                        label: `${room.numBathrooms ?? '?'} Bồn tắm`,
-                                                    },
-                                                ];
-                                                const isExpanded =
-                                                    expandedCardIds[room.id];
-                                                const showFeatures = isExpanded
-                                                    ? features
-                                                    : features.slice(0, 3);
-                                                return (
-                                                    <>
-                                                        {showFeatures.map(
-                                                            (feature, idx) => (
-                                                                <div
-                                                                    className='card-feature-item'
-                                                                    key={idx}
-                                                                >
-                                                                    {
-                                                                        feature.icon
-                                                                    }
-                                                                    <span>
-                                                                        {
-                                                                            feature.label
-                                                                        }
-                                                                    </span>
-                                                                </div>
-                                                            ),
-                                                        )}
-                                                        {features.length >
-                                                            3 && (
-                                                            <button
-                                                                className='more-btn'
-                                                                onClick={(
-                                                                    e,
-                                                                ) => {
-                                                                    e.preventDefault();
-                                                                    setExpandedCardIds(
-                                                                        (
-                                                                            prev,
-                                                                        ) => ({
-                                                                            ...prev,
-                                                                            [room.id]:
-                                                                                !prev[
-                                                                                    room
-                                                                                        .id
-                                                                                ],
-                                                                        }),
-                                                                    );
-                                                                }}
-                                                                style={{
-                                                                    background:
-                                                                        'none',
-                                                                    border: 'none',
-                                                                    cursor: 'pointer',
-                                                                    marginLeft: 8,
-                                                                    color: '#1976d2',
-                                                                    fontWeight: 600,
-                                                                }}
-                                                            >
-                                                                {isExpanded ? (
-                                                                    <span>
-                                                                        &#9650;
-                                                                        Thu gọn
-                                                                    </span>
-                                                                ) : (
-                                                                    <span>
-                                                                        &#9660;
-                                                                        Xem thêm
-                                                                    </span>
-                                                                )}
-                                                            </button>
-                                                        )}
-                                                    </>
+                    <div className='flex flex-col items-center gap-4'>
+                        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
+                            {sortedRooms.map((room) => (
+                                <Link
+                                    to={`/ResultRoom/${room.id}`}
+                                    className='card-link'
+                                    key={room.id}
+                                >
+                                    <div className='card'>
+                                        <img
+                                            src={getValidImageUrl(
+                                                room.imageUrls,
+                                            )}
+                                            alt='Room'
+                                            className='card-image_big'
+                                            onError={(e) => {
+                                                e.target.src = getValidImageUrl(
+                                                    [],
                                                 );
-                                            })()}
-                                        </div>
-                                        <div className='card-footer'>
-                                            <img
-                                                src={
-                                                    room.imageUrls?.length > 1
-                                                        ? baseURL +
-                                                          room.imageUrls[1]
-                                                        : getValidImageUrl([])
-                                                }
-                                                alt='user'
-                                                onError={(e) => {
-                                                    e.target.src =
-                                                        getValidImageUrl([]);
-                                                }}
-                                            />
-                                            <div className='contact-info'>
-                                                <div className='owner-name'>
-                                                    {room.ownerName ||
-                                                        'Chủ phòng'}
+                                            }}
+                                        />
+                                        <div className='card-body'>
+                                            <div className='card-top'>
+                                                <h2>
+                                                    {room.price?.toLocaleString() ??
+                                                        'N/A'}{' '}
+                                                    VND
+                                                </h2>
+                                                <div className='status-badge'>
+                                                    Cho thuê
                                                 </div>
-                                                <div className='owner-phone'>
+                                            </div>
+                                            <div className='text-sm text-slate-500 line-clamp-2'>
+                                                <i className='fas fa-map-marker-alt pr-2'></i>
+                                                <span>
+                                                    {room.addressDetails ??
+                                                        'Địa chỉ không có sẵn'}
+                                                </span>
+                                            </div>
+
+                                            <div className='text-sm text-slate-500 line-clamp-2'>
+                                                <span>Diện tích </span>
+                                                <i className='fas fa-expand-arrows-alt'></i>
+                                                <span>:</span>{' '}
+                                                <span>
+                                                    {room.roomSize
+                                                        ? room.roomSize
+                                                        : 'N/A'}
+                                                </span>
+                                                <span>m²</span>
+                                            </div>
+                                            <div className='card-footer'>
+                                                <img
+                                                    src={
+                                                        room.imageUrls?.length >
+                                                        1
+                                                            ? baseURL +
+                                                              room.imageUrls[1]
+                                                            : getValidImageUrl(
+                                                                  [],
+                                                              )
+                                                    }
+                                                    alt='user'
+                                                    onError={(e) => {
+                                                        e.target.src =
+                                                            getValidImageUrl(
+                                                                [],
+                                                            );
+                                                    }}
+                                                />
+                                                <div className='contact-info'>
+                                                    <div className='owner-name'>
+                                                        {room.ownerName ||
+                                                            'Chủ phòng'}
+                                                    </div>
+                                                    {/* <div className='owner-phone'>
                                                     {room.ownerPhone ||
                                                         'Chưa có số điện thoại'}
+                                                </div> */}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </Link>
-                        ))}
-                        {sortedRooms.length > 12 && (
-                            <div
-                                style={{
-                                    width: '100%',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    marginTop: 16,
-                                }}
+                                </Link>
+                            ))}
+                        </div>
+                        {hasMore && (
+                            <button
+                                className='text-blue-500 border-2 rounded-2xl p-2'
+                                onClick={() =>
+                                    setCurrentPage((prev) => prev + 1)
+                                }
                             >
-                                <button
-                                    className='more-btn'
-                                    onClick={() =>
-                                        setShowAllRooms((prev) => !prev)
-                                    }
-                                    style={{
-                                        background: 'none',
-                                        border: '1px solid #1976d2',
-                                        borderRadius: 8,
-                                        color: '#1976d2',
-                                        fontWeight: 600,
-                                        fontSize: '1rem',
-                                        padding: '8px 24px',
-                                        cursor: 'pointer',
-                                    }}
-                                >
-                                    {showAllRooms ? 'Thu gọn ▲' : 'Xem thêm ▼'}
-                                </button>
-                            </div>
+                                Xem thêm ▼
+                            </button>
                         )}
-                    </>
+                    </div>
                 )}
             </div>
         </div>

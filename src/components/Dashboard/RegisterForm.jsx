@@ -5,7 +5,7 @@ import {
     getDistrictsByProvinceCode,
     getWardsByDistrictCode,
 } from 'sub-vn';
-import { BASE_API_URL } from '../../constants';
+import { BASE_API_URL, GOOGLE_MAPS_API_KEY } from '../../constants';
 
 const RegisterForm = ({ onClose, onRegister }) => {
     const [formData, setFormData] = useState({
@@ -75,23 +75,44 @@ const RegisterForm = ({ onClose, onRegister }) => {
         };
 
         try {
+            const address = `${formData.street}, ${formData.ward}, ${formData.district}, ${formData.city}, Việt Nam`;
             const form = new FormData();
             form.append('title', formData.title);
             form.append('price', formData.price);
             form.append('roomSize', formData.roomSize);
-            form.append('numBedrooms', formData.numBedrooms);
-            form.append('numBathrooms', formData.numBathrooms);
-            form.append('availableFrom', formData.availableFrom);
+            form.append('numBedrooms', '1');
+            form.append('numBathrooms', '1');
+            form.append('availableFrom', new Date().toISOString());
             form.append('city', formData.city);
             form.append('district', formData.district);
             form.append('ward', formData.ward);
             form.append('street', formData.street);
             form.append('description', formData.description);
-            form.append('isRoomAvailable', formData.isRoomAvailable);
+            form.append('isRoomAvailable', formData.isRoomAvailable || true);
+            form.append('addressDetails', address);
 
             formData.imageFiles.forEach((file) => {
                 form.append('images', file);
             });
+
+            // Get geocode
+            try {
+                const geocodeResponse = await fetch(
+                    `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_MAPS_API_KEY}`,
+                );
+                const geocodeData = await geocodeResponse.json();
+                if (geocodeData.status === 'OK') {
+                    const location = geocodeData.results[0].geometry.location;
+                    form.append('latitude', location.lat);
+                    form.append('longitude', location.lng);
+                } else {
+                    throw new Error('Geocoding failed: ' + geocodeData.status);
+                }
+            } catch (error) {
+                console.error('Error geocoding:', error);
+                alert('Không thể lấy tọa độ địa chỉ: ' + error.message);
+                return;
+            }
 
             const response = await fetch(`${BASE_API_URL}/api/rooms`, {
                 method: 'POST',
@@ -197,13 +218,6 @@ const RegisterForm = ({ onClose, onRegister }) => {
                             { label: 'Tiêu đề', name: 'title' },
                             { label: 'Giá', name: 'price' },
                             { label: 'Diện tích phòng', name: 'roomSize' },
-                            { label: 'Số phòng ngủ', name: 'numBedrooms' },
-                            { label: 'Số phòng tắm', name: 'numBathrooms' },
-                            {
-                                label: 'Có sẵn từ',
-                                name: 'availableFrom',
-                                type: 'date',
-                            },
                         ].map(({ label, name, type = 'text' }) => (
                             <div className='form-field' key={name}>
                                 <label>{label}</label>
@@ -219,9 +233,7 @@ const RegisterForm = ({ onClose, onRegister }) => {
 
                         {/* Thành phố */}
                         <div className='form-field'>
-                            <label>
-                                Thành phố/Tỉnh ({provinces.length} tỉnh/thành)
-                            </label>
+                            <label>Thành phố/Tỉnh</label>
                             <select
                                 style={{
                                     padding: '10px 12px',
@@ -251,9 +263,7 @@ const RegisterForm = ({ onClose, onRegister }) => {
 
                         {/* Quận/Huyện */}
                         <div className='form-field'>
-                            <label>
-                                Quận/Huyện ({districts.length} quận/huyện)
-                            </label>
+                            <label>Quận/Huyện</label>
                             <select
                                 style={{
                                     padding: '10px 12px',
@@ -284,7 +294,7 @@ const RegisterForm = ({ onClose, onRegister }) => {
 
                         {/* Phường/Xã */}
                         <div className='form-field'>
-                            <label>Phường/Xã ({wards.length} phường/xã)</label>
+                            <label>Phường/Xã</label>
                             <select
                                 style={{
                                     padding: '10px 12px',
@@ -328,7 +338,7 @@ const RegisterForm = ({ onClose, onRegister }) => {
                             className='form-field'
                             style={{ gridColumn: '1 / -1' }}
                         >
-                            <label>Hình ảnh (có thể chọn nhiều ảnh)</label>
+                            <label>Hình ảnh</label>
                             <input
                                 type='file'
                                 name='images'
@@ -376,7 +386,7 @@ const RegisterForm = ({ onClose, onRegister }) => {
                             />
                         </div>
 
-                        <div
+                        {/* <div
                             className='form-field'
                             style={{ gridColumn: '1 / -1' }}
                         >
@@ -387,7 +397,7 @@ const RegisterForm = ({ onClose, onRegister }) => {
                                 checked={formData.isRoomAvailable}
                                 onChange={handleChange}
                             />
-                        </div>
+                        </div> */}
                     </div>
 
                     <div

@@ -256,7 +256,7 @@ function Navbar() {
         <div className='navbar-container'>
             <div className='leftside'>
                 <Link to='/'>
-                    <h1 className='logo-text'>ROOMIEGO</h1>
+                    <h1 className='logo-text'>SafeNestly</h1>
                 </Link>
             </div>
             <div className='rightside'>
@@ -264,10 +264,12 @@ function Navbar() {
                     <img src={living} alt='' className='img-living' />
                     <span>Phòng trọ</span>
                 </Link>
-                <Link to='/Roommates' className='nav-link'>
-                    <img src={friends} alt='' className='img-living' />
-                    <span>Bạn cùng phòng</span>
-                </Link>
+                {role !== 'OWNER' && role !== 'ADMIN' && (
+                    <Link to='/Roommates' className='nav-link'>
+                        <img src={friends} alt='' className='img-living' />
+                        <span>Bạn cùng phòng</span>
+                    </Link>
+                )}
                 <div className='group relative'>
                     <button onClick={() => (window.location.href = '/chat')}>
                         <svg

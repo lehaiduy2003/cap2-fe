@@ -2,7 +2,12 @@ import { useState } from 'react';
 import './css/BookingCard.css';
 import { BASE_API_URL } from '../../constants';
 
-const BookingCard = ({ initialHotel, onEditClick, onDeleteClick }) => {
+const BookingCard = ({
+    initialHotel,
+    onEditClick,
+    onDeleteClick,
+    markUnavailable,
+}) => {
     const [hotelInfo] = useState(initialHotel);
 
     // Get the first image URL or use default
@@ -22,12 +27,12 @@ const BookingCard = ({ initialHotel, onEditClick, onDeleteClick }) => {
             <div className='booking-info'>
                 <div className='hotel-name'>{hotelInfo.title}</div>
                 <div className='hotel-location'>{hotelInfo.location}</div>
-                <div>Có sẵn từ: {hotelInfo.availableFrom}</div>
+                {/* <div>Có sẵn từ: {hotelInfo.availableFrom}</div> */}
                 <div>Diện tích: {hotelInfo.roomSize}m²</div>
-                <div>
+                {/* <div>
                     Phòng ngủ: {hotelInfo.numBedrooms} | Phòng tắm:{' '}
                     {hotelInfo.numBathrooms}
-                </div>
+                </div> */}
                 <div>{hotelInfo.addressDetails}</div>
                 <div className='hotel-description'>
                     Mô tả: {hotelInfo.description}
@@ -36,11 +41,23 @@ const BookingCard = ({ initialHotel, onEditClick, onDeleteClick }) => {
                     <button
                         className='edit-btn'
                         onClick={() => onEditClick(hotelInfo)}
+                        title='Chỉnh sửa phòng'
                     >
                         ✏️
                     </button>
-                    <button className='delete-btn' onClick={onDeleteClick}>
+                    <button
+                        className='delete-btn'
+                        onClick={onDeleteClick}
+                        title='Xóa phòng'
+                    >
                         🗑️
+                    </button>
+                    <button
+                        className='bg-[#f0f0f0] flex justify-center items-center p-3 rounded-md hover:bg-slate-200'
+                        onClick={markUnavailable}
+                        title='Đánh dấu hết phòng'
+                    >
+                        ❌
                     </button>
                 </div>
             </div>

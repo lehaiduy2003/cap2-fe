@@ -5,7 +5,7 @@ import EditForm from './EditForm';
 import './css/BookingsPage.css';
 import { BASE_API_URL } from '../../constants';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 const BookingsPage = () => {
     const [hotels, setHotels] = useState([]);
@@ -139,6 +139,41 @@ const BookingsPage = () => {
         }
     };
 
+    const markHotelUnavailable = async (hotelId) => {
+        if (!hotelId) return;
+        const hotel = hotels.find((h) => h.id === hotelId);
+        if (!hotel) return;
+
+        try {
+            const response = await fetch(
+                `${BASE_API_URL}/api/rooms/${hotelId}`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ ...hotel, isRoomAvailable: false }),
+                },
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(
+                    errorData.message || 'Cập nhật trạng thái thất bại',
+                );
+            }
+
+            const updatedHotel = await response.json();
+
+            setHotels((prev) =>
+                prev.map((h) => (h.id === updatedHotel.id ? updatedHotel : h)),
+            );
+        } catch (err) {
+            alert('Lỗi khi cập nhật trạng thái phòng: ' + err.message);
+        }
+    };
+
     const handleDeleteHotel = async (hotelId) => {
         if (!hotelId) return;
 
@@ -177,8 +212,7 @@ const BookingsPage = () => {
     return (
         <div className='BookingsPage-content'>
             <div className='filter-bar'>
-                <div className='search-container'>
-                    <FontAwesomeIcon icon={faSearch} className='search-icon' />
+                <div className='search-container mt-5'>
                     <input
                         className='search-input'
                         type='text'
@@ -225,6 +259,9 @@ const BookingsPage = () => {
                             initialHotel={hotel}
                             onEditClick={handleEditClick}
                             onDeleteClick={() => handleDeleteHotel(hotel.id)}
+                            markUnavailable={() =>
+                                markHotelUnavailable(hotel.id)
+                            }
                         />
                     ))
                 ) : (

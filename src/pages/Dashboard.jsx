@@ -4,6 +4,7 @@ import Sidebar from '../components/Dashboard/Sidebar';
 import BookingsPage from '../components/Dashboard/BookingsPage';
 import Request from '../components/Dashboard/Request';
 import ReportPage from '../components/Dashboard/ReportPage';
+import DocumentUpload from '../components/Dashboard/DocumentUpload';
 // import Storage from '../components/Invoices/Storage';
 import AddIncidentForm from '../components/Dashboard/AddIncidentForm';
 // import SettingPage from "../components/Dashboard/Setting"; // nếu có
@@ -19,6 +20,7 @@ function Dashboard() {
                     <Route path='bookings' element={<BookingsPage />} />
                     <Route path='requests' element={<Request />} />
                     <Route path='report' element={<ReportPage />} />
+                    <Route path='documents' element={<DocumentUpload />} />
                     {/* <Route path='invoices' element={<Storage />} /> */}
                     <Route path='add-incident' element={<AddIncidentForm />} />
                     {/* <Route path="setting" element={<SettingPage />} /> */}

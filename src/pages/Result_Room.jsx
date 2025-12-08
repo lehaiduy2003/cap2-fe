@@ -421,8 +421,6 @@ function Result_Room() {
             ? room.imageUrls.map((url) => baseURL + url)
             : ['/default-room.jpg'];
 
-    const mainImageUrl = imageUrls[selectedImageIndex];
-
     return (
         <div className='result-room'>
             <nav className='breadcrumb'>
@@ -436,10 +434,10 @@ function Result_Room() {
             </nav>
 
             <header className='page-header'>
-                <h1 className='hotel-title'>{room.title}</h1>
-                <p className='hotel-location' style={{ color: 'white' }}>
-                    {room.addressDetails}
-                </p>
+                <h1 className='text-black text-2xl font-semibold'>
+                    {room.title}
+                </h1>
+                <p>{room.addressDetails}</p>
             </header>
 
             {/* Two-column layout: left = images (50%), right = details + actions */}
@@ -614,22 +612,22 @@ function Result_Room() {
                             <span>
                                 <strong>Diện tích:</strong> {room.roomSize} m²
                             </span>
-                            <span>
+                            {/* <span>
                                 <img src={bedroom} alt='Số người' />
                                 <strong>Số người:</strong> {room.numBedrooms}
                             </span>
                             <span>
                                 <img src={sink} alt='Phòng tắm' />
                                 <strong>Phòng tắm:</strong> {room.numBathrooms}
-                            </span>
+                            </span> */}
                         </div>
                         <div className='meta-info'>
-                            <p>
+                            {/* <p>
                                 <strong>Có sẵn từ ngày:</strong>{' '}
                                 {new Date(
                                     room.availableFrom,
                                 ).toLocaleDateString('vi-VN')}
-                            </p>
+                            </p> */}
                             <div className='owner-info'>
                                 <div className='owner-avatar'>
                                     {getInitials(room.ownerName)}

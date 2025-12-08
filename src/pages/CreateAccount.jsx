@@ -31,7 +31,7 @@ export default function CreateAccount() {
                             "url('https://www.obieworld.com/wp-content/uploads/2022/12/nha-tro.jpg')",
                     }}
                 >
-                    <div className='create-account-overlay'>RoomieGo</div>
+                    <div className='create-account-overlay'>Safe Nestly</div>
                 </div>
 
                 {/* Form bên phải */}

@@ -24,8 +24,8 @@ export default function App() {
                     Trình duyệt của bạn không hỗ trợ video.
                 </video>
                 <div className='video-content'>
-                    <h1>Chào mừng bạn đến với RoommieGo</h1>
-                    <p>Nơi tìm kiếm bạn cùng phòng lý tưởng dành cho bạn</p>
+                    <h1>Chào mừng bạn đến với SafeNestly</h1>
+                    <p>Nơi tìm kiếm phòng trọ lý tưởng dành cho bạn</p>
                 </div>
             </div>
             <div className='home'>
@@ -55,7 +55,7 @@ export default function App() {
                         <img src={Room4} alt='' />
                     </SwiperSlide>
                 </Swiper>
-                <div className='home-content'>
+                <div className='home-content flex flex-col'>
                     <h1>
                         Chia sẻ{' '}
                         <span className='highlight'>
@@ -64,9 +64,8 @@ export default function App() {
                         và cả sự <span className='highlight'>ngạc nhiên </span>,
                         mỗi lần gặp được người bạn mới
                     </h1>
-                    <p>Hãy để chúng tôi hỗ trợ bạn 😉!!!</p>
-                    <Link to='/Room'>
-                        <button className='home-arrow'>Tìm phòng trọ</button>
+                    <Link to='/Room' className='mx-auto pt-3'>
+                        <button className='home-arrow'>Khám phá ngay</button>
                     </Link>
                 </div>
             </div>

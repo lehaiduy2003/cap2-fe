@@ -47,7 +47,7 @@ const ProfileLayout = () => {
                                     <i className='fas fa-user mr-3'></i>
                                     Hồ sơ cá nhân
                                 </button>
-                                <button
+                                {/* <button
                                     onClick={() =>
                                         handleTabChange('/rent-history')
                                     }
@@ -59,8 +59,8 @@ const ProfileLayout = () => {
                                 >
                                     <i className='fas fa-history mr-3'></i>
                                     Lịch sử thuê
-                                </button>
-                                <button
+                                </button> */}
+                                {/* <button
                                     onClick={() =>
                                         handleTabChange('/id-verification')
                                     }
@@ -72,7 +72,7 @@ const ProfileLayout = () => {
                                 >
                                     <i className='fas fa-id-card mr-3'></i>
                                     Xác thực CMND/CCCD
-                                </button>
+                                </button> */}
                             </nav>
                         </div>
 

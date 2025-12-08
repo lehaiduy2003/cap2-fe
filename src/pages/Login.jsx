@@ -45,7 +45,9 @@ export default function Login() {
             console.log('Response data:', responseData);
 
             if (!responseData.token) {
-                throw new Error('Token không tồn tại trong response');
+                throw new Error(
+                    'Sai tài khoản hoặc mật khẩu, vui lòng thử lại.',
+                );
             }
 
             // Lưu token

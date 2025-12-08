@@ -19,8 +19,9 @@ const Sidebar = () => {
     }, []);
 
     const menuItems = [
-        { label: 'Đặt phòng', key: 'bookings' },
+        { label: 'Quản lý phòng', key: 'bookings' },
         { label: 'Yêu Cầu', key: 'requests' },
+        { label: 'Tài Liệu', key: 'documents' },
         ...(userRole === 'ADMIN'
             ? [
                   { label: 'Báo Cáo', key: 'report' },
@@ -44,7 +45,7 @@ const Sidebar = () => {
                     <ArrowLeft className='back-icon' />
                 </button>
                 <div className='logo-container'>
-                    <h1 className='logo-text1'>ROOMIEGO</h1>
+                    <h1 className='logo-text1'>SAFENESTLY</h1>
                 </div>
             </div>
 

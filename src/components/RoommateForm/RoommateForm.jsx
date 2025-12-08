@@ -16,7 +16,7 @@ const provincesOptions = getProvinces().map((province) => ({
 
 const StepIndicator = ({ step }) => {
     return (
-        <div className='step-indicator'>
+        <div className='step-indicator bg-white glass-background'>
             <div className={`step ${step >= 1 ? 'completed' : ''}`}>
                 <span className='step-number'>01</span>
                 <span className='step-label'>Thông tin</span>

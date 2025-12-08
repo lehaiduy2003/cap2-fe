@@ -78,7 +78,7 @@ const Profile = () => {
 
         try {
             const response = await fetch(
-                `${BASE_API_URL}/renterowner/update-profile`,
+                `${BASE_API_URL}/users/${profile.id}`,
                 {
                     method: 'PUT',
                     headers: {
@@ -94,7 +94,7 @@ const Profile = () => {
             }
 
             const result = await response.json();
-            setProfile(result);
+            setProfile({ id: profile.id, ...result });
             alert('Cập nhật hồ sơ thành công!');
         } catch (error) {
             console.error('Không cập nhật được profile:', error);
@@ -157,8 +157,8 @@ const Profile = () => {
                                 name='email'
                                 value={formData.email}
                                 onChange={handleInputChange}
-                                className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                                required
+                                className='w-full disabled:opacity-50 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                                disabled
                             />
                         </div>
 

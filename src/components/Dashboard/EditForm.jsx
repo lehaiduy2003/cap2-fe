@@ -1,10 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import {
-    getProvinces,
-    getDistrictsByProvinceCode,
-    getWardsByDistrictCode,
-} from 'sub-vn';
+
 import './css/EditForm.css';
 import { BASE_API_URL } from '../../constants';
 
@@ -15,68 +11,11 @@ const EditForm = ({ hotel, onClose, onUpdate }) => {
 
     const token = localStorage.getItem('authToken');
 
-    // sub-vn
-    const [provinces] = useState(getProvinces());
-    const [districts, setDistricts] = useState([]);
-    const [wards, setWards] = useState([]);
-
-    // Load districts/wards theo dữ liệu sẵn có của phòng
-    useEffect(() => {
-        const selectedProvince = provinces.find((p) => p.name === hotel.city);
-        if (selectedProvince) {
-            const dists = getDistrictsByProvinceCode(selectedProvince.code);
-            setDistricts(dists);
-
-            const selectedDistrict = dists.find(
-                (d) => d.name === hotel.district,
-            );
-            if (selectedDistrict) {
-                const wrds = getWardsByDistrictCode(selectedDistrict.code);
-                setWards(wrds);
-            }
-        }
-    }, [hotel, provinces]);
-
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
             [name]: value,
-        }));
-    };
-
-    const handleProvinceChange = (e) => {
-        const provinceCode = e.target.value;
-        const selectedProvince = provinces.find((p) => p.code === provinceCode);
-        setFormData((prev) => ({
-            ...prev,
-            city: selectedProvince?.name || '',
-            district: '',
-            ward: '',
-        }));
-        const newDistricts = getDistrictsByProvinceCode(provinceCode);
-        setDistricts(newDistricts);
-        setWards([]);
-    };
-
-    const handleDistrictChange = (e) => {
-        const districtCode = e.target.value;
-        const selectedDistrict = districts.find((d) => d.code === districtCode);
-        setFormData((prev) => ({
-            ...prev,
-            district: selectedDistrict?.name || '',
-            ward: '',
-        }));
-        const newWards = getWardsByDistrictCode(districtCode);
-        setWards(newWards);
-    };
-
-    const handleWardChange = (e) => {
-        const wardCode = e.target.value;
-        const selectedWard = wards.find((w) => w.code === wardCode);
-        setFormData((prev) => ({
-            ...prev,
-            ward: selectedWard?.name || '',
         }));
     };
 
@@ -123,21 +62,21 @@ const EditForm = ({ hotel, onClose, onUpdate }) => {
                     <div className='form-section'>
                         {[
                             { label: 'Tiêu đề', name: 'title' },
-                            { label: 'Vị trí', name: 'location' },
-                            {
-                                label: 'Địa chỉ chi tiết',
-                                name: 'addressDetails',
-                            },
+                            // { label: 'Vị trí', name: 'location' },
+                            // {
+                            //     label: 'Địa chỉ chi tiết',
+                            //     name: 'addressDetails',
+                            // },
                             { label: 'Giá', name: 'price' },
                             { label: 'Diện tích phòng', name: 'roomSize' },
-                            { label: 'Số phòng ngủ', name: 'numBedrooms' },
-                            { label: 'Số phòng tắm', name: 'numBathrooms' },
-                            {
-                                label: 'Có sẵn từ',
-                                name: 'availableFrom',
-                                type: 'date',
-                            },
-                            { label: 'Đường phố', name: 'street' },
+                            // { label: 'Số phòng ngủ', name: 'numBedrooms' },
+                            // { label: 'Số phòng tắm', name: 'numBathrooms' },
+                            // {
+                            //     label: 'Có sẵn từ',
+                            //     name: 'availableFrom',
+                            //     type: 'date',
+                            // },
+                            // { label: 'Đường phố', name: 'street' },
                         ].map(({ label, name, type = 'text' }) => (
                             <div className='form-field' key={name}>
                                 <label>{label}</label>
@@ -151,8 +90,7 @@ const EditForm = ({ hotel, onClose, onUpdate }) => {
                             </div>
                         ))}
 
-                        {/* Thành phố */}
-                        <div className='form-field'>
+                        {/* <div className='form-field'>
                             <label>Thành phố</label>
                             <select
                                 style={{
@@ -180,7 +118,6 @@ const EditForm = ({ hotel, onClose, onUpdate }) => {
                             </select>
                         </div>
 
-                        {/* Quận/Huyện */}
                         <div className='form-field'>
                             <label>Quận/Huyện</label>
                             <select
@@ -210,7 +147,6 @@ const EditForm = ({ hotel, onClose, onUpdate }) => {
                             </select>
                         </div>
 
-                        {/* Phường/Xã */}
                         <div className='form-field'>
                             <label>Phường/Xã</label>
                             <select
@@ -238,7 +174,7 @@ const EditForm = ({ hotel, onClose, onUpdate }) => {
                                     </option>
                                 ))}
                             </select>
-                        </div>
+                        </div> */}
 
                         {/* Mô tả */}
                         <div
@@ -255,7 +191,7 @@ const EditForm = ({ hotel, onClose, onUpdate }) => {
                         </div>
 
                         {/* Checkbox */}
-                        <div
+                        {/* <div
                             className='form-field'
                             style={{ gridColumn: '1 / -1' }}
                         >
@@ -271,7 +207,7 @@ const EditForm = ({ hotel, onClose, onUpdate }) => {
                                     }))
                                 }
                             />
-                        </div>
+                        </div> */}
                     </div>
 
                     {error && <p style={{ color: 'red' }}>{error}</p>}
