@@ -28,6 +28,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import LocationSearch from './pages/LocationSearch';
 import ProfileLayout from './pages/ProfileLayout';
 import ChatPage from './pages/ChatPageNew';
+import Chat from './pages/Chat';
 
 const App = () => {
     const { theme } = useThemeStore();
@@ -47,6 +48,7 @@ const App = () => {
         '/dashboard/report',
         '/dashboard/bookings',
         '/dashboard/requests',
+        '/chat',
     ].includes(location.pathname);
 
     // Define routes where SearchBar should not be visible
@@ -56,6 +58,7 @@ const App = () => {
         '/dashboard/report',
         '/dashboard/bookings',
         '/dashboard/requests',
+        '/chat',
     ].includes(location.pathname);
 
     return (
@@ -92,7 +95,8 @@ const App = () => {
                 <Route path='/profile' element={<ProfileLayout />} />
                 <Route path='/rent-history' element={<ProfileLayout />} />
                 <Route path='/id-verification' element={<ProfileLayout />} />
-                <Route path='/chat' element={<ChatPage />} />
+                <Route path='/chat' element={<Chat />} />
+                <Route path='/chatpage' element={<ChatPage />} />
                 <Route path='/location' element={<LocationSearch />} />
 
                 {/* Add other routes here */}

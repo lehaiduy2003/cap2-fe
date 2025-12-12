@@ -658,6 +658,27 @@ function Result_Room() {
                                 Gửi yêu cầu xem phòng
                             </button>
                             <button
+                                onClick={() => {
+                                    const token =
+                                        localStorage.getItem('authToken');
+                                    if (!token) {
+                                        showInfoToast(
+                                            'Vui lòng đăng nhập để trò chuyện.',
+                                        );
+                                        navigate('/login');
+                                        return;
+                                    }
+                                    window.open(
+                                        `/chat?ownerId=${room.ownerId}&roomId=${room.id}`,
+                                        '_blank',
+                                    );
+                                }}
+                                className='primary-cta'
+                            >
+                                <i className='fa-solid fa-comment'></i> Trò
+                                chuyện ngay
+                            </button>
+                            <button
                                 className='report-button'
                                 onClick={() => {
                                     const token =

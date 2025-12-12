@@ -41,3 +41,6 @@ export const VAT_API_URL =
 
 export const GOOGLE_MAPS_API_KEY =
     import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+
+export const RAG_API_URL =
+    import.meta.env.VITE_RAG_API_URL || 'http://localhost:3001';
