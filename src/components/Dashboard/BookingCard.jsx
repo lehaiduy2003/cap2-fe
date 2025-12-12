@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import './css/BookingCard.css';
-import { BASE_API_URL } from '../../constants';
 
 const BookingCard = ({
     initialHotel,
@@ -13,9 +12,9 @@ const BookingCard = ({
     // Get the first image URL or use default
     const getImageUrl = () => {
         if (hotelInfo.imageUrls?.length > 0) {
-            return `${BASE_API_URL}/images/${hotelInfo.imageUrls[0]}`;
+            return hotelInfo.imageUrls[0];
         }
-        return '/default-room.jpg';
+        return 'https://saigon-ecogreen.com.vn/uploads/baiviet/gia-thue-phong-tro-tp-ho-chi-minh.jpg';
     };
 
     return (

@@ -1,16 +1,16 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { VAT_API_URL } from '../../constants';
+import * as UC from '@uploadcare/react-uploader';
+
+const { FileUploaderRegular } = UC;
 
 const DocumentUpload = () => {
     const [documents, setDocuments] = useState([]);
-    const [selectedFile, setSelectedFile] = useState(null);
     const [uploading, setUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const [dragActive, setDragActive] = useState(false);
     const [filter, setFilter] = useState('all'); // all, completed, processing, failed
     const [loading, setLoading] = useState(false);
-    const fileInputRef = useRef(null);
+    const uploaderRef = useRef(null);
 
     const getAuthHeaders = () => {
         const userId = localStorage.getItem('userId');
@@ -46,88 +46,52 @@ const DocumentUpload = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filter]);
 
-    const handleDrag = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.type === 'dragenter' || e.type === 'dragover') {
-            setDragActive(true);
-        } else if (e.type === 'dragleave') {
-            setDragActive(false);
-        }
-    };
-
-    const handleDrop = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setDragActive(false);
-
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            handleFileSelect(e.dataTransfer.files[0]);
-        }
-    };
-
-    const handleFileSelect = (file) => {
-        const allowedTypes = [
-            'application/pdf',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'application/msword',
-            'text/plain',
-        ];
-
-        if (!allowedTypes.includes(file.type)) {
-            alert('Chỉ hỗ trợ file PDF, Word (DOCX) và text');
+    // Handle Uploadcare file upload complete
+    const handleUploadComplete = async (items) => {
+        if (!items || !items.allEntries || items.allEntries.length === 0) {
             return;
         }
-
-        if (file.size > 10 * 1024 * 1024) {
-            alert('Kích thước file phải nhỏ hơn 10MB');
-            return;
-        }
-
-        setSelectedFile(file);
-    };
-
-    const handleFileInputChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            handleFileSelect(e.target.files[0]);
-        }
-    };
-
-    const handleUpload = async () => {
-        if (!selectedFile) return;
 
         setUploading(true);
-        setUploadProgress(0);
-
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-        formData.append('title', selectedFile.name);
-        formData.append('kb_scope', 'owner');
 
         try {
-            const response = await axios.post(
-                `${VAT_API_URL}/api/v1/documents/upload`,
-                formData,
-                {
-                    headers: {
-                        ...getAuthHeaders(),
-                        'Content-Type': 'multipart/form-data',
-                    },
-                    onUploadProgress: (progressEvent) => {
-                        const progress = Math.round(
-                            (progressEvent.loaded * 100) / progressEvent.total,
-                        );
-                        setUploadProgress(progress);
-                    },
-                },
+            // Process all successfully uploaded files
+            const successfulUploads = items.allEntries.filter(
+                (file) => file.status === 'success' && file.cdnUrl,
             );
 
-            console.log('Upload successful:', response.data);
+            for (const file of successfulUploads) {
+                // Extract file info
+                const upload_url = file.cdnUrl;
+                const original_filename = file.name || 'document';
+                const title = file.name || 'Untitled Document';
+
+                // Send to VAT service to create document record and trigger RAG processing
+                await axios.post(
+                    `${VAT_API_URL}/api/v1/documents`,
+                    {
+                        title,
+                        original_filename,
+                        upload_url,
+                        property_id: null, // Can be set if needed
+                        metadata: {
+                            file_size: file.size,
+                            content_type:
+                                file.mimeType || 'application/octet-stream',
+                            uploadcare_uuid: file.uuid,
+                        },
+                    },
+                    {
+                        headers: getAuthHeaders(),
+                    },
+                );
+            }
+
             alert(
-                'Tải tài liệu lên thành công! Hệ thống sẽ xử lý tự động trong nền.',
+                `Tải ${successfulUploads.length} tài liệu lên thành công! Hệ thống sẽ xử lý tự động trong nền.`,
             );
-            setSelectedFile(null);
-            setUploadProgress(0);
+
+            // Refresh document list
             fetchDocuments();
         } catch (error) {
             console.error('Upload error:', error);
@@ -163,16 +127,9 @@ const DocumentUpload = () => {
         }
     };
 
-    const formatFileSize = (bytes) => {
-        if (!bytes) return 'N/A';
-        if (bytes < 1024) return bytes + ' B';
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
-        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-    };
-
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
-        return new Date(dateString).toLocaleString();
+        return new Date(dateString).toLocaleString('vi-VN');
     };
 
     const getStatusColor = (status) => {
@@ -181,6 +138,8 @@ const DocumentUpload = () => {
                 return 'text-green-600 bg-green-100';
             case 'processing':
                 return 'text-blue-600 bg-blue-100';
+            case 'pending':
+                return 'text-yellow-600 bg-yellow-100';
             case 'failed':
                 return 'text-red-600 bg-red-100';
             default:
@@ -194,10 +153,10 @@ const DocumentUpload = () => {
                 return 'Hoàn thành';
             case 'processing':
                 return 'Đang xử lý';
-            case 'failed':
-                return 'Thất bại';
             case 'pending':
                 return 'Đang chờ';
+            case 'failed':
+                return 'Thất bại';
             default:
                 return status;
         }
@@ -223,123 +182,45 @@ const DocumentUpload = () => {
                         Tải Tài Liệu Lên
                     </h2>
 
-                    {/* Drag and Drop Area */}
-                    <div
-                        className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                            dragActive
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-gray-300 hover:border-gray-400'
-                        }`}
-                        onDragEnter={handleDrag}
-                        onDragLeave={handleDrag}
-                        onDragOver={handleDrag}
-                        onDrop={handleDrop}
-                    >
-                        <input
-                            ref={fileInputRef}
-                            type='file'
-                            className='hidden'
-                            accept='.pdf,.docx,.doc,.txt'
-                            onChange={handleFileInputChange}
-                            disabled={uploading}
+                    {/* Uploadcare File Uploader */}
+                    <div className='uploadcare-wrapper'>
+                        <FileUploaderRegular
+                            ref={uploaderRef}
+                            pubkey='84bfc996cb9f9a9b5d78'
+                            maxLocalFileSizeBytes={10485760} // 10MB
+                            multiple={true}
+                            accept='.pdf,.doc,.docx,.txt'
+                            imgOnly={false}
+                            sourceList='local, gdrive'
+                            classNameUploader='uc-light'
+                            onChange={handleUploadComplete}
                         />
+                    </div>
 
-                        {!selectedFile ? (
-                            <div className='space-y-4'>
-                                <svg
-                                    className='mx-auto h-12 w-12 text-gray-400'
-                                    stroke='currentColor'
-                                    fill='none'
-                                    viewBox='0 0 48 48'
-                                    aria-hidden='true'
-                                >
-                                    <path
-                                        d='M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02'
-                                        strokeWidth={2}
-                                        strokeLinecap='round'
-                                        strokeLinejoin='round'
-                                    />
-                                </svg>
-                                <div>
-                                    <button
-                                        onClick={() =>
-                                            fileInputRef.current?.click()
-                                        }
-                                        className='text-blue-600 hover:text-blue-700 font-medium'
-                                        disabled={uploading}
-                                    >
-                                        Nhấn để tải lên
-                                    </button>
-                                    <span className='text-gray-600'>
-                                        {' '}
-                                        hoặc kéo thả file vào đây
-                                    </span>
-                                </div>
-                                <p className='text-sm text-gray-500'>
-                                    File PDF, Word (DOCX) hoặc text tối đa 10MB
-                                </p>
-                            </div>
-                        ) : (
-                            <div className='space-y-4'>
-                                <div className='flex items-center justify-center space-x-3'>
-                                    <svg
-                                        className='h-8 w-8 text-blue-600'
-                                        fill='none'
-                                        viewBox='0 0 24 24'
-                                        stroke='currentColor'
-                                    >
-                                        <path
-                                            strokeLinecap='round'
-                                            strokeLinejoin='round'
-                                            strokeWidth={2}
-                                            d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
-                                        />
-                                    </svg>
-                                    <div className='text-left'>
-                                        <p className='font-medium text-gray-900'>
-                                            {selectedFile.name}
-                                        </p>
-                                        <p className='text-sm text-gray-500'>
-                                            {formatFileSize(selectedFile.size)}
-                                        </p>
-                                    </div>
-                                </div>
+                    {uploading && (
+                        <div className='mt-4 text-center'>
+                            <div className='inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
+                            <p className='text-gray-600 mt-2'>
+                                Đang tạo bản ghi tài liệu...
+                            </p>
+                        </div>
+                    )}
 
-                                {uploading && (
-                                    <div className='w-full'>
-                                        <div className='flex justify-between text-sm text-gray-600 mb-1'>
-                                            <span>Đang tải lên...</span>
-                                            <span>{uploadProgress}%</span>
-                                        </div>
-                                        <div className='w-full bg-gray-200 rounded-full h-2'>
-                                            <div
-                                                className='bg-blue-600 h-2 rounded-full transition-all duration-300'
-                                                style={{
-                                                    width: `${uploadProgress}%`,
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className='flex space-x-3 justify-center'>
-                                    <button
-                                        onClick={handleUpload}
-                                        disabled={uploading}
-                                        className='px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors'
-                                    >
-                                        {uploading ? 'Đang tải...' : 'Tải lên'}
-                                    </button>
-                                    <button
-                                        onClick={() => setSelectedFile(null)}
-                                        disabled={uploading}
-                                        className='px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
-                                    >
-                                        Hủy
-                                    </button>
-                                </div>
-                            </div>
-                        )}
+                    <div className='mt-4 text-sm text-gray-500 bg-blue-50 p-4 rounded-lg'>
+                        <p className='font-medium text-blue-900 mb-2'>
+                            📚 Hướng dẫn sử dụng:
+                        </p>
+                        <ul className='space-y-1'>
+                            <li>
+                                📄 Hỗ trợ: PDF, Word (DOCX, DOC), Text (TXT)
+                            </li>
+                            <li>📦 Kích thước tối đa: 10MB mỗi file</li>
+                            <li>
+                                🤖 Hệ thống sẽ tự động xử lý và phân tích tài
+                                liệu
+                            </li>
+                            <li>⚡ Có thể tải nhiều file cùng lúc</li>
+                        </ul>
                     </div>
                 </div>
 
@@ -354,6 +235,7 @@ const DocumentUpload = () => {
                                 { key: 'all', label: 'Tất cả' },
                                 { key: 'completed', label: 'Hoàn thành' },
                                 { key: 'processing', label: 'Đang xử lý' },
+                                { key: 'pending', label: 'Đang chờ' },
                                 { key: 'failed', label: 'Thất bại' },
                             ].map((status) => (
                                 <button
@@ -409,10 +291,10 @@ const DocumentUpload = () => {
                                             Tài Liệu
                                         </th>
                                         <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                                            Kích Thước
+                                            Trạng Thái
                                         </th>
                                         <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                                            Trạng Thái
+                                            Chunks
                                         </th>
                                         <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                                             Ngày Tải Lên
@@ -428,10 +310,10 @@ const DocumentUpload = () => {
                                             key={doc.id}
                                             className='hover:bg-gray-50'
                                         >
-                                            <td className='px-6 py-4 whitespace-nowrap'>
+                                            <td className='px-6 py-4'>
                                                 <div className='flex items-center'>
                                                     <svg
-                                                        className='h-5 w-5 text-gray-400 mr-3'
+                                                        className='h-5 w-5 text-gray-400 mr-3 flex-shrink-0'
                                                         fill='none'
                                                         viewBox='0 0 24 24'
                                                         stroke='currentColor'
@@ -448,13 +330,12 @@ const DocumentUpload = () => {
                                                             {doc.title}
                                                         </div>
                                                         <div className='text-sm text-gray-500'>
-                                                            {doc.filename}
+                                                            {
+                                                                doc.original_filename
+                                                            }
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </td>
-                                            <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                                                {formatFileSize(doc.file_size)}
                                             </td>
                                             <td className='px-6 py-4 whitespace-nowrap'>
                                                 <span
@@ -466,10 +347,10 @@ const DocumentUpload = () => {
                                                 </span>
                                             </td>
                                             <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                                                {formatDate(
-                                                    doc.upload_date ||
-                                                        doc.created_at,
-                                                )}
+                                                {doc.chunk_count || 0} chunks
+                                            </td>
+                                            <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                                                {formatDate(doc.created_at)}
                                             </td>
                                             <td className='px-6 py-4 whitespace-nowrap text-sm'>
                                                 <button

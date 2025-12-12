@@ -1,11 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './css/RegisterForm.css';
 import {
     getProvinces,
     getDistrictsByProvinceCode,
     getWardsByDistrictCode,
 } from 'sub-vn';
-import { BASE_API_URL, GOOGLE_MAPS_API_KEY } from '../../constants';
+import {
+    BASE_API_URL,
+    GOOGLE_MAPS_API_KEY,
+    VAT_API_URL,
+} from '../../constants';
+import * as UC from '@uploadcare/react-uploader';
+import '@uploadcare/react-uploader/core.css';
+
+const { FileUploaderRegular } = UC;
 
 const RegisterForm = ({ onClose, onRegister }) => {
     const [formData, setFormData] = useState({
@@ -19,15 +27,16 @@ const RegisterForm = ({ onClose, onRegister }) => {
         district: '',
         ward: '',
         street: '',
-        imageFiles: [],
+        imageUrls: [], // For images only
+        documentUrls: [], // For documents (PDF, DOC, DOCX, TXT)
         description: '',
         isRoomAvailable: true,
     });
 
-    const [imagePreviews, setImagePreviews] = useState([]);
     const [provinces, setProvinces] = useState([]);
     const [districts, setDistricts] = useState([]);
     const [wards, setWards] = useState([]);
+    const uploaderRef = useRef(null);
 
     useEffect(() => {
         try {
@@ -37,65 +46,87 @@ const RegisterForm = ({ onClose, onRegister }) => {
         } catch (error) {
             console.error('Error loading provinces:', error);
         }
+
+        // Configure Uploadcare locale
+        if (uploaderRef.current) {
+            uploaderRef.current.cfg.locale = 'vi';
+        }
     }, []);
 
     const handleChange = (e) => {
-        const { name, value, files, type, checked } = e.target;
+        const { name, value, type, checked } = e.target;
 
-        if (name === 'images' && files.length > 0) {
-            const newImageFiles = Array.from(files);
-            setFormData((prev) => ({
-                ...prev,
-                imageFiles: newImageFiles,
-            }));
-
-            const newPreviews = newImageFiles.map((file) =>
-                URL.createObjectURL(file),
-            );
-            setImagePreviews(newPreviews);
-        } else if (type === 'checkbox') {
+        if (type === 'checkbox') {
             setFormData((prev) => ({ ...prev, [name]: checked }));
         } else {
             setFormData((prev) => ({ ...prev, [name]: value }));
         }
     };
 
-    React.useEffect(() => {
-        return () => {
-            imagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
-        };
-    }, [imagePreviews]);
+    const handleImageUploadComplete = (items) => {
+        if (items && items.allEntries) {
+            // Get all successfully uploaded files with proper CDN URLs
+            const newUrls = items.allEntries
+                .filter((file) => file.status === 'success')
+                .map((file) => file.cdnUrl);
+
+            if (newUrls.length > 0) {
+                setFormData((prev) => {
+                    // Filter out duplicates by creating a Set
+                    const uniqueUrls = [
+                        ...new Set([...prev.imageUrls, ...newUrls]),
+                    ];
+                    return {
+                        ...prev,
+                        imageUrls: uniqueUrls,
+                    };
+                });
+            }
+        }
+    };
+
+    const handleDocumentUploadComplete = (items) => {
+        if (items && items.allEntries) {
+            // Get all successfully uploaded document files
+            const newDocUrls = items.allEntries
+                .filter((file) => file.status === 'success')
+                .map((file) => ({
+                    url: file.cdnUrl,
+                    name: file.name,
+                    size: file.size,
+                    mimeType: file.mimeType,
+                }));
+
+            if (newDocUrls.length > 0) {
+                setFormData((prev) => {
+                    // Filter out duplicates by URL to prevent duplicate uploads
+                    const existingUrls = new Set(
+                        prev.documentUrls.map((doc) => doc.url),
+                    );
+                    const uniqueNewDocs = newDocUrls.filter(
+                        (doc) => !existingUrls.has(doc.url),
+                    );
+
+                    return {
+                        ...prev,
+                        documentUrls: [...prev.documentUrls, ...uniqueNewDocs],
+                    };
+                });
+            }
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         const token = localStorage.getItem('authToken');
-        const headers = {
-            Authorization: `Bearer ${token}`,
-        };
 
         try {
             const address = `${formData.street}, ${formData.ward}, ${formData.district}, ${formData.city}, Việt Nam`;
-            const form = new FormData();
-            form.append('title', formData.title);
-            form.append('price', formData.price);
-            form.append('roomSize', formData.roomSize);
-            form.append('numBedrooms', '1');
-            form.append('numBathrooms', '1');
-            form.append('availableFrom', new Date().toISOString());
-            form.append('city', formData.city);
-            form.append('district', formData.district);
-            form.append('ward', formData.ward);
-            form.append('street', formData.street);
-            form.append('description', formData.description);
-            form.append('isRoomAvailable', formData.isRoomAvailable || true);
-            form.append('addressDetails', address);
-
-            formData.imageFiles.forEach((file) => {
-                form.append('images', file);
-            });
 
             // Get geocode
+            let latitude = null;
+            let longitude = null;
             try {
                 const geocodeResponse = await fetch(
                     `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_MAPS_API_KEY}`,
@@ -103,8 +134,8 @@ const RegisterForm = ({ onClose, onRegister }) => {
                 const geocodeData = await geocodeResponse.json();
                 if (geocodeData.status === 'OK') {
                     const location = geocodeData.results[0].geometry.location;
-                    form.append('latitude', location.lat);
-                    form.append('longitude', location.lng);
+                    latitude = location.lat;
+                    longitude = location.lng;
                 } else {
                     throw new Error('Geocoding failed: ' + geocodeData.status);
                 }
@@ -114,10 +145,33 @@ const RegisterForm = ({ onClose, onRegister }) => {
                 return;
             }
 
+            // Create room data object
+            const roomData = {
+                title: formData.title,
+                price: formData.price,
+                roomSize: parseFloat(formData.roomSize),
+                numBedrooms: 1,
+                numBathrooms: 1,
+                availableFrom: new Date().toISOString(),
+                city: formData.city,
+                district: formData.district,
+                ward: formData.ward,
+                street: formData.street,
+                description: formData.description,
+                isRoomAvailable: formData.isRoomAvailable || true,
+                addressDetails: address,
+                latitude: latitude,
+                longitude: longitude,
+                imageUrls: formData.imageUrls,
+            };
+
             const response = await fetch(`${BASE_API_URL}/api/rooms`, {
                 method: 'POST',
-                headers: headers,
-                body: form,
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(roomData),
             });
 
             if (!response.ok) {
@@ -126,7 +180,47 @@ const RegisterForm = ({ onClose, onRegister }) => {
             }
 
             const data = await response.json();
-            onRegister(data.data);
+            const createdRoom = data.data;
+
+            // Create document records if there are any documents uploaded
+            try {
+                const userId = localStorage.getItem('userId');
+
+                if (formData.documentUrls.length > 0) {
+                    for (const doc of formData.documentUrls) {
+                        await fetch(`${VAT_API_URL}/api/v1/documents`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'x-user-id': userId,
+                                Authorization: `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({
+                                title: doc.name || 'Tài liệu phòng trọ',
+                                original_filename: doc.name,
+                                upload_url: doc.url,
+                                property_id: createdRoom.id,
+                                metadata: {
+                                    description: formData.description,
+                                    address_details: address,
+                                    price: formData.price,
+                                    room_size: formData.roomSize,
+                                    file_size: doc.size,
+                                    content_type: doc.mimeType,
+                                },
+                            }),
+                        });
+                    }
+                }
+                console.log(
+                    `Created ${formData.documentUrls.length} document records`,
+                );
+            } catch (docError) {
+                console.error('Error creating document records:', docError);
+                // Don't fail the room creation if document upload fails
+            }
+
+            onRegister(createdRoom);
             onClose();
         } catch (error) {
             console.error('Error creating room:', error);
@@ -137,9 +231,15 @@ const RegisterForm = ({ onClose, onRegister }) => {
     const removeImage = (index) => {
         setFormData((prev) => ({
             ...prev,
-            imageFiles: prev.imageFiles.filter((_, i) => i !== index),
+            imageUrls: prev.imageUrls.filter((_, i) => i !== index),
         }));
-        setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const removeDocument = (index) => {
+        setFormData((prev) => ({
+            ...prev,
+            documentUrls: prev.documentUrls.filter((_, i) => i !== index),
+        }));
     };
 
     const handleProvinceChange = (e) => {
@@ -338,23 +438,76 @@ const RegisterForm = ({ onClose, onRegister }) => {
                             className='form-field'
                             style={{ gridColumn: '1 / -1' }}
                         >
-                            <label>Hình ảnh</label>
-                            <input
-                                type='file'
-                                name='images'
-                                accept='image/*'
-                                multiple
-                                onChange={handleChange}
+                            <label>Hình ảnh phòng trọ</label>
+                            <FileUploaderRegular
+                                pubkey='84bfc996cb9f9a9b5d78'
+                                multiple={true}
+                                imgOnly={true}
+                                sourceList='local, camera, gdrive'
+                                classNameUploader='uc-light'
+                                onChange={handleImageUploadComplete}
+                                locale='vi'
+                                localeDefinitionOverride={{
+                                    en: {
+                                        'upload-file': 'Tải lên tệp',
+                                        'upload-files': 'Tải lên tệp',
+                                        'choose-file': 'Chọn tệp',
+                                        'choose-files': 'Chọn tệp',
+                                        'drop-files-here':
+                                            'Kéo thả tệp vào đây',
+                                        'select-file-source': 'Chọn nguồn tệp',
+                                        selected: 'Đã chọn',
+                                        upload: 'Tải lên',
+                                        'add-more': 'Thêm',
+                                        cancel: 'Hủy',
+                                        clear: 'Xóa',
+                                        'camera-shot': 'Chụp ảnh',
+                                        'upload-url': 'Nhập URL',
+                                        'upload-url-placeholder':
+                                            'Dán URL ở đây',
+                                        'edit-image': 'Chỉnh sửa ảnh',
+                                        edit: 'Chỉnh sửa',
+                                        remove: 'Xóa',
+                                        'no-files': 'Chưa có tệp nào',
+                                        done: 'Hoàn tất',
+                                        'file-type-not-allowed':
+                                            'Loại tệp không được phép',
+                                        'file-size-exceeded':
+                                            'Kích thước tệp vượt quá giới hạn',
+                                        'upload-error': 'Lỗi tải lên',
+                                        'no-camera': 'Không tìm thấy camera',
+                                        'camera-access-denied':
+                                            'Quyền truy cập camera bị từ chối',
+                                        'camera-error': 'Lỗi camera',
+                                        // Source names
+                                        'source-local': 'Từ thiết bị',
+                                        'source-camera': 'Máy ảnh',
+                                        'source-gdrive': 'Google Drive',
+                                        'source-dropbox': 'Dropbox',
+                                        'source-url': 'URL',
+                                        // Alternative keys for sources
+                                        local: 'Từ thiết bị',
+                                        camera: 'Máy ảnh',
+                                        gdrive: 'Google Drive',
+                                        dropbox: 'Dropbox',
+                                        url: 'URL',
+                                        // Modal text
+                                        'from-device': 'Từ thiết bị',
+                                        'from-camera': 'Máy ảnh',
+                                        'from-gdrive': 'Google Drive',
+                                        'from-url': 'Từ URL',
+                                    },
+                                }}
                             />
-                            {imagePreviews.length > 0 && (
+                            {formData.imageUrls.length > 0 && (
                                 <div className='image-preview-grid'>
-                                    {imagePreviews.map((preview, index) => (
+                                    {formData.imageUrls.map((url, index) => (
                                         <div
                                             key={index}
                                             className='image-preview-container'
                                         >
                                             <img
-                                                src={preview}
+                                                src={url}
                                                 alt={`Preview ${index + 1}`}
                                                 className='image-preview'
                                             />
@@ -369,6 +522,91 @@ const RegisterForm = ({ onClose, onRegister }) => {
                                             </button>
                                         </div>
                                     ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div
+                            className='form-field'
+                            style={{ gridColumn: '1 / -1' }}
+                        >
+                            <label>
+                                Tài liệu phòng trọ (PDF, DOC, DOCX, TXT)
+                            </label>
+                            <FileUploaderRegular
+                                ref={uploaderRef}
+                                pubkey='84bfc996cb9f9a9b5d78'
+                                multiple={true}
+                                imgOnly={false}
+                                accept='.pdf,.doc,.docx,.txt'
+                                sourceList='local, gdrive'
+                                classNameUploader='uc-light'
+                                onChange={handleDocumentUploadComplete}
+                                locale='vi'
+                            />
+                            {formData.documentUrls.length > 0 && (
+                                <div style={{ marginTop: '10px' }}>
+                                    <p
+                                        style={{
+                                            fontSize: '14px',
+                                            marginBottom: '8px',
+                                            fontWeight: '500',
+                                        }}
+                                    >
+                                        Đã tải lên{' '}
+                                        {formData.documentUrls.length} tài liệu:
+                                    </p>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '8px',
+                                        }}
+                                    >
+                                        {formData.documentUrls.map(
+                                            (doc, index) => (
+                                                <div
+                                                    key={index}
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent:
+                                                            'space-between',
+                                                        padding: '8px 12px',
+                                                        backgroundColor:
+                                                            '#f3f4f6',
+                                                        borderRadius: '6px',
+                                                    }}
+                                                >
+                                                    <span
+                                                        style={{
+                                                            fontSize: '14px',
+                                                        }}
+                                                    >
+                                                        📄 {doc.name}
+                                                    </span>
+                                                    <button
+                                                        type='button'
+                                                        onClick={() =>
+                                                            removeDocument(
+                                                                index,
+                                                            )
+                                                        }
+                                                        style={{
+                                                            background: 'none',
+                                                            border: 'none',
+                                                            color: '#ef4444',
+                                                            fontSize: '18px',
+                                                            cursor: 'pointer',
+                                                            padding: '0 8px',
+                                                        }}
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            ),
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </div>
