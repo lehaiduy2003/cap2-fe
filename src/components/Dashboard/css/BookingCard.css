@@ -11,6 +11,9 @@
         box-shadow 0.2s;
     width: 100%;
     position: relative;
+
+    /* FIX QUAN TRỌNG: Buộc card chiếm hết chiều cao của ô chứa (Grid cell) */
+    height: 100%;
 }
 
 .booking-card:hover {
@@ -23,15 +26,17 @@
 .booking-image {
     position: relative;
     width: 100%;
+    /* Sử dụng aspect-ratio hiện đại hơn, nhưng giữ height cố định để đảm bảo đồng nhất tuyệt đối */
     height: 200px;
-    overflow: hidden;
+    flex-shrink: 0; /* Ngăn ảnh bị co lại nếu nội dung text quá dài */
     background-color: #f0f0f0;
 }
 
 .booking-image img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover; /* Cắt ảnh để vừa khung mà không bị méo */
+    object-position: center;
     display: block;
 }
 
@@ -47,14 +52,16 @@
     font-size: 14px;
     font-weight: 600;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 2; /* Đảm bảo luôn nổi lên trên */
 }
 
 /* Info section */
 .booking-info {
-    flex-grow: 1;
+    flex-grow: 1; /* Quan trọng: Đẩy phần này chiếm khoảng trống còn lại */
     padding: 16px 20px;
     display: flex;
     flex-direction: column;
+    justify-content: space-between; /* Cân đối khoảng cách */
 }
 
 .hotel-name {
@@ -62,18 +69,39 @@
     font-weight: bold;
     margin-bottom: 5px;
     color: #222;
+
+    /* Giới hạn tên khách sạn tối đa 2 dòng để tránh lệch layout quá nhiều */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .hotel-location {
     font-size: 0.95rem;
     color: #666;
     margin-bottom: 12px;
+    white-space: nowrap; /* Cắt bớt nếu quá dài trên 1 dòng */
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .booking-info > div {
     font-size: 0.9rem;
     color: #444;
     margin-bottom: 6px;
+}
+
+.address-details {
+    /* Giới hạn địa chỉ chi tiết */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 6px;
+    min-height: 2.7em; /* Giữ chỗ cố định cho địa chỉ để các card đều nhau hơn */
 }
 
 .hotel-description {
@@ -84,14 +112,16 @@
     overflow: hidden;
     text-overflow: ellipsis;
     word-wrap: break-word;
-    max-height: 4.5em;
-    line-height: 1.5em;
+    /* Không dùng max-height cứng, để line-clamp tự xử lý */
+    margin-bottom: 15px;
+    color: #666;
 }
 
 /* Action buttons */
 .card-actions {
-    margin-top: auto;
-    padding: 15px 20px;
+    margin-top: auto; /* Đẩy buttons xuống đáy cùng của card */
+    padding-top: 15px;
+    border-top: 1px solid #eee; /* Thêm đường kẻ nhẹ phân cách */
     display: flex;
     gap: 10px;
 }
@@ -104,6 +134,10 @@
     font-size: 1rem;
     cursor: pointer;
     transition: background-color 0.2s;
+    flex: 1; /* Các nút chia đều chiều ngang */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .edit-btn {
@@ -115,10 +149,86 @@
 }
 
 .delete-btn {
-    background-color: #f0f0f0;
-    color: #e74c3c;
+    background-color: #fee2e2;
+    color: #dc2626;
 }
 
 .delete-btn:hover {
-    background-color: #fadbd8;
+    background-color: #fca5a5;
+}
+
+.unavailable-btn {
+    background-color: #f3f4f6;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+.unavailable-btn:hover {
+    background-color: #e5e7eb;
+}
+/* ... Các CSS cũ giữ nguyên ... */
+
+/* Status Badge trên góc trái */
+.status-badge-card {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    z-index: 5;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.status-green {
+    background-color: #10b981; /* Màu xanh lá */
+    color: white;
+}
+
+.status-red {
+    background-color: #6b7280; /* Màu xám cho trạng thái ẩn */
+    color: white;
+}
+
+/* Hiệu ứng làm mờ card khi hết phòng */
+.booking-card.unavailable-mode .booking-image img {
+    filter: grayscale(80%);
+}
+
+.booking-card.unavailable-mode .hotel-name {
+    color: #888;
+}
+
+/* Toggle Button Styles */
+.toggle-btn {
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem; /* Chữ nhỏ hơn 1 chút để vừa dòng */
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 1.2; /* Nút này quan trọng nên cho rộng hơn chút */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.btn-warning {
+    background-color: #f59e0b;
+    color: white;
+}
+.btn-warning:hover {
+    background-color: #d97706;
+}
+
+.btn-success {
+    background-color: #10b981;
+    color: white;
+}
+.btn-success:hover {
+    background-color: #059669;
 }
