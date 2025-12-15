@@ -74,9 +74,7 @@ const BookingCard = ({
                     <div className='hotel-name' title={hotel.title}>
                         {hotel.title}
                     </div>
-                    <div className='hotel-location'>
-                        📍 {hotel.location || 'Chưa cập nhật vị trí'}
-                    </div>
+
                     <div>
                         <strong>Diện tích:</strong> {hotel.roomSize || 0}m²
                     </div>

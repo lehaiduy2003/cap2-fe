@@ -603,9 +603,7 @@ function Room() {
                                 >
                                     <div className='card'>
                                         <img
-                                            src={getValidImageUrl(
-                                                room.imageUrls,
-                                            )}
+                                            src={room.imageUrls[0]}
                                             alt='Room'
                                             className='card-image_big'
                                             onError={(e) => {
