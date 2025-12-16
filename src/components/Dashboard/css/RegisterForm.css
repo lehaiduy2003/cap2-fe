@@ -1,128 +1,166 @@
+/* Overlay làm mờ nền phía sau */
 .register-form-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.4); /* Semi-transparent background */
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Đen mờ */
+    backdrop-filter: blur(4px); /* Hiệu ứng blur hiện đại */
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 9999; /* Ensure it's on top */
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-out;
 }
 
+/* Container chính của Form */
 .register-form {
-    background-color: white;
-    padding: 30px;
-    border-radius: 12px;
-    width: 800px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-}
-
-.form-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.form-field {
+    background-color: #ffffff;
+    width: 90%;
+    max-width: 850px; /* Rộng hơn để chia cột */
+    max-height: 90vh; /* Không vượt quá chiều cao màn hình */
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     display: flex;
     flex-direction: column;
+    overflow: hidden; /* Để bo góc hoạt động với header */
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Các style khác giữ nguyên */
-.register-form h2 {
+/* Header */
+.form-header {
+    padding: 20px 30px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.form-header h2 {
+    margin: 0;
     font-size: 1.5rem;
-    margin-bottom: 20px;
-    color: #333;
+    font-weight: 600;
 }
 
-.form-section label {
-    font-weight: bold;
-    color: #555;
+.close-icon-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
 }
 
-.form-section input[type='text'],
-.form-section input[type='email'],
-.form-section input[type='password'],
-.form-section input[type='file'],
-.form-section textarea {
-    padding: 10px 15px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+.close-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* Body (Phần cuộn được) */
+.form-body {
+    padding: 30px;
+    overflow-y: auto;
+    flex: 1; /* Chiếm hết khoảng trống còn lại */
+}
+
+/* Grid Layout cho các trường */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 cột bằng nhau */
+    gap: 20px;
+}
+
+/* Những trường cần full chiều rộng */
+.full-width {
+    grid-column: span 2;
+}
+
+/* Form Group (Label + Input) */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: #374151;
+}
+
+/* Input & Select Styling */
+.form-control {
+    width: 100%;
+    padding: 12px 16px;
     font-size: 1rem;
-    color: #333;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background-color: #f9fafb;
+    transition: all 0.2s ease;
     outline: none;
 }
 
-.form-section textarea {
-    resize: vertical;
-    min-height: 100px;
+.form-control:focus {
+    border-color: #3b82f6;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
-.form-section input[type='text']:focus,
-.form-section input[type='email']:focus,
-.form-section input[type='password']:focus,
-.form-section input[type='file']:focus,
-.form-section textarea:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
-}
-.form-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Hai cột bằng nhau */
-    gap: 20px 16px; /* row-gap, column-gap */
-}
-
-.form-section label {
-    grid-column: span 2; /* Mặc định label span 2 để nằm trước input */
-}
-
-.form-section input,
-.form-section textarea {
-    width: 100%;
-}
-
-.register-btn1 {
-    width: 20%;
-    background: #007bff;
-    color: #fff;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.register-btn1:hover {
-    background: #0056b3;
-}
-
-button[disabled] {
-    opacity: 0.6;
+.form-control:disabled {
+    background-color: #e5e7eb;
     cursor: not-allowed;
 }
 
+textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+/* Upload Section Styling */
+.upload-section {
+    background-color: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 10px;
+}
+
+.upload-label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #475569;
+}
+
+/* Image Preview Grid */
 .image-preview-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
 }
 
 .image-preview-container {
     position: relative;
-    aspect-ratio: 1;
+    width: 100%;
+    padding-top: 100%; /* Aspect ratio 1:1 */
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .image-preview {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -130,44 +168,105 @@ button[disabled] {
 
 .remove-image-btn {
     position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background-color: rgba(255, 0, 0, 0.7);
+    top: 4px;
+    right: 4px;
+    background: rgba(255, 0, 0, 0.8);
     color: white;
     border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    line-height: 1;
-    transition: background-color 0.2s;
+    font-size: 14px;
+    transition: transform 0.2s;
 }
 
 .remove-image-btn:hover {
-    background-color: rgba(255, 0, 0, 0.9);
+    transform: scale(1.1);
+    background: red;
 }
 
-.document-preview {
-    width: 100%;
-    height: 100%;
+/* Footer Actions */
+.form-actions {
+    padding: 20px 30px;
+    border-top: 1px solid #e5e7eb;
+    background-color: #f9fafb;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f5f5f5;
-    padding: 1rem;
-    text-align: center;
-    word-break: break-word;
+    justify-content: flex-end;
+    gap: 12px;
 }
 
-.document-preview span {
-    font-size: 0.875rem;
-    color: #555;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    align-items: center;
+.btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    font-size: 1rem;
+}
+
+.btn-secondary {
+    background-color: white;
+    border: 1px solid #d1d5db;
+    color: #374151;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(59, 130, 246, 0.4);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .form-grid {
+        grid-template-columns: 1fr; /* Chuyển về 1 cột trên mobile */
+    }
+    .register-form {
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+    }
 }

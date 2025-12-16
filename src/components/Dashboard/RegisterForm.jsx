@@ -41,7 +41,6 @@ const RegisterForm = ({ onClose, onRegister }) => {
     const [wards, setWards] = useState([]);
     const uploaderRef = useRef(null);
 
-    // Dùng useEffect một lần để load data tĩnh
     useEffect(() => {
         try {
             const provincesData = getProvinces();
@@ -67,17 +66,8 @@ const RegisterForm = ({ onClose, onRegister }) => {
         if (items && items.allEntries) {
             const newUrls = items.allEntries
                 .filter((file) => file.status === 'success')
-                .map((file) => {
-                    let cdnUrl = file.cdnUrl;
-                    if (
-                        cdnUrl &&
-                        cdnUrl.startsWith('http:/') &&
-                        !cdnUrl.startsWith('https://')
-                    ) {
-                        cdnUrl = cdnUrl.replace('http:/', 'https://');
-                    }
-                    return cdnUrl;
-                });
+                .map((file) => file.cdnUrl);
+
             if (newUrls.length > 0) {
                 setFormData((prev) => ({
                     ...prev,
@@ -115,7 +105,6 @@ const RegisterForm = ({ onClose, onRegister }) => {
         }
     };
 
-    // Hàm lấy tọa độ tách biệt để code gọn hơn
     const getCoordinates = async (address) => {
         const response = await fetch(
             `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_MAPS_API_KEY}`,
@@ -124,13 +113,11 @@ const RegisterForm = ({ onClose, onRegister }) => {
         if (data.status !== 'OK') {
             throw new Error(`Geocoding failed: ${data.status}`);
         }
-        return data.results[0].geometry.location; // { lat, lng }
+        return data.results[0].geometry.location;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // 1. CHỐNG SPAM CLICK: Nếu đang submit thì dừng ngay
         if (isSubmitting) return;
 
         const token = localStorage.getItem('authToken');
@@ -139,18 +126,15 @@ const RegisterForm = ({ onClose, onRegister }) => {
             return;
         }
 
-        // 2. BẮT ĐẦU LOCK NÚT
         setIsSubmitting(true);
 
         try {
-            // Validate sơ bộ (Backend vẫn cần check kỹ hơn)
             if (!formData.title.trim() || !formData.price || !formData.city) {
                 throw new Error('Vui lòng điền đầy đủ thông tin bắt buộc.');
             }
 
             const address = `${formData.street}, ${formData.ward}, ${formData.district}, ${formData.city}, Việt Nam`;
 
-            // Lấy tọa độ
             let latitude = null;
             let longitude = null;
             try {
@@ -159,22 +143,21 @@ const RegisterForm = ({ onClose, onRegister }) => {
                 longitude = location.lng;
             } catch (geoError) {
                 console.warn('Không lấy được tọa độ:', geoError);
-                // Quyết định của Architect: Có cho phép tạo phòng nếu map lỗi không?
-                // Tạm thời cho phép, nhưng cảnh báo.
                 if (
                     !confirm(
                         'Không thể xác định vị trí trên bản đồ. Bạn có muốn tiếp tục đăng không?',
                     )
                 ) {
+                    setIsSubmitting(false);
                     return;
                 }
             }
 
             const roomData = {
                 title: formData.title.trim(),
-                price: formData.price, // API nên handle string -> number, hoặc convert ở đây: Number(formData.price)
+                price: formData.price,
                 roomSize: parseFloat(formData.roomSize),
-                numBedrooms: 1, // Hardcode theo logic cũ của bạn
+                numBedrooms: 1,
                 numBathrooms: 1,
                 availableFrom: new Date().toISOString(),
                 city: formData.city,
@@ -189,7 +172,6 @@ const RegisterForm = ({ onClose, onRegister }) => {
                 imageUrls: formData.imageUrls,
             };
 
-            // API Create Room
             const response = await fetch(`${BASE_API_URL}/api/rooms`, {
                 method: 'POST',
                 headers: {
@@ -207,7 +189,15 @@ const RegisterForm = ({ onClose, onRegister }) => {
             const data = await response.json();
             const createdRoom = data.data;
 
-            // Xử lý documents (nếu có) - Chạy song song để tối ưu tốc độ
+            // Fallback image handling
+            const finalRoomData = {
+                ...createdRoom,
+                imageUrls:
+                    createdRoom.imageUrls && createdRoom.imageUrls.length > 0
+                        ? createdRoom.imageUrls
+                        : formData.imageUrls,
+            };
+
             if (formData.documentUrls.length > 0) {
                 const userId = localStorage.getItem('userId');
                 const docPromises = formData.documentUrls.map((doc) =>
@@ -236,22 +226,15 @@ const RegisterForm = ({ onClose, onRegister }) => {
                         console.error(`Lỗi upload doc ${doc.name}:`, err),
                     ),
                 );
-
                 await Promise.all(docPromises);
             }
 
-            // Success
-            onRegister(createdRoom);
+            onRegister(finalRoomData);
             onClose();
         } catch (error) {
             console.error('Error creating room:', error);
             alert(`Lỗi: ${error.message}`);
         } finally {
-            // 3. MỞ KHÓA NÚT (Luôn chạy dù thành công hay thất bại)
-            // Chỉ cần thiết nếu form không bị đóng (onClose).
-            // Nếu onClose chạy, component unmount thì dòng này có thể gây warning nhẹ trên console (không ảnh hưởng app).
-            // Để an toàn, ta kiểm tra xem component còn mount không (phức tạp),
-            // hoặc đơn giản là để nó ở đây để xử lý trường hợp lọt vào catch block.
             setIsSubmitting(false);
         }
     };
@@ -270,7 +253,6 @@ const RegisterForm = ({ onClose, onRegister }) => {
         }));
     };
 
-    // Logic handle change địa chỉ giữ nguyên
     const handleProvinceChange = (e) => {
         const provinceCode = e.target.value;
         const province = provinces.find((p) => p.code === provinceCode);
@@ -328,230 +310,202 @@ const RegisterForm = ({ onClose, onRegister }) => {
     return (
         <div className='register-form-overlay'>
             <div className='register-form'>
-                <h2>Đăng ký phòng trọ của bạn</h2>
-                <form onSubmit={handleSubmit}>
-                    <div className='form-section'>
-                        {/* Các input giữ nguyên */}
-                        {[
-                            { label: 'Tiêu đề', name: 'title' },
-                            {
-                                label: 'Giá (VND/Tháng)',
-                                name: 'price',
-                                type: 'number',
-                            }, // Thêm type number cho UX tốt hơn
-                            {
-                                label: 'Diện tích (m²)',
-                                name: 'roomSize',
-                                type: 'number',
-                            },
-                        ].map(({ label, name, type = 'text' }) => (
-                            <div className='form-field' key={name}>
-                                <label>{label}</label>
+                {/* Header */}
+                <div className='form-header'>
+                    <h2>Đăng ký phòng mới</h2>
+                    <button
+                        type='button'
+                        className='close-icon-btn'
+                        onClick={onClose}
+                        title='Đóng'
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                {/* Form Body - Scrollable */}
+                <div className='form-body'>
+                    <form onSubmit={handleSubmit} id='createRoomForm'>
+                        <div className='form-grid'>
+                            {/* Section: Basic Info */}
+                            <div className='form-group full-width'>
+                                <label>
+                                    Tiêu đề bài đăng{' '}
+                                    <span className='text-red-500'>*</span>
+                                </label>
                                 <input
-                                    type={type}
-                                    name={name}
-                                    placeholder={label}
-                                    value={formData[name] || ''}
+                                    className='form-control'
+                                    type='text'
+                                    name='title'
+                                    placeholder='Ví dụ: Phòng trọ cao cấp gần ĐH FPT'
+                                    value={formData.title}
                                     onChange={handleChange}
-                                    required // Clean Code: Thêm required cho HTML validation cơ bản
+                                    required
                                 />
                             </div>
-                        ))}
 
-                        {/* Select Tỉnh/Thành */}
-                        <div className='form-field'>
-                            <label>Thành phố/Tỉnh</label>
-                            <select
-                                className='custom-select' // Nên move style inline ra file CSS
-                                style={{
-                                    padding: '10px',
-                                    borderRadius: '8px',
-                                    border: '1px solid #ccc',
-                                }}
-                                value={
-                                    provinces.find(
-                                        (p) => p.name === formData.city,
-                                    )?.code || ''
-                                }
-                                onChange={handleProvinceChange}
-                                required
-                            >
-                                <option value=''>-- Chọn tỉnh/thành --</option>
-                                {provinces.map((p) => (
-                                    <option key={p.code} value={p.code}>
-                                        {p.name}
+                            <div className='form-group'>
+                                <label>
+                                    Giá (VND/Tháng){' '}
+                                    <span className='text-red-500'>*</span>
+                                </label>
+                                <input
+                                    className='form-control'
+                                    type='number'
+                                    name='price'
+                                    placeholder='0'
+                                    value={formData.price}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className='form-group'>
+                                <label>
+                                    Diện tích (m²){' '}
+                                    <span className='text-red-500'>*</span>
+                                </label>
+                                <input
+                                    className='form-control'
+                                    type='number'
+                                    name='roomSize'
+                                    placeholder='0'
+                                    value={formData.roomSize}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            {/* Section: Location */}
+                            <div className='form-group'>
+                                <label>
+                                    Tỉnh / Thành phố{' '}
+                                    <span className='text-red-500'>*</span>
+                                </label>
+                                <select
+                                    className='form-control'
+                                    value={
+                                        provinces.find(
+                                            (p) => p.name === formData.city,
+                                        )?.code || ''
+                                    }
+                                    onChange={handleProvinceChange}
+                                    required
+                                >
+                                    <option value=''>
+                                        -- Chọn tỉnh/thành --
                                     </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Select Quận/Huyện */}
-                        <div className='form-field'>
-                            <label>Quận/Huyện</label>
-                            <select
-                                style={{
-                                    padding: '10px',
-                                    borderRadius: '8px',
-                                    border: '1px solid #ccc',
-                                }}
-                                value={
-                                    districts.find(
-                                        (d) => d.name === formData.district,
-                                    )?.code || ''
-                                }
-                                onChange={handleDistrictChange}
-                                disabled={!districts.length}
-                                required
-                            >
-                                <option value=''>-- Chọn quận/huyện --</option>
-                                {districts.map((d) => (
-                                    <option key={d.code} value={d.code}>
-                                        {d.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Select Phường/Xã */}
-                        <div className='form-field'>
-                            <label>Phường/Xã</label>
-                            <select
-                                style={{
-                                    padding: '10px',
-                                    borderRadius: '8px',
-                                    border: '1px solid #ccc',
-                                }}
-                                value={
-                                    wards.find((w) => w.name === formData.ward)
-                                        ?.code || ''
-                                }
-                                onChange={handleWardChange}
-                                disabled={!wards.length}
-                                required
-                            >
-                                <option value=''>-- Chọn phường/xã --</option>
-                                {wards.map((w) => (
-                                    <option key={w.code} value={w.code}>
-                                        {w.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className='form-field'>
-                            <label>Đường phố</label>
-                            <input
-                                type='text'
-                                name='street'
-                                placeholder='Số nhà, tên đường'
-                                value={formData.street || ''}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-
-                        {/* Upload Care Components giữ nguyên */}
-                        <div
-                            className='form-field'
-                            style={{ gridColumn: '1 / -1' }}
-                        >
-                            <label>Hình ảnh phòng trọ</label>
-                            <FileUploaderRegular
-                                pubkey='84bfc996cb9f9a9b5d78'
-                                multiple={true}
-                                imgOnly={true}
-                                sourceList='local, camera, gdrive'
-                                classNameUploader='uc-light'
-                                onChange={handleImageUploadComplete}
-                                locale='vi'
-                            />
-                            {formData.imageUrls.length > 0 && (
-                                <div className='image-preview-grid'>
-                                    {formData.imageUrls.map((url, index) => (
-                                        <div
-                                            key={index}
-                                            className='image-preview-container'
-                                        >
-                                            <img
-                                                src={url}
-                                                alt={`Preview ${index + 1}`}
-                                                className='image-preview'
-                                            />
-                                            <button
-                                                type='button'
-                                                className='remove-image-btn'
-                                                onClick={() =>
-                                                    removeImage(index)
-                                                }
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
+                                    {provinces.map((p) => (
+                                        <option key={p.code} value={p.code}>
+                                            {p.name}
+                                        </option>
                                     ))}
-                                </div>
-                            )}
-                        </div>
+                                </select>
+                            </div>
 
-                        <div
-                            className='form-field'
-                            style={{ gridColumn: '1 / -1' }}
-                        >
-                            <label>Tài liệu (PDF, DOC, DOCX, TXT)</label>
-                            <FileUploaderRegular
-                                ref={uploaderRef}
-                                pubkey='84bfc996cb9f9a9b5d78'
-                                multiple={true}
-                                imgOnly={false}
-                                accept='.pdf,.doc,.docx,.txt'
-                                sourceList='local, gdrive'
-                                classNameUploader='uc-light'
-                                onChange={handleDocumentUploadComplete}
-                                locale='vi'
-                            />
-                            {formData.documentUrls.length > 0 && (
-                                <div style={{ marginTop: '10px' }}>
-                                    <p
-                                        style={{
-                                            fontSize: '14px',
-                                            marginBottom: '8px',
-                                        }}
-                                    >
-                                        Đã tải lên{' '}
-                                        {formData.documentUrls.length} tài liệu:
-                                    </p>
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: '8px',
-                                        }}
-                                    >
-                                        {formData.documentUrls.map(
-                                            (doc, index) => (
+                            <div className='form-group'>
+                                <label>
+                                    Quận / Huyện{' '}
+                                    <span className='text-red-500'>*</span>
+                                </label>
+                                <select
+                                    className='form-control'
+                                    value={
+                                        districts.find(
+                                            (d) => d.name === formData.district,
+                                        )?.code || ''
+                                    }
+                                    onChange={handleDistrictChange}
+                                    disabled={!districts.length}
+                                    required
+                                >
+                                    <option value=''>
+                                        -- Chọn quận/huyện --
+                                    </option>
+                                    {districts.map((d) => (
+                                        <option key={d.code} value={d.code}>
+                                            {d.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className='form-group'>
+                                <label>
+                                    Phường / Xã{' '}
+                                    <span className='text-red-500'>*</span>
+                                </label>
+                                <select
+                                    className='form-control'
+                                    value={
+                                        wards.find(
+                                            (w) => w.name === formData.ward,
+                                        )?.code || ''
+                                    }
+                                    onChange={handleWardChange}
+                                    disabled={!wards.length}
+                                    required
+                                >
+                                    <option value=''>
+                                        -- Chọn phường/xã --
+                                    </option>
+                                    {wards.map((w) => (
+                                        <option key={w.code} value={w.code}>
+                                            {w.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className='form-group'>
+                                <label>
+                                    Đường / Số nhà{' '}
+                                    <span className='text-red-500'>*</span>
+                                </label>
+                                <input
+                                    className='form-control'
+                                    type='text'
+                                    name='street'
+                                    placeholder='Nhập tên đường, số nhà'
+                                    value={formData.street}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            {/* Section: Upload */}
+                            <div className='form-group full-width upload-section'>
+                                <label className='upload-label'>
+                                    📸 Hình ảnh phòng trọ
+                                </label>
+                                <FileUploaderRegular
+                                    pubkey='84bfc996cb9f9a9b5d78'
+                                    multiple={true}
+                                    imgOnly={true}
+                                    sourceList='local, camera, gdrive'
+                                    classNameUploader='uc-light'
+                                    onChange={handleImageUploadComplete}
+                                    locale='vi'
+                                />
+                                {formData.imageUrls.length > 0 && (
+                                    <div className='image-preview-grid'>
+                                        {formData.imageUrls.map(
+                                            (url, index) => (
                                                 <div
                                                     key={index}
-                                                    style={{
-                                                        display: 'flex',
-                                                        justifyContent:
-                                                            'space-between',
-                                                        padding: '8px',
-                                                        background: '#f3f4f6',
-                                                        borderRadius: '4px',
-                                                    }}
+                                                    className='image-preview-container'
                                                 >
-                                                    <span>📄 {doc.name}</span>
+                                                    <img
+                                                        src={url}
+                                                        alt={`Preview ${index + 1}`}
+                                                        className='image-preview'
+                                                    />
                                                     <button
                                                         type='button'
+                                                        className='remove-image-btn'
                                                         onClick={() =>
-                                                            removeDocument(
-                                                                index,
-                                                            )
+                                                            removeImage(index)
                                                         }
-                                                        style={{
-                                                            border: 'none',
-                                                            color: 'red',
-                                                            cursor: 'pointer',
-                                                        }}
                                                     >
                                                         ×
                                                     </button>
@@ -559,53 +513,113 @@ const RegisterForm = ({ onClose, onRegister }) => {
                                             ),
                                         )}
                                     </div>
-                                </div>
-                            )}
-                        </div>
+                                )}
+                            </div>
 
-                        <div
-                            className='form-field'
-                            style={{ gridColumn: '1 / -1' }}
-                        >
-                            <label>Mô tả chi tiết</label>
-                            <textarea
-                                name='description'
-                                placeholder='Mô tả tiện ích, nội quy...'
-                                value={formData.description || ''}
-                                onChange={handleChange}
-                                rows={4}
-                            />
-                        </div>
-                    </div>
+                            <div className='form-group full-width upload-section'>
+                                <label className='upload-label'>
+                                    📄 Tài liệu pháp lý (nếu có)
+                                </label>
+                                <FileUploaderRegular
+                                    ref={uploaderRef}
+                                    pubkey='84bfc996cb9f9a9b5d78'
+                                    multiple={true}
+                                    imgOnly={false}
+                                    accept='.pdf,.doc,.docx,.txt'
+                                    sourceList='local, gdrive'
+                                    classNameUploader='uc-light'
+                                    onChange={handleDocumentUploadComplete}
+                                    locale='vi'
+                                />
+                                {formData.documentUrls.length > 0 && (
+                                    <div style={{ marginTop: '12px' }}>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '8px',
+                                            }}
+                                        >
+                                            {formData.documentUrls.map(
+                                                (doc, index) => (
+                                                    <div
+                                                        key={index}
+                                                        style={{
+                                                            display: 'flex',
+                                                            justifyContent:
+                                                                'space-between',
+                                                            padding: '8px 12px',
+                                                            background:
+                                                                '#e0e7ff',
+                                                            borderRadius: '6px',
+                                                            fontSize: '0.9rem',
+                                                        }}
+                                                    >
+                                                        <span>
+                                                            📄 {doc.name}
+                                                        </span>
+                                                        <button
+                                                            type='button'
+                                                            onClick={() =>
+                                                                removeDocument(
+                                                                    index,
+                                                                )
+                                                            }
+                                                            style={{
+                                                                border: 'none',
+                                                                background:
+                                                                    'transparent',
+                                                                color: 'red',
+                                                                cursor: 'pointer',
+                                                                fontWeight:
+                                                                    'bold',
+                                                            }}
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </div>
+                                                ),
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
 
-                    <div
-                        style={{
-                            marginTop: '20px',
-                            display: 'flex',
-                            gap: '12px',
-                        }}
+                            {/* Section: Description */}
+                            <div className='form-group full-width'>
+                                <label>Mô tả chi tiết</label>
+                                <textarea
+                                    className='form-control'
+                                    name='description'
+                                    placeholder='Mô tả tiện ích, nội quy, giờ giấc...'
+                                    value={formData.description}
+                                    onChange={handleChange}
+                                    rows={4}
+                                />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                {/* Footer Actions */}
+                <div className='form-actions'>
+                    <button
+                        type='button'
+                        onClick={onClose}
+                        className='btn btn-secondary'
+                        disabled={isSubmitting}
                     >
-                        <button
-                            type='submit'
-                            className={`register-btn1 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            disabled={isSubmitting} // 4. THUỘC TÍNH QUAN TRỌNG NHẤT
-                            style={{ position: 'relative' }} // Để custom spinner nếu cần
-                        >
-                            {isSubmitting ? (
-                                <span>⏳ Đang xử lý...</span>
-                            ) : (
-                                'Đăng Ký'
-                            )}
-                        </button>
-                        <button
-                            type='button'
-                            onClick={onClose}
-                            disabled={isSubmitting} // Không cho đóng khi đang submit dở để tránh lỗi state
-                        >
-                            Đóng
-                        </button>
-                    </div>
-                </form>
+                        Hủy bỏ
+                    </button>
+                    <button
+                        type='submit'
+                        form='createRoomForm' // Link button outside form to the form ID
+                        className='btn btn-primary'
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? 'Đang xử lý...' : 'Đăng Ký Phòng'}
+                    </button>
+                </div>
             </div>
         </div>
     );
