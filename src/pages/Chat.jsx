@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { showErrorToast, showInfoToast } from '../components/toast';
 import Navbar from '../components/Navbar';
-import { RAG_API_URL } from '../constants';
+import { RAG_API_KEY, RAG_API_URL } from '../constants';
 
 function Chat() {
     const [searchParams] = useSearchParams();
@@ -73,7 +73,7 @@ function Chat() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': 'admin@2025', // Use your RAG API key
+                    'x-api-key': RAG_API_KEY,
                 },
                 body: JSON.stringify({
                     message: currentMessage,
