@@ -44,3 +44,5 @@ export const GOOGLE_MAPS_API_KEY =
 
 export const RAG_API_URL =
     import.meta.env.VITE_RAG_API_URL || 'http://localhost:3001';
+
+export const RAG_API_KEY = import.meta.env.VITE_RAG_API_KEY || 'admin@2025';
