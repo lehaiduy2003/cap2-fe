@@ -17,6 +17,8 @@ import FloodReportModal from '../components/Safety/FloodReportModal';
 //import FloodHistoryList from '../components/Safety/FloodHistoryList';
 import ReviewSection from '../components/Safety/ReviewSection';
 
+const FALLBACK_IMAGE =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAMFBMVEX////b29v+/v7c3Nzy8vLl5eXY2Njq6ur6+vrf39/t7e309PT39/fh4eHu7u7k5OQMjIt7AAAFVElEQVR4nO2ciYKbIBRFWZRFUf//b8tTo3HNJvrG3tOmM5NY5AwIPECFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgI1T/ui/3N2xRl5JaTty/DFWos0txqQVVLs1lxFPLLLWhyOV1aCl9CUMYwhCGMIQhDE821NL4sy1PHdMY6X3j9Wn4iD61DLV155M+fHqupVY8giklpt8uPhj+fn/wOWHbtJbaC8Lhsw3vFw4vDe/mCMO/z/9rqM5qzNdzdWAby7MMo99hituGV5smNoxfyisnUetwguGlUZWxyWupUrnR1ymaPHUZwhCGMIQhDGEIw4WhoT/J0XEso08zFBNDXVVN5ZNzquG0DG1wLiSfOG0uNKwPOts+VrYrGZfU0uKMiU1hjdRXlWEhTjGUMPwGGMLwSPgYdt+Pb8RvDtl+x89QhZI4bG6Tj2H3gyotrflrnZcHTW4yMqSfnK1oRN7ubrDH7BHlZBgPKkwcgdAWUfo3D0fk5VxD8cKwmAWPR2ynZlWGoTETQXNEe8PJUFk9NZS5+r3H4FRLXTUTpM1bP2eJTxkqEbScXYcUQt6plpZyPk1livUsqcmXfVgZ6rcN6V2XvTWu42ToqnktNdnG2JzeLbR7J8OcDFUzuwqlDxtVMSaYaZO/09DyMVxbIK7c5sUWfx2VeWcXKSPD2Jj68VNjYr6yrU0clFA8pgri5ZCAj6HouvxxZkzqWIQbl6HIJHUt2qqXiqwMRaAbwvpLsBt5b2Tf+ZhryvjrcR0vQxHqRnaK2vehxVqeVPPYOV69DCM5GbaRRJb7roZSeNjGxPOk46uWXQlq2kDyhwy7/KtQF0VWiuWH/REqDg3GxGX2twyfktia8ndq0m+a6kWnyCm2aA94vLVpqGglYiA2vsXfK8Pd/eixjsrnwZ02fr/fZ2aohralN6SXG6tAfIVqMj73mkY+O80Nt1o6T4hG2E32OJCUrVxEkfneMh2zMlwmJEpjhkKiAbcfBz0D5U4YxdxQiCyOXkwTRN8TlpVZGhq/E0fxNozNSkXdejfEjm+4vJ0uXiju3LTC2lCp0HSjl7YUYyrFYqJjqKdbmedrSK2Ks8PRUVGp0s9n4x7nyDfrKV9DOjwf7sw0tIzhmpVWhtDS2604hK0h9YM1xcFDMk0o2rB4zVAbvRUtszWMn9Xx/+qxFHVFd4iuCbZLVVvjU46G/ZsZTYGPSl20tC5IZ6Hx6VpqHA3bA1W5mFvch8an1xt+MGorm41rbrsQm9X1RpZlSB1FRWHDJ4ax31zdKMfU0DV03Ed38cf2dPU5A8xqaf+zy9sA4qNaSrRD9Fmbyq8MqYoW3z6DISY57zS4GbZRbyE/ugKfWS6pMjRUsSP80lCbatEpsjOkZURqNb5UXG48ZmTYz8yErfjhLdontU002BmG6gc/wrppsswM+yD+e2INL6aLNcwMnf28E5zjM8ZlKIof7dptcfmkPU1jOF2wtkOy+4aUmwOeMRTr6XM1TWKoukXoPtloMjRv+6trxbedxKwcfXlGGZrxd2ofM/Uv1vFD4494nJTX8nlraqoytH58nGg9pPtihTS49QcGfcrkKVGpWppQhgfl00Tffktz0MmVSH4d7pz8LncjbAHDFMDwWP43Q7u3dHsYT/sazjds52QSc6lhcYahutRQ0b3WdzY0lT5kILrP05zB6YanA0MYvqV4d8P7l+H9DVFLYcjfkOZRrzPU7ZPF0/opl+v0T4baot1qm9pRXPn80ro+4KbbfdTWfUznoFT6p/269iSXIdIbAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+PEP4/1rkWew+VMAAAAASUVORK5CYII=';
 const DEFAULT_IMAGE =
     'https://imperiaskygardens.com/wp-content/uploads/2023/01/unnamed-3.jpg';
 
@@ -94,7 +96,21 @@ function Result_Room() {
     });
     const [submittingReview, setSubmittingReview] = useState(false);
     const [locationData, setLocationData] = useState(null);
+    const handlePrevImage = (e) => {
+        e?.stopPropagation(); // Ngăn sự kiện nổi bọt
+        if (!room?.imageUrls?.length) return;
+        setSelectedImageIndex((prev) =>
+            prev === 0 ? room.imageUrls.length - 1 : prev - 1,
+        );
+    };
 
+    const handleNextImage = (e) => {
+        e?.stopPropagation();
+        if (!room?.imageUrls?.length) return;
+        setSelectedImageIndex((prev) =>
+            prev === room.imageUrls.length - 1 ? 0 : prev + 1,
+        );
+    };
     // 1. Fetch Room Info
     useEffect(() => {
         const fetchRoomDetails = async () => {
@@ -399,6 +415,10 @@ function Result_Room() {
         room.imageUrls?.length > 0
             ? room.imageUrls.map((url) => baseURL + url)
             : [DEFAULT_IMAGE];
+    const fullImageUrls =
+        room?.imageUrls?.length > 0
+            ? room.imageUrls.map((url) => baseURL + url)
+            : [];
 
     return (
         <div className='result-room font-sans text-gray-800 bg-gray-50 min-h-screen pb-10'>
@@ -423,26 +443,73 @@ function Result_Room() {
                 {/* --- LEFT COLUMN --- */}
                 <div className='lg:col-span-2 flex flex-col gap-6'>
                     {/* Image Gallery */}
-                    <div className='bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden'>
-                        <div
-                            className='main-image-container relative w-full bg-gray-100'
-                            style={{ height: '400px' }}
-                        >
-                            <img
-                                src={imageUrls[0]}
-                                alt='Main Room'
-                                className='w-full h-full object-cover'
-                                onError={(e) => {
-                                    e.target.src = DEFAULT_IMAGE;
-                                }}
-                            />
-                            {imageUrls.length > 1 && (
-                                <div className='absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium'>
-                                    <i className='fas fa-images mr-2'></i>{' '}
-                                    {imageUrls.length} ảnh
-                                </div>
-                            )}
+                    <div className='image-gallery-wrapper'>
+                        <div className='bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden relative group'>
+                            <div
+                                className='main-image-container relative w-full bg-gray-100'
+                                style={{ height: '500px' }}
+                            >
+                                <img
+                                    // Sửa lỗi Fallback: Ưu tiên ảnh từ mảng, nếu không có hoặc index sai thì dùng Base64 ngay
+                                    src={
+                                        fullImageUrls.length > 0 &&
+                                        fullImageUrls[selectedImageIndex]
+                                            ? fullImageUrls[selectedImageIndex]
+                                            : FALLBACK_IMAGE
+                                    }
+                                    alt={`Room image ${selectedImageIndex + 1}`}
+                                    className='w-full h-full object-cover transition-all duration-500'
+                                    onError={(e) => {
+                                        // Triệt tiêu lỗi fallback: Nếu ảnh lỗi, gán lại src bằng Base64 và xóa callback để tránh loop
+                                        e.target.onerror = null;
+                                        e.target.src = FALLBACK_IMAGE;
+                                    }}
+                                />
+
+                                {/* Pagination Dots - Giữ lại và căn chỉnh đẹp hơn */}
+                                {fullImageUrls.length > 1 && (
+                                    <div className='absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-20'>
+                                        {fullImageUrls.map((_, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() =>
+                                                    setSelectedImageIndex(idx)
+                                                }
+                                                className={`transition-all duration-300 rounded-full ${
+                                                    selectedImageIndex === idx
+                                                        ? 'bg-blue-600 w-6 h-2'
+                                                        : 'bg-white/60 hover:bg-white w-2 h-2 shadow-sm'
+                                                }`}
+                                                aria-label={`Slide ${idx + 1}`}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Navigation Arrows */}
+                                {fullImageUrls.length > 1 && (
+                                    <>
+                                        <button
+                                            onClick={handlePrevImage}
+                                            className='gallery-nav-btn prev opacity-0 group-hover:opacity-100 transition-opacity'
+                                        >
+                                            ❮
+                                        </button>
+                                        <button
+                                            onClick={handleNextImage}
+                                            className='gallery-nav-btn next opacity-0 group-hover:opacity-100 transition-opacity'
+                                        >
+                                            ❯
+                                        </button>
+                                        <div className='absolute top-4 right-4 bg-black/40 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium'>
+                                            {selectedImageIndex + 1} /{' '}
+                                            {fullImageUrls.length}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
+                        {/* PHẦN THUMBNAILS ĐÃ ĐƯỢC XÓA THEO YÊU CẦU */}
                     </div>
 
                     {/* SAFETY WIDGET */}
@@ -512,8 +579,9 @@ function Result_Room() {
                                 }}
                                 className='w-full bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-3 rounded-xl transition'
                             >
-                                <i className='fa-solid fa-comment mr-2'></i> Trò
-                                chuyện ngay
+                                <i className='fa-solid fa-robot mr-2'></i>
+                                {/* <i className='fa-solid fa-comment mr-2'></i> */}
+                                Trò chuyện ngay
                             </button>
                             <button
                                 onClick={() => {
