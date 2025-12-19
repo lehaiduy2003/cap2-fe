@@ -106,6 +106,8 @@ function Room() {
 
             params.append('page', page.toString());
             params.append('size', '10'); // Load 12 rooms per page
+            params.append('sort', 'createdAt');
+            params.append('order', 'DESC');
 
             if (appliedSearchQuery) {
                 params.append('search', appliedSearchQuery);
@@ -599,7 +601,11 @@ function Room() {
                                 >
                                     <div className='card'>
                                         <img
-                                            src={room.imageUrls[0]}
+                                            src={
+                                                room.imageUrls.length > 0
+                                                    ? room.imageUrls[0]
+                                                    : 'https://imperiaskygardens.com/wp-content/uploads/2023/01/unnamed-3.jpg'
+                                            }
                                             alt='Room'
                                             className='card-image_big'
                                             onError={(e) => {
