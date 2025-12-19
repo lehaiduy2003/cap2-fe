@@ -607,7 +607,6 @@ function Result_Room() {
                     setShowFloodModal(false);
                     handleFloodReportSuccess();
                 }}
-                nodeServerUrl='${VAT_API_URL}'
                 defaultLocation={{
                     lat: room.latitude,
                     lng: room.longitude,

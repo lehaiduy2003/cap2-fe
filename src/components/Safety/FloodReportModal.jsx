@@ -1,13 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { VAT_API_URL } from '../../constants';
 
-export default function FloodReportModal({
-    isOpen,
-    onClose,
-    nodeServerUrl,
-    defaultLocation,
-}) {
+export default function FloodReportModal({ isOpen, onClose, defaultLocation }) {
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         latitude: '',
@@ -31,7 +27,7 @@ export default function FloodReportModal({
         try {
             setLoading(true);
             await axios.post(
-                `${nodeServerUrl}/api/v1/flood-reports`,
+                `${VAT_API_URL}/api/v1/flood-reports`,
                 {
                     latitude: formData.latitude,
                     longitude: formData.longitude,
