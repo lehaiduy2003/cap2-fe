@@ -3,7 +3,6 @@ import SettingsPage from './pages/SettingsPage';
 import Chatbox from './pages/Chatbox';
 import Login from './pages/Login';
 import Home from './pages/Home';
-import ChatPage2 from './pages/ChatPage2';
 
 // import SearchBar from "./components/SearchBar";
 import Footer from './components/Footer';

@@ -1,7 +1,8 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import '../styles/Result_Room.css';
 import { axiosInstance } from '../lib/axios';
+import axios from 'axios';
 import {
     showErrorToast,
     showSuccessToast,
@@ -9,21 +10,48 @@ import {
 } from '../components/toast';
 import { BASE_API_URL, VAT_API_URL } from '../constants';
 import LocationSummary from '../components/LocationSummary';
-import ReactMarkdown from 'react-markdown';
+
+// IMPORT COMPONENT SAFETY
+import SafetyWidget from '../components/Safety/SafetyWidget';
+import FloodReportModal from '../components/Safety/FloodReportModal';
+//import FloodHistoryList from '../components/Safety/FloodHistoryList';
+import ReviewSection from '../components/Safety/ReviewSection';
 
 const DEFAULT_IMAGE = '/default-room.jpg';
+
+// Helper: Component chọn sao
+// eslint-disable-next-line react-refresh/only-export-components
+const StarRatingInput = ({ label, value, onChange }) => {
+    return (
+        <div className='flex flex-col mb-3'>
+            <label className='text-sm font-bold text-gray-700 mb-1'>
+                {label}
+            </label>
+            <div className='flex gap-1'>
+                {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                        key={star}
+                        type='button'
+                        onClick={() => onChange(star)}
+                        className={`text-2xl transition-colors ${
+                            star <= value ? 'text-yellow-400' : 'text-gray-300'
+                        }`}
+                    >
+                        ★
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+};
 
 function Result_Room() {
     const { id } = useParams();
     const navigate = useNavigate();
-
-    // 1. LẤY DỮ LIỆU USER AN TOÀN
-    const token = localStorage.getItem('authToken');
-    const rawRole = localStorage.getItem('userRole');
     const authUser = JSON.parse(localStorage.getItem('authUser') || '{}');
     const currentUserId = authUser?.id;
 
-    // Helper: Get initials
+    // Helper: Initials
     const getInitials = (name) => {
         if (!name) return '?';
         const parts = name.trim().split(' ');
@@ -34,69 +62,39 @@ function Result_Room() {
               ).toUpperCase();
     };
 
+    // --- STATES ---
     const [room, setRoom] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Form states
+    const [activeTab, setActiveTab] = useState('reviews');
+    const [floodHistory, setFloodHistory] = useState([]);
+    const [showFloodModal, setShowFloodModal] = useState(false);
+
     const [showReportForm, setShowReportForm] = useState(false);
     const [reportReason, setReportReason] = useState('');
     const [showViewRequestForm, setShowViewRequestForm] = useState(false);
     const [viewRequestMessage, setViewRequestMessage] = useState('');
+    const [showRentalRequestForm, setShowRentalRequestForm] = useState(false);
+    const [rentalRequestMessage, setRentalRequestMessage] = useState('');
 
-    // Gallery state
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-    // Reviews state
     const [reviews, setReviews] = useState([]);
-    const [reviewsPagination, setReviewsPagination] = useState(null);
-    const [currentReviewPage, setCurrentReviewPage] = useState(1);
-    const [loadingReviews, setLoadingReviews] = useState(false);
-    const [showReviewForm, setShowReviewForm] = useState(false);
     const [userReview, setUserReview] = useState(null);
 
-    // Safety & Location state
-    const [safetyData, setSafetyData] = useState(null);
-    const [loadingSafety, setLoadingSafety] = useState(false);
+    const [showReviewForm, setShowReviewForm] = useState(false);
+    const [reviewData, setReviewData] = useState({
+        safety_rating: 5,
+        cleanliness_rating: 5,
+        amenities_rating: 5,
+        host_rating: 5,
+        review_text: '',
+    });
+    const [submittingReview, setSubmittingReview] = useState(false);
     const [locationData, setLocationData] = useState(null);
 
-    // Image Logic
-    const processedImageUrls = useMemo(() => {
-        if (!room?.imageUrls || room.imageUrls.length === 0) {
-            return [DEFAULT_IMAGE];
-        }
-        return room.imageUrls.map((url) => {
-            if (url.startsWith('http://') || url.startsWith('https://')) {
-                return url;
-            }
-            return `${BASE_API_URL}/images/${url}`;
-        });
-    }, [room]);
-
-    // Address Logic
-    const formattedAddress = useMemo(() => {
-        if (!room) return '';
-        if (room.ward && room.district && room.city) {
-            const streetPart = room.street || room.addressDetails || '';
-            if (
-                streetPart.includes(room.district) ||
-                streetPart.includes(room.city)
-            ) {
-                return streetPart;
-            }
-            return [
-                room.street || room.addressDetails,
-                room.ward,
-                room.district,
-                room.city,
-            ]
-                .filter((part) => part && part.trim() !== '')
-                .join(', ');
-        }
-        return room.addressDetails || '';
-    }, [room]);
-
-    // Fetch Room Details
+    // 1. Fetch Room Info
     useEffect(() => {
         const fetchRoomDetails = async () => {
             try {
@@ -111,75 +109,52 @@ function Result_Room() {
                 }
             } catch (err) {
                 console.error('Error fetching room details:', err.message);
-                setError('Không thể tải thông tin phòng.');
+                setError('Failed to fetch room details.');
             } finally {
                 setLoading(false);
             }
         };
         fetchRoomDetails();
     }, [id]);
-
-    // Fetch Safety Data
+    useEffect(() => {
+        if (room?.latitude) {
+            axios
+                .get(`http://localhost:3000/api/v1/flood-reports`, {
+                    params: { lat: room.latitude, lng: room.longitude },
+                })
+                .then((res) => setFloodHistory(res.data || []));
+        }
+    }, [room]);
+    // 2. Fetch Location Data (cho Map)
     useEffect(() => {
         if (!room) return;
-        const fetchSafetyData = async () => {
-            setLoadingSafety(true);
+        const fetchLocationData = async () => {
             try {
+                const addressParts = [
+                    room.addressDetails,
+                    room.ward,
+                    room.district,
+                    room.city,
+                ]
+                    .filter((p) => p)
+                    .join(', ');
                 const nearbyResponse = await axiosInstance.post(
                     '/maps/locations',
-                    {
-                        address: formattedAddress,
-                    },
+                    { address: addressParts },
                 );
                 setLocationData(nearbyResponse.data);
-
-                const propertyData = {
-                    id: room.id,
-                    title: room.title,
-                    description: room.description,
-                    price: room.price,
-                    roomSize: room.roomSize,
-                    numBedrooms: room.numBedrooms,
-                    numBathrooms: room.numBathrooms,
-                    availableFrom: room.availableFrom,
-                    isRoomAvailable: room.isRoomAvailable,
-                    ownerId: room.ownerId,
-                    ownerName: room.ownerName,
-                    imageUrls: room.imageUrls,
-                    location: nearbyResponse.data?.location || null,
-                };
-
-                const safetyResponse = await fetch(
-                    `${VAT_API_URL}/api/v1/properties/${id}/safety`,
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            property: propertyData,
-                            nearbyPlaces:
-                                nearbyResponse.data?.nearbyPlaces || [],
-                        }),
-                    },
-                );
-
-                if (safetyResponse.ok) {
-                    const safetyResult = await safetyResponse.json();
-                    setSafetyData(safetyResult);
-                }
             } catch (error) {
-                console.error('Error fetching safety data:', error);
-            } finally {
-                setLoadingSafety(false);
+                console.error('Error fetching location data:', error);
             }
         };
-        fetchSafetyData();
-    }, [room, formattedAddress, id]);
+        fetchLocationData();
+    }, [room]);
 
-    // Fetch Reviews
+    // 3. Fetch Reviews
     const fetchReviews = useCallback(
         async (page = 1) => {
-            setLoadingReviews(true);
             try {
+                const token = localStorage.getItem('authToken');
                 const response = await fetch(
                     `${VAT_API_URL}/api/v1/reviews/${id}?page=${page}&limit=5`,
                     {
@@ -203,447 +178,611 @@ function Result_Room() {
                         (review) => review.user_id !== currentUserId,
                     );
                     setReviews(otherReviews);
-                    setReviewsPagination(data.pagination);
+                } else {
+                    setReviews([]);
                 }
             } catch (error) {
                 console.error('Error fetching reviews:', error);
-            } finally {
-                setLoadingReviews(false);
             }
         },
-        [id, token, currentUserId],
+        [id, currentUserId],
     );
 
     useEffect(() => {
-        if (room) fetchReviews(currentReviewPage);
-    }, [room, currentReviewPage, fetchReviews]);
+        if (room) fetchReviews(1);
+    }, [room, fetchReviews]);
 
-    // Keyboard navigation
+    // 4. Fetch Flood History
+    useEffect(() => {
+        if (room?.latitude && room?.longitude) {
+            const fetchFloodHistory = async () => {
+                try {
+                    const floodRes = await axios.get(
+                        `http://localhost:3000/api/v1/flood-reports`,
+                        {
+                            params: { lat: room.latitude, lng: room.longitude },
+                        },
+                    );
+                    setFloodHistory(floodRes.data || []);
+                } catch (e) {
+                    console.error('Lỗi lấy lịch sử ngập:', e);
+                }
+            };
+            fetchFloodHistory();
+        }
+    }, [room]);
+    // 1. Click nút "Sửa": Đổ dữ liệu cũ vào form và hiện popup
+    const handleEditReview = (existingReview) => {
+        setReviewData({
+            safety_rating: existingReview.safety_rating,
+            cleanliness_rating: existingReview.cleanliness_rating,
+            amenities_rating: existingReview.amenities_rating,
+            host_rating: existingReview.host_rating,
+            review_text: existingReview.review_text || '',
+        });
+        setShowReviewForm(true);
+    };
+    // Keyboard nav for images
     useEffect(() => {
         const handleKey = (e) => {
             if (!room) return;
+            const imageUrls = room.imageUrls || [];
+            if (imageUrls.length === 0) return;
             if (e.key === 'ArrowLeft') {
                 setSelectedImageIndex((prev) =>
-                    prev === 0 ? processedImageUrls.length - 1 : prev - 1,
+                    prev === 0 ? imageUrls.length - 1 : prev - 1,
                 );
             }
             if (e.key === 'ArrowRight') {
                 setSelectedImageIndex((prev) =>
-                    prev === processedImageUrls.length - 1 ? 0 : prev + 1,
+                    prev === imageUrls.length - 1 ? 0 : prev + 1,
                 );
             }
         };
         window.addEventListener('keydown', handleKey);
         return () => window.removeEventListener('keydown', handleKey);
-    }, [room, processedImageUrls]);
+    }, [room, selectedImageIndex]);
 
-    const handleNextImage = () => {
-        setSelectedImageIndex((prev) =>
-            prev === processedImageUrls.length - 1 ? 0 : prev + 1,
-        );
+    // --- HANDLERS ---
+    const handleFloodReportSuccess = async () => {
+        if (room?.latitude && room?.longitude) {
+            try {
+                const floodRes = await axios.get(
+                    `http://localhost:3000/api/v1/flood-reports`,
+                    {
+                        params: { lat: room.latitude, lng: room.longitude },
+                    },
+                );
+                setFloodHistory(floodRes.data || []);
+                setActiveTab('flood');
+            } catch (e) {
+                console.error(e);
+            }
+        }
     };
 
-    const handlePrevImage = () => {
-        setSelectedImageIndex((prev) =>
-            prev === 0 ? processedImageUrls.length - 1 : prev - 1,
-        );
+    const handleReportSubmit = async () => {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            showInfoToast('Bạn cần đăng nhập để gửi báo cáo.');
+            navigate('/login');
+            return;
+        }
+        try {
+            const response = await fetch(`${BASE_API_URL}/api/reports`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ roomId: room.id, reason: reportReason }),
+            });
+            if (!response.ok) throw new Error(`HTTP error!`);
+            showInfoToast('Đã gửi báo cáo thành công.');
+            setShowReportForm(false);
+            setReportReason('');
+        } catch (error) {
+            console.error(error);
+            showErrorToast('Gửi báo cáo thất bại.');
+        }
     };
 
-    if (loading)
-        return (
-            <div className='loading-container'>Đang tải chi tiết phòng...</div>
-        );
-    if (error) return <div className='error-container'>{error}</div>;
-    if (!room)
-        return <div className='error-container'>Không tìm thấy phòng.</div>;
+    const handleSendViewRequest = async () => {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            showInfoToast('Vui lòng đăng nhập.');
+            navigate('/login');
+            return;
+        }
+        if (!viewRequestMessage.trim()) {
+            showErrorToast('Vui lòng nhập lời nhắn.');
+            return;
+        }
+        try {
+            const response = await fetch(`${BASE_API_URL}/api/view-requests`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    roomId: room.id,
+                    message: viewRequestMessage,
+                }),
+            });
+            if (!response.ok) throw new Error('Gửi yêu cầu thất bại');
+            showSuccessToast('Đã gửi yêu cầu xem phòng.');
+            setShowViewRequestForm(false);
+            setViewRequestMessage('');
+        } catch (error) {
+            showErrorToast(error.message);
+        }
+    };
 
-    // -----------------------------------------------------------------
-    // FIX LOGIC ẨN NÚT CHAT (ROBUST CHECK)
-    // -----------------------------------------------------------------
+    const handleSendRentalRequest = async () => {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            showInfoToast('Vui lòng đăng nhập.');
+            navigate('/login');
+            return;
+        }
+        if (!rentalRequestMessage.trim()) {
+            showErrorToast('Vui lòng nhập lời nhắn.');
+            return;
+        }
+        try {
+            const response = await fetch(`${BASE_API_URL}/api/rent-requests`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    roomId: room.id,
+                    message: rentalRequestMessage,
+                }),
+            });
+            if (!response.ok) throw new Error('Gửi yêu cầu thất bại');
+            showInfoToast('Đã gửi yêu cầu thuê phòng.');
+            setShowRentalRequestForm(false);
+            setRentalRequestMessage('');
+        } catch (error) {
+            showErrorToast(error.message);
+        }
+    };
 
-    // 1. Kiểm tra Role: Chuyển về Uppercase và Trim khoảng trắng để so sánh chính xác
-    const isOwnerRole = rawRole
-        ? String(rawRole).trim().toUpperCase() === 'OWNER'
-        : false;
+    const handleSubmitReview = async (e) => {
+        e.preventDefault();
+        setSubmittingReview(true);
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            showInfoToast('Vui lòng đăng nhập.');
+            navigate('/login');
+            return;
+        }
+        try {
+            const response = await fetch(`${VAT_API_URL}/api/v1/reviews`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                    'x-user-id': currentUserId,
+                },
+                body: JSON.stringify({ property_id: room.id, ...reviewData }),
+            });
+            if (!response.ok) throw new Error('Lỗi gửi đánh giá');
+            showSuccessToast('Gửi đánh giá thành công!');
+            setShowReviewForm(false);
+            fetchReviews(1);
+        } catch (error) {
+            console.error(error);
+            showErrorToast('Gửi đánh giá thất bại.');
+        } finally {
+            setSubmittingReview(false);
+        }
+    };
 
-    // 2. Kiểm tra ID: Chuyển cả 2 ID về String để so sánh (tránh lỗi 123 !== "123")
-    const isMyRoom =
-        currentUserId &&
-        room.ownerId &&
-        String(currentUserId) === String(room.ownerId);
+    if (loading) return <div className='loading-spinner'>Loading...</div>;
+    if (error || !room) return <div className='error-message'>{error}</div>;
 
-    // 3. Quyết định ẩn
-    const shouldHideChatButton = isOwnerRole || isMyRoom;
-
-    // Log debug nếu vẫn lỗi (Bạn có thể xóa sau khi fix xong)
-    console.log('Check Hide Chat:', {
-        isOwnerRole,
-        isMyRoom,
-        rawRole,
-        currentUserId,
-        roomOwnerId: room.ownerId,
-    });
-    // -----------------------------------------------------------------
+    const addressParts = [
+        room.addressDetails,
+        room.ward,
+        room.district,
+        room.city,
+    ]
+        .filter(Boolean)
+        .join(', ');
+    const baseURL = `${BASE_API_URL}/images/`;
+    const imageUrls =
+        room.imageUrls?.length > 0
+            ? room.imageUrls.map((url) => baseURL + url)
+            : [DEFAULT_IMAGE];
 
     return (
-        <div className='result-room'>
-            <nav className='breadcrumb'>
-                <Link to='/Room' style={{ color: '#6b7280' }}>
+        <div className='result-room font-sans text-gray-800 bg-gray-50 min-h-screen pb-10'>
+            <nav className='breadcrumb max-w-7xl mx-auto px-4 py-4 text-sm text-gray-500'>
+                <Link to='/Room' className='hover:text-blue-600'>
                     Phòng trọ
                 </Link>
-                <span className='divider'>/</span>
-                <span>Chi tiết phòng</span>
+                <span className='mx-2'>/</span>
+                <span className='text-gray-900 font-medium'>
+                    Chi tiết phòng
+                </span>
             </nav>
 
-            <header className='page-header'>
-                <h1 className='text-black text-2xl font-semibold'>
+            <header className='page-header max-w-7xl mx-auto px-4 mb-6'>
+                <h1 className='text-3xl font-bold text-gray-900 mb-2'>
                     {room.title}
                 </h1>
-                {/* <p style={{ color: '#666', fontSize: '1.1rem', marginTop: '5px' }}>
-                    📍 {formattedAddress}
-                </p> */}
             </header>
 
-            <section className='room-layout'>
-                <div className='left-column'>
-                    {/* Gallery Code Giữ Nguyên */}
-                    <div className='image-gallery'>
-                        <div className='main-image' tabIndex={0}>
-                            {processedImageUrls.length > 1 && (
-                                <>
-                                    <button
-                                        className='gallery-nav-btn prev'
-                                        onClick={handlePrevImage}
-                                    >
-                                        &#8592;
-                                    </button>
-                                    <button
-                                        className='gallery-nav-btn next'
-                                        onClick={handleNextImage}
-                                    >
-                                        &#8594;
-                                    </button>
-                                </>
-                            )}
+            {/* --- MAIN LAYOUT --- */}
+            <div className='max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-3 gap-8'>
+                {/* --- LEFT COLUMN --- */}
+                <div className='lg:col-span-2 flex flex-col gap-6'>
+                    {/* Image Gallery */}
+                    <div className='bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden'>
+                        <div
+                            className='main-image-container relative w-full bg-gray-100'
+                            style={{ height: '400px' }}
+                        >
                             <img
-                                src={processedImageUrls[selectedImageIndex]}
-                                alt={`Room view ${selectedImageIndex + 1}`}
+                                src={imageUrls[0]}
+                                alt='Main Room'
+                                className='w-full h-full object-cover'
                                 onError={(e) => {
                                     e.target.src = DEFAULT_IMAGE;
                                 }}
-                                style={{
-                                    objectFit: 'contain',
-                                    backgroundColor: '#000',
-                                }}
                             />
-                        </div>
-                        {processedImageUrls.length > 1 && (
-                            <div className='thumbnail-container'>
-                                {processedImageUrls.map((url, index) => (
-                                    <div
-                                        key={index}
-                                        className={`thumbnail ${selectedImageIndex === index ? 'active' : ''}`}
-                                        onClick={() =>
-                                            setSelectedImageIndex(index)
-                                        }
-                                    >
-                                        <img
-                                            src={url}
-                                            alt={`Thumbnail ${index + 1}`}
-                                            onError={(e) => {
-                                                e.target.src = DEFAULT_IMAGE;
-                                            }}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                    {/* Safety Code Giữ Nguyên */}
-                    <section className='safety-section section-card'>
-                        <h2 className='safety-title'>
-                            Phân tích an toàn khu vực
-                        </h2>
-                        {loadingSafety ? (
-                            <div className='loading-safety'>
-                                Đang phân tích an toàn...
-                            </div>
-                        ) : safetyData ? (
-                            <div className='safety-content'>
-                                <div className='safety-scores'>
-                                    <div className='score-item'>
-                                        <div className='score-label'>
-                                            Điểm tổng thể
-                                        </div>
-                                        <div className='score-value'>
-                                            {safetyData.overall_score}/10
-                                        </div>
-                                        <div className='score-bar'>
-                                            <div
-                                                className='score-fill'
-                                                style={{
-                                                    width: `${(safetyData.overall_score / 10) * 100}%`,
-                                                }}
-                                            ></div>
-                                        </div>
-                                    </div>
-                                    <div className='score-breakdown'>
-                                        <div className='score-item small'>
-                                            <div className='score-label'>
-                                                An ninh
-                                            </div>
-                                            <div className='score-value'>
-                                                {safetyData.crime_score}/10
-                                            </div>
-                                        </div>
-                                        <div className='score-item small'>
-                                            <div className='score-label'>
-                                                Cộng đồng
-                                            </div>
-                                            <div className='score-value'>
-                                                {safetyData.user_score}/10
-                                            </div>
-                                        </div>
-                                        <div className='score-item small'>
-                                            <div className='score-label'>
-                                                Môi trường
-                                            </div>
-                                            <div className='score-value'>
-                                                {safetyData.environment_score}
-                                                /10
-                                            </div>
-                                        </div>
-                                    </div>
+                            {imageUrls.length > 1 && (
+                                <div className='absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium'>
+                                    <i className='fas fa-images mr-2'></i>{' '}
+                                    {imageUrls.length} ảnh
                                 </div>
-                                {safetyData.ai_summary && (
-                                    <div className='ai-summary'>
-                                        <h3>Đánh giá AI</h3>
-                                        <div className='summary-text'>
-                                            <ReactMarkdown>
-                                                {safetyData.ai_summary}
-                                            </ReactMarkdown>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div className='no-safety-data'>
-                                Chưa có dữ liệu phân tích an toàn.
-                            </div>
-                        )}
-                    </section>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* SAFETY WIDGET */}
+                    <SafetyWidget propertyId={id} />
                 </div>
 
-                <div className='right-column'>
-                    <section className='combined-panel section-card booking-card'>
-                        <div className='combined-header'>
-                            <div className='price-row'>
-                                <div className='price'>
-                                    {room.price?.toLocaleString('vi-VN')}{' '}
-                                    <span className='currency'>VND</span>
-                                </div>
-                                <div className='per'>/ tháng</div>
+                {/* --- RIGHT COLUMN --- */}
+                <div className='lg:col-span-1'>
+                    <div className='bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sticky top-4 flex flex-col h-full max-h-[calc(100vh-2rem)] overflow-y-auto custom-scrollbar'>
+                        <div className='mb-6 text-center border-b border-gray-100 pb-6'>
+                            <div className='text-3xl font-bold text-blue-600 mb-1'>
+                                {room.price.toLocaleString('vi-VN')}{' '}
+                                <span className='text-lg text-gray-500 font-normal'>
+                                    VND/tháng
+                                </span>
                             </div>
                             <span
-                                className={`status-badge ${room.isRoomAvailable ? 'available' : 'unavailable'}`}
+                                className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${room.isRoomAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}
                             >
                                 {room.isRoomAvailable
-                                    ? 'Còn trống'
+                                    ? 'Còn phòng'
                                     : 'Hết phòng'}
                             </span>
                         </div>
 
-                        <p
-                            className='room-description'
-                            style={{ whiteSpace: 'pre-line' }}
-                        >
-                            {room.description}
-                        </p>
-
-                        <div className='room-details'>
-                            <span>
-                                <strong>Diện tích:</strong> {room.roomSize} m²
-                            </span>
-                            {room.numBedrooms > 0 && (
-                                <span>
-                                    <strong>Phòng ngủ:</strong>{' '}
-                                    {room.numBedrooms}
-                                </span>
-                            )}
-                            {room.numBathrooms > 0 && (
-                                <span>
-                                    <strong>Phòng tắm:</strong>{' '}
-                                    {room.numBathrooms}
-                                </span>
-                            )}
-                        </div>
-
-                        <div className='meta-info'>
-                            <div className='owner-info'>
-                                <div className='owner-avatar'>
-                                    {getInitials(room.ownerName)}
+                        {/* Owner Info */}
+                        <div className='flex items-center gap-3 mb-6 bg-gray-50 p-3 rounded-xl'>
+                            <div className='w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg'>
+                                {getInitials(room.ownerName)}
+                            </div>
+                            <div>
+                                <div className='text-xs text-gray-500'>
+                                    Chủ nhà
                                 </div>
-                                <div className='owner-details'>
-                                    <strong>Chủ sở hữu:</strong>{' '}
+                                <div className='font-bold text-gray-900'>
                                     {room.ownerName}
                                 </div>
                             </div>
                         </div>
 
-                        <div className='cta-group'>
+                        {/* Action Buttons */}
+                        <div className='flex flex-col gap-3 mb-6'>
                             <button
                                 onClick={() => {
-                                    if (!token) {
+                                    if (!authUser.id) {
                                         showInfoToast('Vui lòng đăng nhập.');
                                         navigate('/login');
                                         return;
                                     }
                                     setShowViewRequestForm(true);
                                 }}
-                                className='primary-cta'
+                                className='w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-md'
                             >
                                 Gửi yêu cầu xem phòng
                             </button>
-
-                            {/* --- NÚT CHAT ĐƯỢC ẨN NẾU shouldHideChatButton LÀ TRUE --- */}
-                            {!shouldHideChatButton && (
-                                <button
-                                    onClick={() => {
-                                        if (!token) {
-                                            showInfoToast(
-                                                'Vui lòng đăng nhập.',
-                                            );
-                                            navigate('/login');
-                                            return;
-                                        }
-                                        window.open(
-                                            `/chat?ownerId=${room.ownerId}&roomId=${room.id}`,
-                                            '_blank',
-                                        );
-                                    }}
-                                    className='secondary-cta'
-                                >
-                                    💬 Trò chuyện ngay
-                                </button>
-                            )}
-                            {/* -------------------------------------------------------- */}
-
                             <button
-                                className='report-button'
                                 onClick={() => {
-                                    if (!token) {
-                                        showInfoToast(
-                                            'Bạn cần đăng nhập để gửi báo cáo.',
-                                        );
+                                    if (!authUser.id) {
+                                        showInfoToast('Vui lòng đăng nhập.');
+                                        navigate('/login');
+                                        return;
+                                    }
+                                    window.open(
+                                        `/chat?ownerId=${room.ownerId}&roomId=${room.id}`,
+                                        '_blank',
+                                    );
+                                }}
+                                className='w-full bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-3 rounded-xl transition'
+                            >
+                                <i className='fa-solid fa-comment mr-2'></i> Trò
+                                chuyện ngay
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (!authUser.id) {
+                                        showInfoToast('Vui lòng đăng nhập.');
                                         navigate('/login');
                                         return;
                                     }
                                     setShowReportForm(true);
                                 }}
+                                className='text-gray-400 text-sm hover:text-red-500 transition mt-2 flex items-center justify-center gap-2'
                             >
-                                🚩 Báo cáo bài viết
+                                <i className='fa-solid fa-flag'></i> Báo cáo bài
+                                viết
                             </button>
                         </div>
 
-                        <div className='location-wrapper'>
+                        {/* Details */}
+                        <div className='space-y-4 mb-6'>
+                            <h3 className='font-bold text-gray-800 border-l-4 border-blue-500 pl-3'>
+                                Thông tin chi tiết
+                            </h3>
+                            <div className='grid grid-cols-2 gap-4 text-sm'>
+                                <div className='flex flex-col p-3 bg-gray-50 rounded-lg'>
+                                    <span className='text-gray-500 text-xs'>
+                                        Diện tích
+                                    </span>
+                                    <span className='font-bold'>
+                                        {room.roomSize} m²
+                                    </span>
+                                </div>
+                                <div className='flex flex-col p-3 bg-gray-50 rounded-lg'>
+                                    <span className='text-gray-500 text-xs'>
+                                        Phòng ngủ
+                                    </span>
+                                    <span className='font-bold'>
+                                        {room.numBedrooms || 1}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className='text-sm text-gray-600 leading-relaxed max-h-32 overflow-hidden relative group'>
+                                <div className='line-clamp-4'>
+                                    {room.description}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Map Mini */}
+                        <div className='mt-auto pt-4 border-t border-gray-100'>
                             <LocationSummary
-                                address={formattedAddress}
+                                address={addressParts}
                                 nearbyPlaces={locationData?.nearbyPlaces}
                                 location={locationData?.location}
                             />
                         </div>
-                    </section>
+                    </div>
                 </div>
-            </section>
+            </div>
 
-            {/* Reviews Section và Modal giữ nguyên */}
-            {/* ... */}
-            {showViewRequestForm && (
-                <div className='report-overlay'>
-                    <div className='report-form'>
-                        <h3>Yêu cầu xem phòng</h3>
+            {/* --- REVIEWS & FLOOD HISTORY SECTION --- */}
+            <div className='max-w-7xl mx-auto px-4 mt-8'>
+                <div className='max-w-7xl mx-auto px-4 mt-8'>
+                    <ReviewSection
+                        reviews={reviews}
+                        userReview={userReview}
+                        floodHistory={floodHistory}
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        authUser={authUser}
+                        onWriteReview={() => {
+                            setReviewData({
+                                safety_rating: 5,
+                                cleanliness_rating: 5,
+                                amenities_rating: 5,
+                                host_rating: 5,
+                                review_text: '',
+                            });
+                            setShowReviewForm(true);
+                        }}
+                        onEditReview={handleEditReview} // <-- Truyền hàm Sửa
+                        // onDeleteReview={handleDeleteReview} // <-- Truyền hàm Xóa
+                        onReportFlood={() => setShowFloodModal(true)}
+                    />
+                </div>
+            </div>
+
+            {/* --- MODALS --- */}
+            <FloodReportModal
+                isOpen={showFloodModal}
+                onClose={() => {
+                    setShowFloodModal(false);
+                    handleFloodReportSuccess();
+                }}
+                nodeServerUrl='http://localhost:3000'
+                defaultLocation={{
+                    lat: room.latitude,
+                    lng: room.longitude,
+                    address: addressParts,
+                }}
+            />
+
+            {showReviewForm && (
+                <div className='fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4'>
+                    <div className='bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl animate-fade-in-up'>
+                        <h3 className='text-xl font-bold mb-6 text-center text-gray-800'>
+                            Đánh giá trải nghiệm
+                        </h3>
+                        <form onSubmit={handleSubmitReview}>
+                            <div className='grid grid-cols-2 gap-x-8 gap-y-4 mb-6'>
+                                <StarRatingInput
+                                    label='Hàng xóm'
+                                    value={reviewData.safety_rating}
+                                    onChange={(v) =>
+                                        setReviewData({
+                                            ...reviewData,
+                                            safety_rating: v,
+                                        })
+                                    }
+                                />
+                                <StarRatingInput
+                                    label='Sạch sẽ'
+                                    value={reviewData.cleanliness_rating}
+                                    onChange={(v) =>
+                                        setReviewData({
+                                            ...reviewData,
+                                            cleanliness_rating: v,
+                                        })
+                                    }
+                                />
+                                <StarRatingInput
+                                    label='Tiện nghi'
+                                    value={reviewData.amenities_rating}
+                                    onChange={(v) =>
+                                        setReviewData({
+                                            ...reviewData,
+                                            amenities_rating: v,
+                                        })
+                                    }
+                                />
+                                <StarRatingInput
+                                    label='Chủ nhà'
+                                    value={reviewData.host_rating}
+                                    onChange={(v) =>
+                                        setReviewData({
+                                            ...reviewData,
+                                            host_rating: v,
+                                        })
+                                    }
+                                />
+                            </div>
+
+                            <div className='mb-6'>
+                                <label className='block text-sm font-bold text-gray-700 mb-2'>
+                                    Nhận xét chi tiết
+                                </label>
+                                <textarea
+                                    className='w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none resize-none'
+                                    value={reviewData.review_text}
+                                    onChange={(e) =>
+                                        setReviewData({
+                                            ...reviewData,
+                                            review_text: e.target.value,
+                                        })
+                                    }
+                                    placeholder='Chia sẻ trải nghiệm thực tế của bạn về phòng trọ này...'
+                                    rows={4}
+                                />
+                            </div>
+                            <div className='flex gap-3 justify-end'>
+                                <button
+                                    type='button'
+                                    onClick={() => setShowReviewForm(false)}
+                                    className='px-5 py-2 rounded-xl text-gray-600 font-bold hover:bg-gray-100 transition'
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    type='submit'
+                                    disabled={submittingReview}
+                                    className='px-6 py-2 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition shadow-md disabled:bg-gray-400'
+                                >
+                                    {submittingReview
+                                        ? 'Đang gửi...'
+                                        : 'Gửi đánh giá'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {showReportForm && (
+                <div className='fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4'>
+                    <div className='bg-white rounded-xl p-6 w-full max-w-md'>
+                        <h3 className='font-bold text-red-600 mb-4'>
+                            <i className='fa-solid fa-flag mr-2'></i> Báo cáo
+                            bài viết
+                        </h3>
                         <textarea
-                            value={viewRequestMessage}
-                            onChange={(e) =>
-                                setViewRequestMessage(e.target.value)
-                            }
-                            placeholder='Nhập lời nhắn cho chủ phòng...'
+                            className='w-full border p-2 rounded mb-4'
+                            value={reportReason}
+                            onChange={(e) => setReportReason(e.target.value)}
+                            placeholder='Lý do...'
+                            rows={3}
                         />
-                        <div className='report_inside-buttons'>
+                        <div className='flex justify-end gap-2'>
                             <button
-                                onClick={() => {
-                                    /* Logic Gửi */
-                                }}
-                            >
-                                Gửi
-                            </button>
-                            <button
-                                onClick={() => setShowViewRequestForm(false)}
+                                onClick={() => setShowReportForm(false)}
+                                className='px-4 py-2 text-gray-600'
                             >
                                 Hủy
+                            </button>
+                            <button
+                                onClick={handleReportSubmit}
+                                className='px-4 py-2 bg-red-600 text-white rounded'
+                            >
+                                Gửi
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-            <section className='reviews-section section-card'>
-                <div className='reviews-header'>
-                    <h2 className='reviews-title'>Đánh giá từ người dùng</h2>
-                    {token && !userReview && (
-                        <button
-                            onClick={() => setShowReviewForm(true)}
-                            className='write-review-btn'
-                        >
-                            Viết đánh giá
-                        </button>
-                    )}
+
+            {(showViewRequestForm || showRentalRequestForm) && (
+                <div className='fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4'>
+                    <div className='bg-white rounded-xl p-6 w-full max-w-md'>
+                        <h3 className='font-bold mb-4'>
+                            {showViewRequestForm
+                                ? 'Yêu cầu xem phòng'
+                                : 'Yêu cầu thuê phòng'}
+                        </h3>
+                        <textarea
+                            className='w-full border p-2 rounded mb-4'
+                            value={
+                                showViewRequestForm
+                                    ? viewRequestMessage
+                                    : rentalRequestMessage
+                            }
+                            onChange={(e) =>
+                                showViewRequestForm
+                                    ? setViewRequestMessage(e.target.value)
+                                    : setRentalRequestMessage(e.target.value)
+                            }
+                            placeholder='Lời nhắn...'
+                            rows={3}
+                        />
+                        <div className='flex justify-end gap-2'>
+                            <button
+                                onClick={() => {
+                                    setShowViewRequestForm(false);
+                                    setShowRentalRequestForm(false);
+                                }}
+                                className='px-4 py-2 text-gray-600'
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                onClick={
+                                    showViewRequestForm
+                                        ? handleSendViewRequest
+                                        : handleSendRentalRequest
+                                }
+                                className='px-4 py-2 bg-blue-600 text-white rounded'
+                            >
+                                Gửi
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                {loadingReviews ? (
-                    <div className='loading-reviews'>Đang tải đánh giá...</div>
-                ) : reviews.length > 0 || userReview ? (
-                    <div className='reviews-list'>
-                        {userReview && (
-                            <div className='review-item user-review'>
-                                <div className='review-header'>
-                                    <div className='reviewer-name'>
-                                        {userReview.reviewer_name} (Bạn)
-                                    </div>
-                                    <div className='review-date'>
-                                        {new Date(
-                                            userReview.created_at,
-                                        ).toLocaleDateString('vi-VN')}
-                                    </div>
-                                </div>
-                                <div className='review-text'>
-                                    {userReview.review_text}
-                                </div>
-                            </div>
-                        )}
-                        {reviews.map((review, index) => (
-                            <div key={index} className='review-item'>
-                                <div className='review-header'>
-                                    <div className='reviewer-name'>
-                                        {review.reviewer_name}
-                                    </div>
-                                    <div className='review-date'>
-                                        {new Date(
-                                            review.created_at,
-                                        ).toLocaleDateString('vi-VN')}
-                                    </div>
-                                </div>
-                                <div className='review-text'>
-                                    {review.review_text}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className='no-reviews'>
-                        Chưa có đánh giá nào cho phòng này.
-                    </div>
-                )}
-            </section>
-            {/* Modal Reports/Review (Bạn tự thêm lại phần modal ReviewForm cũ nếu cần, hoặc để như cũ) */}
+            )}
         </div>
     );
 }

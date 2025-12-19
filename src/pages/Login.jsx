@@ -123,7 +123,7 @@ export default function Login() {
                 <div className='login-card'>
                     <div className='login-header'>
                         <h1 className='login-title'>
-                            Login
+                            Đăng nhập
                             <span className='title-underline'></span>
                         </h1>
                     </div>
@@ -174,23 +174,23 @@ export default function Login() {
                                         setRememberMe(e.target.checked)
                                     }
                                 />
-                                <label htmlFor='remember'>Remember me</label>
+                                <label htmlFor='remember'>Lưu tài khoản</label>
                             </div>
                             <div className='forgot-password'>
                                 <Link to='/forgot-password'>
-                                    Forgot password?
+                                    Quên mật khẩu?
                                 </Link>
                             </div>
                         </div>
 
                         <button type='submit' className='login-btn'>
-                            Login Now
+                            Đăng nhập
                         </button>
                     </form>
 
                     <div className='signup-link'>
-                        <span>Don&apos;t have an account? </span>
-                        <Link to='/register'>Signup now</Link>
+                        <span>Bạn chưa có tài khoản? </span>
+                        <Link to='/register'>Đăng ký ngay</Link>
                     </div>
                 </div>
             </div>
