@@ -271,6 +271,7 @@ const RegisterForm = ({ onClose, onRegister }) => {
             } catch (error) {
                 setDistricts([]);
                 setWards([]);
+                console.error('Error loading districts:', error);
             }
         } else {
             setDistricts([]);
@@ -292,6 +293,7 @@ const RegisterForm = ({ onClose, onRegister }) => {
                 setWards(wardsData);
             } catch (error) {
                 setWards([]);
+                console.error('Error loading wards:', error);
             }
         } else {
             setWards([]);
