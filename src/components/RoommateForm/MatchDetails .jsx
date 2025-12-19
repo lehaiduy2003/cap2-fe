@@ -143,7 +143,7 @@ const MatchDetails = () => {
         // Log để debug
         console.log('Navigating to chat with user:', userInfo);
 
-        navigate('/chat', {
+        navigate('/chatpage', {
             state: {
                 selectedUser: {
                     id: userInfo.id,

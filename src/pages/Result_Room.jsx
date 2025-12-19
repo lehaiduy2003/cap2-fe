@@ -17,7 +17,8 @@ import FloodReportModal from '../components/Safety/FloodReportModal';
 //import FloodHistoryList from '../components/Safety/FloodHistoryList';
 import ReviewSection from '../components/Safety/ReviewSection';
 
-const DEFAULT_IMAGE = '/default-room.jpg';
+const DEFAULT_IMAGE =
+    'https://imperiaskygardens.com/wp-content/uploads/2023/01/unnamed-3.jpg';
 
 // Helper: Component chọn sao
 // eslint-disable-next-line react-refresh/only-export-components
