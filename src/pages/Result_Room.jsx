@@ -120,7 +120,7 @@ function Result_Room() {
     useEffect(() => {
         if (room?.latitude) {
             axios
-                .get(`http://localhost:3000/api/v1/flood-reports`, {
+                .get(`${VAT_API_URL}/api/v1/flood-reports`, {
                     params: { lat: room.latitude, lng: room.longitude },
                 })
                 .then((res) => setFloodHistory(res.data || []));
@@ -199,7 +199,7 @@ function Result_Room() {
             const fetchFloodHistory = async () => {
                 try {
                     const floodRes = await axios.get(
-                        `http://localhost:3000/api/v1/flood-reports`,
+                        `${VAT_API_URL}/api/v1/flood-reports`,
                         {
                             params: { lat: room.latitude, lng: room.longitude },
                         },
@@ -249,7 +249,7 @@ function Result_Room() {
         if (room?.latitude && room?.longitude) {
             try {
                 const floodRes = await axios.get(
-                    `http://localhost:3000/api/v1/flood-reports`,
+                    `${VAT_API_URL}/api/v1/flood-reports`,
                     {
                         params: { lat: room.latitude, lng: room.longitude },
                     },
@@ -607,7 +607,7 @@ function Result_Room() {
                     setShowFloodModal(false);
                     handleFloodReportSuccess();
                 }}
-                nodeServerUrl='http://localhost:3000'
+                nodeServerUrl='${VAT_API_URL}'
                 defaultLocation={{
                     lat: room.latitude,
                     lng: room.longitude,

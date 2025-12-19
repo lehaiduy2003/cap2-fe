@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
+import { VAT_API_URL } from '../../constants';
 
 export default function SafetyWidget({ propertyId }) {
     const [data, setData] = useState(null);
@@ -10,9 +11,6 @@ export default function SafetyWidget({ propertyId }) {
     const [aiLoading, setAiLoading] = useState(false);
     const [showAiContent, setShowAiContent] = useState(false);
 
-    // URL Server
-    const NODE_SERVER_URL = 'http://localhost:3000';
-
     // 1. Lấy dữ liệu điểm số (Mặc định include_ai=false)
     useEffect(() => {
         if (!propertyId) return;
@@ -20,7 +18,7 @@ export default function SafetyWidget({ propertyId }) {
             try {
                 setLoading(true);
                 const res = await axios.get(
-                    `${NODE_SERVER_URL}/api/v1/properties/${propertyId}/safety`,
+                    `${VAT_API_URL}/api/v1/properties/${propertyId}/safety`,
                     {
                         params: { include_ai: false },
                     },
@@ -40,7 +38,7 @@ export default function SafetyWidget({ propertyId }) {
         try {
             setAiLoading(true);
             const res = await axios.get(
-                `${NODE_SERVER_URL}/api/v1/properties/${propertyId}/safety`,
+                `${VAT_API_URL}/api/v1/properties/${propertyId}/safety`,
                 {
                     params: { include_ai: true },
                 },
