@@ -271,7 +271,9 @@ function Navbar() {
                     </Link>
                 )}
                 <div className='group relative'>
-                    <button onClick={() => (window.location.href = '/chat')}>
+                    <button
+                        onClick={() => (window.location.href = '/chatpage')}
+                    >
                         <svg
                             strokeLinejoin='round'
                             strokeLinecap='round'
