@@ -64,7 +64,7 @@ function Chat() {
 
         try {
             // Get user info for session ID
-            const userStr = localStorage.getItem('user');
+            const userStr = localStorage.getItem('userData');
             const user = userStr ? JSON.parse(userStr) : null;
             const userId = user?.id || 'guest';
 
