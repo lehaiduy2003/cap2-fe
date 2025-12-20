@@ -36,17 +36,6 @@ const Map = ({ rooms: propRooms = [] }) => {
         const fetchCoordinates = async () => {
             if (!rooms || rooms.length === 0) return;
 
-            // Filter rooms missing coordinates
-            // const roomsWithoutCoords = rooms.filter(
-            //     (room) => !room.latitude || !room.longitude,
-            // );
-
-            // if (roomsWithoutCoords.length === 0) {
-            //     // All rooms already have coordinates
-            //     setRoomsWithCoords(rooms);
-            //     return;
-            // }
-
             setIsLoadingCoords(true);
 
             // Create address objects for API call
@@ -63,7 +52,38 @@ const Map = ({ rooms: propRooms = [] }) => {
                     addressData,
                 );
 
-                setRoomsWithCoords(response.data);
+                // console.log(response.data)
+
+                // if(!response.data.isHasRoomData) {
+                //     const updatedRooms = rooms.map((room) => {
+                //         const coordData = response.data.find(
+                //             (coord) => coord.id === room.id,
+                //         );
+                //         if (coordData) {
+                //             return {
+                //                 ...room,
+                //                 latitude: coordData.latitude,
+                //                 longitude: coordData.longitude,
+                //             };
+                //         }
+                //         return room;
+                //     });
+
+                //     setRoomsWithCoords(updatedRooms);
+                //     return;
+                // }
+
+                // Update rooms with fetched coordinates
+
+                const rooms = response.data.map((data) => {
+                    return {
+                        latitude: data.latitude,
+                        longitude: data.longitude,
+                        ...data.roomData,
+                    };
+                });
+                console.log(rooms);
+                setRoomsWithCoords(rooms);
             } catch (error) {
                 console.error('Error fetching coordinates:', error);
                 // Fallback to rooms with existing coordinates
