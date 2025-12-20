@@ -191,8 +191,14 @@ const StepTwo = ({
     // Optimization: Memoize districts calculation
     const districtsOptions = useMemo(() => {
         if (!formData.province) return [];
+        // Find the province code from the province name
+        const selectedProvince = getProvinces().find(
+            (p) => p.name === formData.province,
+        );
+        if (!selectedProvince) return [];
+
         return getDistricts()
-            .filter((d) => d.province_code === formData.province)
+            .filter((d) => d.province_code === selectedProvince.code)
             .map((d) => ({ value: d.name, label: d.name }));
     }, [formData.province]);
 
@@ -355,7 +361,7 @@ const RoommateForm = () => {
 
     // Memoize province options để tránh recalculate
     const provincesOptions = useMemo(
-        () => getProvinces().map((p) => ({ value: p.code, label: p.name })),
+        () => getProvinces().map((p) => ({ value: p.name, label: p.name })),
         [],
     );
 
