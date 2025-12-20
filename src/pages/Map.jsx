@@ -37,20 +37,20 @@ const Map = ({ rooms: propRooms = [] }) => {
             if (!rooms || rooms.length === 0) return;
 
             // Filter rooms missing coordinates
-            const roomsWithoutCoords = rooms.filter(
-                (room) => !room.latitude || !room.longitude,
-            );
+            // const roomsWithoutCoords = rooms.filter(
+            //     (room) => !room.latitude || !room.longitude,
+            // );
 
-            if (roomsWithoutCoords.length === 0) {
-                // All rooms already have coordinates
-                setRoomsWithCoords(rooms);
-                return;
-            }
+            // if (roomsWithoutCoords.length === 0) {
+            //     // All rooms already have coordinates
+            //     setRoomsWithCoords(rooms);
+            //     return;
+            // }
 
             setIsLoadingCoords(true);
 
             // Create address objects for API call
-            const addressData = roomsWithoutCoords.map((room) => ({
+            const addressData = rooms.map((room) => ({
                 id: room.id,
                 address:
                     `${room.addressDetails || ''} ${room.ward || ''} ${room.district || ''} ${room.city || ''}`.trim(),
@@ -63,22 +63,7 @@ const Map = ({ rooms: propRooms = [] }) => {
                     addressData,
                 );
 
-                // Update rooms with fetched coordinates
-                const updatedRooms = rooms.map((room) => {
-                    const coordData = response.data.find(
-                        (coord) => coord.id === room.id,
-                    );
-                    if (coordData) {
-                        return {
-                            ...room,
-                            latitude: coordData.latitude,
-                            longitude: coordData.longitude,
-                        };
-                    }
-                    return room;
-                });
-
-                setRoomsWithCoords(updatedRooms);
+                setRoomsWithCoords(response.data);
             } catch (error) {
                 console.error('Error fetching coordinates:', error);
                 // Fallback to rooms with existing coordinates
