@@ -1,7 +1,6 @@
 // MatchDetails.jsx
 // import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import './RoommateForm.css'; // Import CSS
 import { FaComments } from 'react-icons/fa'; // Import message icon
 import { useEffect, useState } from 'react';
 import { BASE_API_URL } from '../../constants';
@@ -14,6 +13,31 @@ const MatchDetails = () => {
     console.log('Match data received:', match); // Debug log
 
     const [detailedRecommendations, setDetailedRecommendations] = useState([]);
+
+    // Function to get initials from name
+    const getInitials = (name) => {
+        if (!name) return '?';
+        return name.charAt(0).toUpperCase();
+    };
+
+    // Function to generate background color based on first letter
+    const getAvatarColor = (name) => {
+        if (!name) return 'bg-gray-400';
+        const colors = [
+            'bg-red-500',
+            'bg-blue-500',
+            'bg-green-500',
+            'bg-yellow-500',
+            'bg-purple-500',
+            'bg-pink-500',
+            'bg-indigo-500',
+            'bg-teal-500',
+            'bg-orange-500',
+            'bg-cyan-500',
+        ];
+        const charCode = name.charCodeAt(0);
+        return colors[charCode % colors.length];
+    };
 
     useEffect(() => {
         const fetchDetails = async () => {
@@ -43,9 +67,11 @@ const MatchDetails = () => {
 
     if (!match) {
         return (
-            <div className='roommate-form-container'>
-                <div className='match-details-container'>
-                    <h2>Không tìm thấy thông tin phù hợp</h2>
+            <div className='max-w-4xl mx-auto p-6'>
+                <div className='bg-white rounded-lg shadow-md p-8 text-center'>
+                    <h2 className='text-2xl font-semibold text-gray-800'>
+                        Không tìm thấy thông tin phù hợp
+                    </h2>
                 </div>
             </div>
         );
@@ -159,90 +185,156 @@ const MatchDetails = () => {
     };
 
     return (
-        <div className='roommate-form-container'>
-            <div className='match-details-container card-listing-container'>
-                <h2>Danh sách người phù hợp</h2>
-                <div className='card-listing-grid'>
-                    {detailedRecommendations.map((recommendation, index) => (
-                        <div
-                            key={recommendation.id || index}
-                            className='match-card'
-                        >
-                            <div className='match-card-avatar-wrapper'>
-                                <img
-                                    className='match-card-avatar'
-                                    src={
-                                        recommendation.avatarUrl ||
-                                        'https://randomuser.me/api/portraits/lego/1.jpg'
-                                    }
-                                    alt={recommendation.fullName || 'Avatar'}
-                                />
-                            </div>
-                            <div
-                                className='match-card-header'
-                                style={{ width: '100%' }}
-                            >
-                                <span
-                                    className='match-card-name'
-                                    style={{
-                                        flex: 1,
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                    }}
-                                >
-                                    {`Người phù hợp #${index + 1}`}
-                                </span>
-                                <button
-                                    className='message-button'
-                                    onClick={() =>
-                                        handleCardClick(recommendation)
-                                    }
-                                    title='Nhắn tin'
-                                    style={{ marginLeft: 8 }}
-                                >
-                                    <FaComments
-                                        size={24}
-                                        className='message-icon'
-                                    />
-                                </button>
-                            </div>
-                            <div className='match-card-job'>
-                                {recommendation.job ||
-                                    'Chưa cập nhật nghề nghiệp'}
-                            </div>
-                            <div className='match-card-field'>
-                                <b>Số điện thoại:</b>{' '}
-                                {recommendation.phone || '--'}
-                            </div>
-                            <div className='match-card-field'>
-                                <b>Sở thích:</b>{' '}
-                                {Array.isArray(recommendation.hobbies)
-                                    ? recommendation.hobbies.join(', ')
-                                    : recommendation.hobbies || 'Không có'}
-                            </div>
-                            <div className='match-card-field'>
-                                <b>Thành phố:</b> {recommendation.city || '--'}
-                            </div>
-                            <div className='match-card-field'>
-                                <b>Quận:</b> {recommendation.district || '--'}
-                            </div>
-                            <div className='match-card-field'>
-                                <b>Quê quán:</b>{' '}
-                                {recommendation.hometown || '--'}
-                            </div>
-                            <div className='match-card-field'>
-                                <b>Giới tính:</b>{' '}
-                                {recommendation.gender || '--'}
-                            </div>
-                            <div className='match-card-desc'>
-                                {recommendation.more ||
-                                    recommendation.description ||
-                                    'Không có mô tả'}
-                            </div>
-                        </div>
-                    ))}
+        <div className='max-w-4xl mx-auto p-6'>
+            <div className='bg-white rounded-lg shadow-md'>
+                <div className='border-b border-gray-200 p-6'>
+                    <h2 className='text-2xl font-bold text-gray-800'>
+                        Danh sách người phù hợp
+                    </h2>
+                    <p className='text-sm text-gray-600 mt-1'>
+                        {detailedRecommendations.length} kết quả
+                    </p>
                 </div>
+                <ul className='divide-y divide-gray-200'>
+                    {detailedRecommendations.map((recommendation, index) => (
+                        <li
+                            key={recommendation.id || index}
+                            className='p-4 hover:bg-gray-50 transition-colors duration-150'
+                        >
+                            <div className='flex items-start gap-3'>
+                                {/* Avatar */}
+                                <div className='shrink-0'>
+                                    {recommendation.avatarUrl ? (
+                                        <img
+                                            className='w-12 h-12 rounded-full object-cover border-2 border-gray-200'
+                                            src={recommendation.avatarUrl}
+                                            alt={
+                                                recommendation.fullName ||
+                                                'Avatar'
+                                            }
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                e.target.nextSibling.style.display =
+                                                    'flex';
+                                            }}
+                                        />
+                                    ) : null}
+                                    <div
+                                        className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold ${
+                                            recommendation.avatarUrl
+                                                ? 'hidden'
+                                                : ''
+                                        } ${getAvatarColor(recommendation.fullName || recommendation.username)}`}
+                                        style={{
+                                            display: recommendation.avatarUrl
+                                                ? 'none'
+                                                : 'flex',
+                                        }}
+                                    >
+                                        {getInitials(
+                                            recommendation.fullName ||
+                                                recommendation.username,
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Content */}
+                                <div className='flex-1 min-w-0'>
+                                    <div className='flex items-center justify-between gap-2 mb-1.5'>
+                                        <h3 className='text-base font-semibold text-gray-900 truncate'>
+                                            Người phù hợp #{index + 1}
+                                        </h3>
+                                        <button
+                                            onClick={() =>
+                                                handleCardClick(recommendation)
+                                            }
+                                            className='shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-150 font-medium text-md'
+                                            title='Nhắn tin'
+                                        >
+                                            <FaComments size={16} />
+                                            <span>Nhắn tin</span>
+                                        </button>
+                                    </div>
+
+                                    <p className='text-sm text-gray-600 mb-2'>
+                                        {recommendation.job ||
+                                            'Chưa cập nhật nghề nghiệp'}
+                                    </p>
+
+                                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm'>
+                                        <div className='flex items-start gap-1.5'>
+                                            <span className='font-semibold text-gray-700 min-w-fit'>
+                                                Số điện thoại:
+                                            </span>
+                                            <span className='text-gray-600'>
+                                                {recommendation.phone || '--'}
+                                            </span>
+                                        </div>
+                                        <div className='flex items-start gap-1.5'>
+                                            <span className='font-semibold text-gray-700 min-w-fit'>
+                                                Giới tính:
+                                            </span>
+                                            <span className='text-gray-600'>
+                                                {recommendation.gender || '--'}
+                                            </span>
+                                        </div>
+                                        <div className='flex items-start gap-1.5'>
+                                            <span className='font-semibold text-gray-700 min-w-fit'>
+                                                Thành phố:
+                                            </span>
+                                            <span className='text-gray-600'>
+                                                {recommendation.city || '--'}
+                                            </span>
+                                        </div>
+                                        <div className='flex items-start gap-1.5'>
+                                            <span className='font-semibold text-gray-700 min-w-fit'>
+                                                Quận:
+                                            </span>
+                                            <span className='text-gray-600'>
+                                                {recommendation.district ||
+                                                    '--'}
+                                            </span>
+                                        </div>
+                                        <div className='flex items-start gap-1.5 sm:col-span-2'>
+                                            <span className='font-semibold text-gray-700 min-w-fit'>
+                                                Quê quán:
+                                            </span>
+                                            <span className='text-gray-600'>
+                                                {recommendation.hometown ||
+                                                    '--'}
+                                            </span>
+                                        </div>
+                                        <div className='flex items-start gap-1.5 sm:col-span-2'>
+                                            <span className='font-semibold text-gray-700 min-w-fit'>
+                                                Sở thích:
+                                            </span>
+                                            <span className='text-gray-600'>
+                                                {Array.isArray(
+                                                    recommendation.hobbies,
+                                                )
+                                                    ? recommendation.hobbies.join(
+                                                          ', ',
+                                                      )
+                                                    : recommendation.hobbies ||
+                                                      'Không có'}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {(recommendation.more ||
+                                        recommendation.description) && (
+                                        <div className='mt-2 pt-2 border-t border-gray-100'>
+                                            <p className='text-sm text-gray-600 leading-relaxed'>
+                                                {recommendation.more ||
+                                                    recommendation.description}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
             </div>
         </div>
     );

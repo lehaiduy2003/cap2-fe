@@ -78,7 +78,9 @@ function AddIncidentForm() {
             setIsLoadingRooms(true);
             try {
                 // Bước 1: Lấy danh sách phòng từ Java BE
-                const res = await axiosInstance.get('/api/rooms');
+                const res = await axiosInstance.get(
+                    '/api/rooms?page=0&size=100',
+                );
                 // Xử lý linh hoạt cấu trúc response (có thể là res.data hoặc res.data.data)
                 const rooms = Array.isArray(res.data)
                     ? res.data
