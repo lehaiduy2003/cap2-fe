@@ -10,6 +10,7 @@ import { Loader } from 'lucide-react';
 import { axiosInstance } from '../../lib/axios'; // Gọi API Java Core
 import './css/AddIncidentForm.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { VAT_API_KEY } from '../../constants';
 
 // --- CẤU HÌNH ---
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -261,7 +262,7 @@ function AddIncidentForm() {
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
-                        'x-api-key': 'my-secret-key-123',
+                        'x-api-key': VAT_API_KEY,
                     },
                 },
             );

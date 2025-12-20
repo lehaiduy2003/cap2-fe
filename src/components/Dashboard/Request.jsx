@@ -833,20 +833,6 @@ const Request = () => {
     return (
         <div className='request-container'>
             <h2>Yêu cầu phòng trọ</h2>
-            <div className='request-type-selector'>
-                <button
-                    className={requestType === 'VIEW' ? 'active' : ''}
-                    onClick={() => setRequestType('VIEW')}
-                >
-                    Yêu cầu xem phòng
-                </button>
-                <button
-                    className={requestType === 'RENTAL' ? 'active' : ''}
-                    onClick={() => setRequestType('RENTAL')}
-                >
-                    Yêu cầu thuê phòng
-                </button>
-            </div>
             {loading ? (
                 <p>Đang tải...</p>
             ) : error ? (

@@ -410,15 +410,8 @@ function Result_Room() {
     ]
         .filter(Boolean)
         .join(', ');
-    const baseURL = `${BASE_API_URL}/images/`;
-    const imageUrls =
-        room.imageUrls?.length > 0
-            ? room.imageUrls.map((url) => baseURL + url)
-            : [DEFAULT_IMAGE];
     const fullImageUrls =
-        room?.imageUrls?.length > 0
-            ? room.imageUrls.map((url) => baseURL + url)
-            : [];
+        room?.imageUrls?.length > 0 ? room.imageUrls : [DEFAULT_IMAGE];
 
     return (
         <div className='result-room font-sans text-gray-800 bg-gray-50 min-h-screen pb-10'>

@@ -10,12 +10,15 @@ const DocumentUpload = () => {
     const [uploading, setUploading] = useState(false);
     const [filter, setFilter] = useState('all'); // all, completed, processing, failed
     const [loading, setLoading] = useState(false);
+    const [uploadMessage, setUploadMessage] = useState(null);
     const uploaderRef = useRef(null);
+    const processedUploadsRef = useRef(new Set());
 
     const getAuthHeaders = () => {
         const userId = localStorage.getItem('userId');
         const token = localStorage.getItem('token');
         return {
+            'Content-Type': 'application/json',
             'x-user-id': userId,
             Authorization: `Bearer ${token}`,
         };
@@ -52,53 +55,92 @@ const DocumentUpload = () => {
             return;
         }
 
+        // Process all successfully uploaded files
+        const successfulUploads = items.allEntries.filter(
+            (file) => file.status === 'success' && file.cdnUrl,
+        );
+
+        if (successfulUploads.length === 0) {
+            return;
+        }
+
+        // Check if we've already processed these uploads to prevent duplicates
+        const uploadKey = successfulUploads
+            .map((f) => f.uuid)
+            .sort()
+            .join(',');
+        if (processedUploadsRef.current.has(uploadKey)) {
+            return; // Already processed
+        }
+
+        processedUploadsRef.current.add(uploadKey);
         setUploading(true);
 
         try {
-            // Process all successfully uploaded files
-            const successfulUploads = items.allEntries.filter(
-                (file) => file.status === 'success' && file.cdnUrl,
-            );
+            let successCount = 0;
+            let errorCount = 0;
 
             for (const file of successfulUploads) {
-                // Extract file info
-                const upload_url = file.cdnUrl;
-                const original_filename = file.name || 'document';
-                const title = file.name || 'Untitled Document';
+                try {
+                    // Extract file info
+                    const upload_url = file.cdnUrl;
+                    const original_filename = file.name || 'document';
+                    const title = file.name || 'Untitled Document';
 
-                // Send to VAT service to create document record and trigger RAG processing
-                await axios.post(
-                    `${VAT_API_URL}/api/v1/documents`,
-                    {
-                        title,
-                        original_filename,
-                        upload_url,
-                        property_id: null, // Can be set if needed
-                        metadata: {
-                            file_size: file.size,
-                            content_type:
-                                file.mimeType || 'application/octet-stream',
-                            uploadcare_uuid: file.uuid,
+                    // Send to VAT service to create document record and trigger RAG processing
+                    await axios.post(
+                        `${VAT_API_URL}/api/v1/documents`,
+                        {
+                            title,
+                            original_filename,
+                            upload_url,
+                            property_id: null, // Can be set if needed
+                            metadata: {
+                                file_size: file.size,
+                                content_type:
+                                    file.mimeType || 'application/octet-stream',
+                                uploadcare_uuid: file.uuid,
+                            },
                         },
-                    },
-                    {
-                        headers: getAuthHeaders(),
-                    },
-                );
+                        {
+                            headers: getAuthHeaders(),
+                        },
+                    );
+                    successCount++;
+                } catch (error) {
+                    console.error(`Error uploading ${file.name}:`, error);
+                    errorCount++;
+                }
             }
 
-            alert(
-                `Tải ${successfulUploads.length} tài liệu lên thành công! Hệ thống sẽ xử lý tự động trong nền.`,
-            );
+            // Show a single consolidated message
+            if (successCount > 0) {
+                setUploadMessage({
+                    type: 'success',
+                    text: `Tải ${successCount} tài liệu lên thành công! Hệ thống sẽ xử lý tự động trong nền.`,
+                });
+            }
+            if (errorCount > 0) {
+                setUploadMessage({
+                    type: 'error',
+                    text: `Không thể tải ${errorCount} tài liệu lên.`,
+                });
+            }
 
-            // Refresh document list
+            // Auto-hide message after 5 seconds
+            setTimeout(() => setUploadMessage(null), 5000);
+
+            // Refresh document list only once
             fetchDocuments();
         } catch (error) {
             console.error('Upload error:', error);
-            alert(
-                'Không thể tải tài liệu lên: ' +
+            setUploadMessage({
+                type: 'error',
+                text:
+                    'Không thể tải tài liệu lên: ' +
                     (error.response?.data?.error || error.message),
-            );
+            });
+            setTimeout(() => setUploadMessage(null), 5000);
         } finally {
             setUploading(false);
         }
@@ -116,14 +158,21 @@ const DocumentUpload = () => {
                     headers: getAuthHeaders(),
                 },
             );
-            alert('Xóa tài liệu thành công');
+            setUploadMessage({
+                type: 'success',
+                text: 'Xóa tài liệu thành công',
+            });
+            setTimeout(() => setUploadMessage(null), 3000);
             fetchDocuments();
         } catch (error) {
             console.error('Delete error:', error);
-            alert(
-                'Không thể xóa tài liệu: ' +
+            setUploadMessage({
+                type: 'error',
+                text:
+                    'Không thể xóa tài liệu: ' +
                     (error.response?.data?.error || error.message),
-            );
+            });
+            setTimeout(() => setUploadMessage(null), 5000);
         }
     };
 
@@ -181,6 +230,19 @@ const DocumentUpload = () => {
                     <h2 className='text-xl font-semibold text-gray-800 mb-4'>
                         Tải Tài Liệu Lên
                     </h2>
+
+                    {/* Message Display */}
+                    {uploadMessage && (
+                        <div
+                            className={`mb-4 p-4 rounded-lg ${
+                                uploadMessage.type === 'success'
+                                    ? 'bg-green-50 text-green-800 border border-green-200'
+                                    : 'bg-red-50 text-red-800 border border-red-200'
+                            }`}
+                        >
+                            <p className='font-medium'>{uploadMessage.text}</p>
+                        </div>
+                    )}
 
                     {/* Uploadcare File Uploader */}
                     <div className='uploadcare-wrapper'>
@@ -313,7 +375,7 @@ const DocumentUpload = () => {
                                             <td className='px-6 py-4'>
                                                 <div className='flex items-center'>
                                                     <svg
-                                                        className='h-5 w-5 text-gray-400 mr-3 flex-shrink-0'
+                                                        className='h-5 w-5 text-gray-400 mr-3 shrink-0'
                                                         fill='none'
                                                         viewBox='0 0 24 24'
                                                         stroke='currentColor'

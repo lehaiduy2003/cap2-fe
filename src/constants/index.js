@@ -46,3 +46,5 @@ export const RAG_API_URL =
     import.meta.env.VITE_RAG_API_URL || 'http://localhost:3001';
 
 export const RAG_API_KEY = import.meta.env.VITE_RAG_API_KEY || 'admin@2025';
+
+export const VAT_API_KEY = import.meta.env.VITE_VAT_API_KEY || '';
